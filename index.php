@@ -19,7 +19,7 @@ require __DIR__ . '/includes/header.php';
 
   <h1>Web Server Metadata Security Lab</h1>
 
-  <img class="banner-photo" src="/images/cyber-banner.gif" alt="Animated cyberspace banner">
+  <img class="banner-photo" src="/images/cyber-banner.jpg" alt="Animated cyberspace banner">
 
   <p class="subtext">Apache server environment built for generating, collecting, and analyzing web access logs for cybersecurity analysis</p>
 
@@ -47,12 +47,10 @@ require __DIR__ . '/includes/header.php';
   <a href="https://google.com">Instagram</a><br>
   <em>Always hover over links first and check where they actually lead before clicking.</em></p>
 
-  <div class="gallery-grid">
-    <img src="/images/cyber-gallery-1.gif" alt="Retro cyberspace animation">
+  <div class="gallery-grid gallery-grid--single">
     <a href="https://www.staysafeonline.org/resources/online-safety-and-privacy" target="_blank" rel="noopener">
       <img src="/images/cyber-gallery-2.jpg" alt="Learn about cyber safety">
     </a>
-    <img src="/images/cyber-gallery-3.gif" alt="Retro cyber animation">
   </div>
 
   <div class="threat-map">
