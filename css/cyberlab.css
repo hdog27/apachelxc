@@ -70,3 +70,12 @@ body.cyberlab {
   .gallery-grid { grid-template-columns: 1fr; }
   .banner-photo { width: 70%; }
 }
+
+/* Single-image gallery: keep the one cyber-safety visual at a sensible size
+   instead of stretching it across the full 3-column grid. */
+.gallery-grid--single {
+  grid-template-columns: 1fr;
+  max-width: 360px;
+  margin-left: auto;
+  margin-right: auto;
+}
