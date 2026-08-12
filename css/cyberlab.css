@@ -1,0 +1,72 @@
+/* ==========================================================================
+   cyberlab.css - Cyber Lab (home) page only
+   Ported from Morgan's fork: CSS-only cyber-grid background, banner image,
+   gallery grid and a RESPONSIVE threat-map (no fixed pixel width).
+   ========================================================================== */
+
+/* Morgan's background treatment: radial glow + faint grid, no image. */
+body.cyberlab {
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    radial-gradient(circle, #123b7c 0%, #08111f 40%, #040608 100%);
+  background-size: 40px 40px, 40px 40px, 100% 100%;
+  background-attachment: fixed;
+}
+
+/* ASCII-cat replacement: Morgan's animated banner, centred. */
+.banner-photo {
+  display: block;
+  width: 45%;
+  max-width: 260px;
+  height: auto;
+  margin: 8px auto 20px;
+  border-radius: 12px;
+}
+
+/* Gallery grid of thumbnails. */
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin: 2rem 0;
+}
+.gallery-grid img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  transition: transform 0.25s, box-shadow 0.25s;
+}
+.gallery-grid a:hover img,
+.gallery-grid a:focus img {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+/* Responsive Kaspersky threat map. Replaces Morgan's fixed width="700".
+   The wrapper keeps a 16:9 box that scales to the card width; the iframe
+   fills it, so there is never horizontal scroll on a phone. */
+.threat-map {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 700 / 322;
+  margin: 1.5rem 0;
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+.threat-map iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+@media (max-width: 600px) {
+  .gallery-grid { grid-template-columns: 1fr; }
+  .banner-photo { width: 70%; }
+}
