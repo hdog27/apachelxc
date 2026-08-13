@@ -15,7 +15,11 @@ require __DIR__ . '/includes/header.php';
 
 <div class="card homelab-card">
   <h2>Homelab</h2>
-  <p class="homelab-intro">This is my own build, shaped by trial and error, not a shopping list to clone. It all lives in a 12U half-depth rack. Below is a quick tour of the hardware; the real story is in the services running on top of it.</p>
+  <p class="homelab-intro">Homelabbing is personal. Build yours, don't clone mine.</p>
+  <ul class="homelab-facts">
+    <li>12U half-depth rack</li>
+    <li>Click the numbered points for a hardware breakdown</li>
+  </ul>
 
   <div class="rack-hotspot-wrap">
     <img src="/images/rack.jpg?v=2" alt="Homelab rack" class="rack-photo">
