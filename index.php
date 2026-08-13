@@ -43,7 +43,7 @@ require __DIR__ . '/includes/header.php';
   <hr class="divider">
 
   <p>Every site you load reads this much about you. This one logged it.</p>
-  <p>Link text lies, too &mdash; this one says Instagram:<br>
+  <p>Links can lie too. Does this take you to Instagram?<br>
   <a href="https://google.com">Instagram</a><br>
   <em>Hover before you click.</em></p>
 
