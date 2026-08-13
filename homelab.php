@@ -15,18 +15,22 @@ require __DIR__ . '/includes/header.php';
 
 <div class="card homelab-card">
   <h2>Homelab</h2>
-  <p class="homelab-intro">This is my own build, shaped by trial and error, not a shopping list to clone. Below is a quick tour of the hardware; the real story is in the services running on top of it.</p>
+  <p class="homelab-intro">This is my own build, shaped by trial and error, not a shopping list to clone. It all lives in a 12U half-depth rack. Below is a quick tour of the hardware; the real story is in the services running on top of it.</p>
 
   <div class="rack-hotspot-wrap">
     <img src="/images/rack.jpg?v=2" alt="Homelab rack" class="rack-photo">
-    <div class="hotspot" style="top:12%;left:50%;" tabindex="0"><span class="hotspot-dot">1</span><div class="hotspot-tooltip"><strong>Display</strong>Repurposed monitor for at-a-glance dashboards.</div></div>
-    <div class="hotspot" style="top:28%;left:30%;" tabindex="0"><span class="hotspot-dot">2</span><div class="hotspot-tooltip"><strong>Managed PoE Switch</strong>VLAN segmentation and PoE for access points/cameras.</div></div>
-    <div class="hotspot" style="top:40%;left:65%;" tabindex="0"><span class="hotspot-dot">3</span><div class="hotspot-tooltip"><strong>Spotify Car Thing</strong>Jailbroken, running Nocturne as a custom media controller.</div></div>
-    <div class="hotspot" style="top:52%;left:35%;" tabindex="0"><span class="hotspot-dot">4</span><div class="hotspot-tooltip"><strong>Proxmox Mini PC</strong>Main virtualization host for the lab.</div></div>
-    <div class="hotspot" style="top:64%;left:60%;" tabindex="0"><span class="hotspot-dot">5</span><div class="hotspot-tooltip"><strong>Hue Hub</strong>Smart lighting tied into the automation stack.</div></div>
-    <div class="hotspot" style="top:76%;left:30%;" tabindex="0"><span class="hotspot-dot">6</span><div class="hotspot-tooltip"><strong>Protectli VP1410</strong>Purpose-built appliance running the firewall/router stack.</div></div>
-    <div class="hotspot" style="top:86%;left:65%;" tabindex="0"><span class="hotspot-dot">7</span><div class="hotspot-tooltip"><strong>NAS</strong>Central storage for backups, media, and lab data.</div></div>
-    <div class="hotspot" style="top:95%;left:45%;" tabindex="0"><span class="hotspot-dot">8</span><div class="hotspot-tooltip"><strong>PDU</strong>Remote power control for the rack.</div></div>
+    <div class="hotspot below" style="top:10%;left:29%;" tabindex="0"><span class="hotspot-dot">1</span><div class="hotspot-tooltip"><strong>Raspberry Pi 4</strong>Small ARM board handling lightweight always-on jobs and monitoring agents.</div></div>
+    <div class="hotspot below" style="top:14%;left:50%;" tabindex="0"><span class="hotspot-dot">2</span><div class="hotspot-tooltip"><strong>Wireless Access Point</strong>Broadcasts the lab's networks, each pinned to its own VLAN.</div></div>
+    <div class="hotspot below" style="top:28%;left:50%;" tabindex="0"><span class="hotspot-dot">3</span><div class="hotspot-tooltip"><strong>Display</strong>Repurposed monitor showing live dashboards for traffic and system health.</div></div>
+    <div class="hotspot" style="top:37%;left:73%;" tabindex="0"><span class="hotspot-dot">4</span><div class="hotspot-tooltip"><strong>Raspberry Pi 4</strong>Second ARM node, used for trying things out before they touch real hardware.</div></div>
+    <div class="hotspot" style="top:40%;left:32%;" tabindex="0"><span class="hotspot-dot">5</span><div class="hotspot-tooltip"><strong>Patch Panel</strong>Terminates the structured cabling so drops can be repatched without touching the walls.</div></div>
+    <div class="hotspot" style="top:45%;left:50%;" tabindex="0"><span class="hotspot-dot">6</span><div class="hotspot-tooltip"><strong>PoE Switch</strong>Managed switching with VLAN tagging; powers the access point over its data line.</div></div>
+    <div class="hotspot" style="top:55%;left:62%;" tabindex="0"><span class="hotspot-dot">7</span><div class="hotspot-tooltip"><strong>Spotify Car Thing</strong>Salvaged dashboard unit running open jailbroken firmware as a desk player.</div></div>
+    <div class="hotspot" style="top:64%;left:42%;" tabindex="0"><span class="hotspot-dot">8</span><div class="hotspot-tooltip"><strong>Mini PC</strong>General compute node for virtualization and lab workloads.</div></div>
+    <div class="hotspot" style="top:70%;left:58%;" tabindex="0"><span class="hotspot-dot">9</span><div class="hotspot-tooltip"><strong>Hue Hub</strong>Bridges smart lighting onto its own isolated segment.</div></div>
+    <div class="hotspot" style="top:79%;left:40%;" tabindex="0"><span class="hotspot-dot">10</span><div class="hotspot-tooltip"><strong>Firewall</strong>Routes between VLANs and enforces the policy that keeps segments separated.</div></div>
+    <div class="hotspot" style="top:88%;left:60%;" tabindex="0"><span class="hotspot-dot">11</span><div class="hotspot-tooltip"><strong>NAS Storage</strong>Spinning disks for backups, media, and virtual machine snapshots.</div></div>
+    <div class="hotspot" style="top:94%;left:45%;" tabindex="0"><span class="hotspot-dot">12</span><div class="hotspot-tooltip"><strong>PDU</strong>Distributes power to the rack with per-outlet switching and monitoring.</div></div>
   </div>
 
   <h3>Services</h3>
