@@ -18,7 +18,7 @@ require __DIR__ . '/includes/header.php';
   <p class="homelab-intro">This is my own build, shaped by trial and error, not a shopping list to clone. Below is a quick tour of the hardware; the real story is in the services running on top of it.</p>
 
   <div class="rack-hotspot-wrap">
-    <img src="/images/rack.jpg" alt="Homelab rack" class="rack-photo">
+    <img src="/images/rack.jpg?v=2" alt="Homelab rack" class="rack-photo">
     <div class="hotspot" style="top:12%;left:50%;" tabindex="0"><span class="hotspot-dot">1</span><div class="hotspot-tooltip"><strong>Display</strong>Repurposed monitor for at-a-glance dashboards.</div></div>
     <div class="hotspot" style="top:28%;left:30%;" tabindex="0"><span class="hotspot-dot">2</span><div class="hotspot-tooltip"><strong>Managed PoE Switch</strong>VLAN segmentation and PoE for access points/cameras.</div></div>
     <div class="hotspot" style="top:40%;left:65%;" tabindex="0"><span class="hotspot-dot">3</span><div class="hotspot-tooltip"><strong>Spotify Car Thing</strong>Jailbroken, running Nocturne as a custom media controller.</div></div>
