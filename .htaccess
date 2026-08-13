@@ -1,8 +1,12 @@
 RewriteEngine On
 
+# never rewrite the WebRTC endpoint - the 301 eats POST bodies
+RewriteCond %{REQUEST_URI} ^/log_rtc\.php$
+RewriteRule ^ - [L]
+
 # strip .php from incoming requests -> canonical extensionless URL
 RewriteCond %{THE_REQUEST} \s/+(.+?)\.php[\s?] [NC]
-RewriteRule ^ /%1 [R=301,L]
+RewriteRule ^ https://%{HTTP_HOST}/%1 [R=301,L]
 
 # map extensionless URL to the real .php file
 RewriteCond %{REQUEST_FILENAME} !-d
