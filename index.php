@@ -19,7 +19,7 @@ require __DIR__ . '/includes/header.php';
 
   <h1>Web Server Metadata Security Lab</h1>
 
-  <img class="banner-photo" src="/images/cyber-banner.jpg" alt="Animated cyberspace banner">
+  <img class="banner-photo" src="/images/cyber-banner.gif" alt="Animated cyberspace banner">
 
   <p class="subtext">Apache server environment built for generating, collecting, and analyzing web access logs for cybersecurity analysis</p>
 
