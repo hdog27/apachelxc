@@ -94,6 +94,8 @@
 /* quick facts under the intro */
 .homelab-facts {
   list-style: none;
+  display: inline-block;
+  text-align: left;
   margin: 0 0 18px;
   padding: 0;
   font-size: 0.82rem;

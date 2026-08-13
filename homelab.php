@@ -15,7 +15,7 @@ require __DIR__ . '/includes/header.php';
 
 <div class="card homelab-card">
   <h2>Homelab</h2>
-  <p class="homelab-intro">Homelabbing is personal. Build yours, don't clone mine.</p>
+  <p class="homelab-intro">Homelabbing is a personal journey. You should be the one to build it, not copy it.</p>
   <ul class="homelab-facts">
     <li>12U half-depth rack</li>
     <li>Click the numbered points for a hardware breakdown</li>
