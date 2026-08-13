@@ -157,3 +157,14 @@ a  { color: #a8d8ff; text-decoration: underline; font-weight: 600; }
   h2 { font-size: 24px; }
   p, .subtext { font-size: 15px; }
 }
+
+/* device fingerprint: red labels, white values (forced - loads last) */
+body .device-box,
+body .device-box * {
+  color: #ff7b72 !important;
+}
+body .device-box strong,
+body .device-box b {
+  color: #ffffff !important;
+  font-weight: 400 !important;
+}
