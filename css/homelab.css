@@ -110,3 +110,31 @@
   border-radius: 50%;
   background: #9e53d4;
 }
+
+/* ---------- collapsible services + tighter rack image (override) --------- */
+.rack-hotspot-wrap { max-width: 380px; }
+@media (max-width: 520px) { .rack-hotspot-wrap { max-width: 290px; } }
+
+details.service-item > summary {
+  cursor: pointer;
+  list-style: none;
+  font-weight: 700;
+  color: #fff;
+  font-size: 0.95rem;
+  padding: 9px 26px 9px 0;
+  position: relative;
+  user-select: none;
+}
+details.service-item > summary::-webkit-details-marker { display: none; }
+details.service-item > summary::after {
+  content: "+";
+  position: absolute;
+  right: 4px; top: 50%;
+  transform: translateY(-50%);
+  color: #9e53d4;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+details.service-item[open] > summary::after { content: "\2212"; }
+details.service-item > summary:hover { color: #d8b4f0; }
+details.service-item > p { margin: 2px 0 10px; }

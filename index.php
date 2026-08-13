@@ -17,7 +17,7 @@ require __DIR__ . '/includes/header.php';
 
 <div class="card">
 
-  <h1>Web Server Metadata Security Lab</h1>
+  <h1>Metadata Security Lab</h1>
 
   <img class="banner-photo" src="/images/cyber-banner.gif?v=2" alt="Animated cyberspace banner">
 

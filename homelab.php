@@ -19,6 +19,7 @@ require __DIR__ . '/includes/header.php';
   <ul class="homelab-facts">
     <li>12U half-depth rack</li>
     <li>Click the numbered points for a hardware breakdown</li>
+    <li>Tap a service below to expand it</li>
   </ul>
 
   <div class="rack-hotspot-wrap">
@@ -39,42 +40,42 @@ require __DIR__ . '/includes/header.php';
 
   <h3>Services</h3>
   <div class="services-list">
-    <div class="service-item">
-      <h4>Virtualization Platform &mdash; Proxmox VE</h4>
+    <details class="service-item">
+      <summary>Virtualization Platform &mdash; Proxmox VE</summary>
       <p>Proxmox VE is the hypervisor underlying the entire lab, hosting every VM and container listed here. It's also where most of the day-to-day admin practice happens: snapshots, resource tuning, and template-based provisioning.</p>
-    </div>
-    <div class="service-item">
-      <h4>Firewall &amp; Routing &mdash; OPNsense</h4>
+    </details>
+    <details class="service-item">
+      <summary>Firewall &amp; Routing &mdash; OPNsense</summary>
       <p>OPNsense runs on the Protectli appliance and handles inter-VLAN routing and firewall policy for the lab. It's the enforcement point that keeps management, IoT, and training-range traffic segmented from each other.</p>
-    </div>
-    <div class="service-item">
-      <h4>Security Monitoring &amp; SIEM &mdash; Splunk Enterprise</h4>
+    </details>
+    <details class="service-item">
+      <summary>Security Monitoring &amp; SIEM &mdash; Splunk Enterprise</summary>
       <p>A Splunk Enterprise instance ingests logs from across the lab for correlation, alerting, and hands-on detection engineering practice. It's the primary tool used to build and test custom search queries and dashboards.</p>
-    </div>
-    <div class="service-item">
-      <h4>Log Aggregation &mdash; Loki</h4>
+    </details>
+    <details class="service-item">
+      <summary>Log Aggregation &mdash; Loki</summary>
       <p>Loki collects and indexes logs from services and containers that don't feed into Splunk, giving a lighter-weight option for quick troubleshooting. It's mainly used to practice log-based debugging without the overhead of a full SIEM pipeline.</p>
-    </div>
-    <div class="service-item">
-      <h4>Network Management &mdash; UniFi Controller</h4>
+    </details>
+    <details class="service-item">
+      <summary>Network Management &mdash; UniFi Controller</summary>
       <p>A UniFi controller manages switching, access points, and VLAN segmentation, keeping management, IoT, and lab traffic isolated from one another. It's also where most network-design experimentation happens before rules get pushed to the firewall.</p>
-    </div>
-    <div class="service-item">
-      <h4>Remote Access &mdash; Tailscale</h4>
+    </details>
+    <details class="service-item">
+      <summary>Remote Access &mdash; Tailscale</summary>
       <p>Tailscale provides a zero-config mesh VPN for securely reaching lab services from anywhere without exposing ports to the public internet. Every device authenticates individually, so there's no single exposed entry point.</p>
-    </div>
-    <div class="service-item">
-      <h4>Security Training Range</h4>
+    </details>
+    <details class="service-item">
+      <summary>Security Training Range</summary>
       <p>Deliberately vulnerable targets &mdash; OWASP Juice Shop, Metasploitable2, and DVWA &mdash; run in an isolated segment for practicing red-team techniques and building teaching demos. Keeping them fully separated from production services is itself part of the network-segmentation exercise.</p>
-    </div>
-    <div class="service-item">
-      <h4>Self-Hosted Cloud Storage &mdash; Nextcloud</h4>
+    </details>
+    <details class="service-item">
+      <summary>Self-Hosted Cloud Storage &mdash; Nextcloud</summary>
       <p>Nextcloud provides self-hosted file sync and storage as a hands-on alternative to commercial cloud services. It also doubles as a testbed for practicing backup and access-control workflows.</p>
-    </div>
-    <div class="service-item">
-      <h4>Web &amp; Application Hosting</h4>
+    </details>
+    <details class="service-item">
+      <summary>Web &amp; Application Hosting</summary>
       <p>An Apache/PHP container hosts this site, including the Cyber Lab metadata logger showcased under that tab.</p>
-    </div>
+    </details>
   </div>
 </div>
 

@@ -79,3 +79,21 @@ body.cyberlab {
   margin-left: auto;
   margin-right: auto;
 }
+
+/* ---------- smaller banner on phones (override) -------------------------- */
+@media (max-width: 600px) {
+  .banner-photo { width: 45%; max-width: 165px; }
+}
+
+/* ---------- readable device fingerprint box ------------------------------ */
+.device-box {
+  text-align: left;
+  line-height: 1.75;
+  color: #ff7b72;
+  font-size: 0.8rem;
+  word-break: break-word;
+}
+.device-box strong {
+  color: #ffffff;
+  font-weight: 400;
+}
