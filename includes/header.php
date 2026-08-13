@@ -40,9 +40,9 @@ if (!isset($body_class))       { $body_class = ''; }
   <meta name="twitter:image" content="<?= htmlspecialchars($og_image) ?>">
 
 
-  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/style.css?v=<?= @filemtime(__DIR__ . '/../css/style.css') ?>">
 <?php if (!empty($page_css)): ?>
-  <link rel="stylesheet" href="/css/<?= htmlspecialchars($page_css) ?>">
+  <link rel="stylesheet" href="/css/<?= htmlspecialchars($page_css) ?>?v=<?= @filemtime(__DIR__ . '/../css/' . $page_css) ?>">
 <?php endif; ?>
 </head>
 <body class="<?= htmlspecialchars($body_class) ?>">
