@@ -69,7 +69,7 @@ require __DIR__ . '/includes/header.php';
       LinkedIn
     </a>
   </div>
-  <p class="footer">Built by Harrison</p>
+  <p class="footer">Built by Harrison Smith, <a href="https://github.com/1Fragz1" target="_blank" rel="noopener">Zachary Lavornia</a> and <a href="https://www.linkedin.com/in/morgan-stone-90b514419/" target="_blank" rel="noopener">Morgan Stone</a></p>
 </div>
 
 <?php require __DIR__ . '/includes/footer.php'; ?>
