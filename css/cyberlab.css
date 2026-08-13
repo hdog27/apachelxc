@@ -97,3 +97,15 @@ body.cyberlab {
   color: #ffffff;
   font-weight: 400;
 }
+
+/* VPN badge: detected = good (green), none = warning (red) */
+body .vpn-badge.vpn-yes {
+  background: rgba(46, 160, 67, 0.28) !important;
+  border-color: rgba(63, 185, 80, 0.55) !important;
+  color: #7ee787 !important;
+}
+body .vpn-badge.vpn-no {
+  background: rgba(180, 45, 55, 0.28) !important;
+  border-color: rgba(220, 70, 80, 0.55) !important;
+  color: #ff9492 !important;
+}

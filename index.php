@@ -21,7 +21,7 @@ require __DIR__ . '/includes/header.php';
 
   <img class="banner-photo" src="/images/cyber-banner.gif?v=2" alt="Animated cyberspace banner">
 
-  <p class="subtext">Apache server environment built for generating, collecting, and analyzing web access logs for cybersecurity analysis</p>
+  <p class="subtext">Apache environment logging, parsing and indexing live web access requests.</p>
 
   <span class="ip-highlight"><?= htmlspecialchars($ip) ?></span>
 
@@ -42,10 +42,10 @@ require __DIR__ . '/includes/header.php';
 
   <hr class="divider">
 
-  <p>Any website you visit can see your IP address, estimate your location, and read your device info. This page logged all of it the moment you loaded it.</p>
-  <p>As another example, this link appears to go to Instagram, but it actually takes you to Google:<br>
+  <p>Every site you load reads this much about you. This one logged it.</p>
+  <p>Link text lies, too &mdash; this one says Instagram:<br>
   <a href="https://google.com">Instagram</a><br>
-  <em>Always hover over links first and check where they actually lead before clicking.</em></p>
+  <em>Hover before you click.</em></p>
 
   <div class="gallery-grid gallery-grid--single">
     <a href="https://www.staysafeonline.org/resources/online-safety-and-privacy" target="_blank" rel="noopener">
