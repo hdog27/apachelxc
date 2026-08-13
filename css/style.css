@@ -314,3 +314,19 @@ nav a.active, .nav a.active, .site-nav a.active,
     0 2px 5px rgba(0,0,0,0.32),
     0 0 1.5em -0.1em rgba(191,123,255,0.75);
 }
+
+/* squarer nav corners - forced, must load last */
+body nav a,
+body .nav a,
+body .site-nav a,
+body .nav-links a,
+body header nav a {
+  border-radius: 0.4em !important;
+}
+body nav a::after,
+body .nav a::after,
+body .site-nav a::after,
+body .nav-links a::after,
+body header nav a::after {
+  border-radius: 0.4em !important;
+}
