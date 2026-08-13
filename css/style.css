@@ -330,3 +330,19 @@ body .nav-links a::after,
 body header nav a::after {
   border-radius: 0.4em !important;
 }
+
+/* squarer nav corners - forced, must load last */
+body nav a,
+body .nav a,
+body .site-nav a,
+body .nav-links a,
+body header nav a {
+  border-radius: 0.4em !important;
+}
+body nav a::after,
+body .nav a::after,
+body .site-nav a::after,
+body .nav-links a::after,
+body header nav a::after {
+  border-radius: 0.4em !important;
+}
