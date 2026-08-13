@@ -168,3 +168,35 @@ body .device-box b {
   color: #ffffff !important;
   font-weight: 400 !important;
 }
+
+/* ---------- glow nav buttons -------------------------------------------- */
+nav a, .nav a, .site-nav a, .nav-links a, header nav a {
+  --glow-color: rgb(217, 176, 255);
+  --glow-spread-color: rgba(191, 123, 255, 0.45);
+  --btn-color: rgb(100, 61, 136);
+  display: inline-block;
+  border: 2px solid var(--glow-color);
+  padding: 0.45em 1.1em;
+  color: var(--glow-color);
+  font-size: 0.85rem;
+  font-weight: bold;
+  text-decoration: none;
+  background-color: var(--btn-color);
+  border-radius: 0.8em;
+  box-shadow: 0 0 0.5em 0.05em var(--glow-color),
+              0 0 1.4em 0.2em var(--glow-spread-color),
+              inset 0 0 0.45em 0.1em var(--glow-color);
+  text-shadow: 0 0 0.35em var(--glow-color);
+  transition: all 0.25s;
+}
+nav a:active, .nav a:active, .site-nav a:active,
+.nav-links a:active, header nav a:active {
+  box-shadow: 0 0 0.4em 0.05em var(--glow-color),
+              0 0 1em 0.6em var(--glow-spread-color),
+              inset 0 0 0.35em 0.1em var(--glow-color);
+}
+nav a.active, .nav a.active, .site-nav a.active,
+.nav-links a.active, nav a[aria-current] {
+  color: var(--btn-color);
+  background-color: var(--glow-color);
+}
