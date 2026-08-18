@@ -6,20 +6,27 @@
 // ==========================================================================
 require_once __DIR__ . '/includes/metadata.php';
 
-$page_title       = 'Cyber Lab — hmax.space';
+$page_title       = 'Cyber Lab | hmax.space';
 $page_description = 'A live web-server metadata security lab: see the IP, geolocation, ISP, VPN/proxy status and device fingerprint your browser reveals on every request.';
 $body_class       = 'cyberlab';
 $page_css         = 'cyberlab.css';
-$page_js          = ['rtc.js'];
+$page_js          = ['rtc.js', 'flank.js', 'confetti.js', 'rain.js', 'ghosts.js'];
 
+$og_image         = 'https://hmax.space/images/og-cyberlab.jpg';
 require __DIR__ . '/includes/header.php';
 ?>
 
 <div class="card">
 
+  <p class="identity-strip">Built and run by <strong>Harrison</strong>, cybersecurity student. Everything here runs on <a href="/homelab">my homelab rack &rarr;</a></p>
+
   <h1>Metadata Security Lab</h1>
 
-  <img class="banner-photo" src="/images/cyber-banner.gif?v=2" alt="Animated cyberspace banner">
+  <div class="banner-row">
+    <div class="banner-flank" id="flank-l"></div>
+    <img class="banner-photo" src="/images/cyber-banner.gif?v=2" alt="Animated cyberspace banner" loading="lazy" width="400" height="400305">
+    <div class="banner-flank" id="flank-r"></div>
+  </div>
 
   <p class="subtext">Apache environment logging, parsing and indexing live web access requests.</p>
 
@@ -27,13 +34,14 @@ require __DIR__ . '/includes/header.php';
 
   <p class="info-row">📍 Location: <strong><?= htmlspecialchars($city) ?>, <?= htmlspecialchars($country) ?></strong></p>
   <p class="info-row">🌐 ISP: <strong><?= htmlspecialchars($isp) ?></strong></p>
-  <span class="vpn-badge <?= (($data->proxy ?? false) || ($data->hosting ?? false)) ? 'vpn-yes' : 'vpn-no' ?>">
+  <span class="vpn-badge <?= $vpnDetected ? "vpn-yes" : "vpn-no" ?>" data-vpn="<?= $vpnDetected ? 1 : 0 ?>">
     <?= htmlspecialchars($vpn) ?>
   </span>
+  <?php if (!empty($vpnReason)): ?><p class="vpn-reason"><?= htmlspecialchars($vpnReason) ?></p><?php endif; ?>
 
   <hr class="divider">
 
-  <p class="visit-counter">👁 This page has been visited <strong><?= number_format($visit_count) ?></strong> times</p>
+  <p class="visit-counter">👁 This page has been loaded <strong><?= number_format($visit_count) ?></strong> times by <strong><?= number_format($unique_count) ?></strong> unique visitors</p>
 
   <hr class="divider">
 
@@ -47,14 +55,16 @@ require __DIR__ . '/includes/header.php';
   <a href="https://google.com">Instagram</a><br>
   <em>Hover before you click.</em></p>
 
-  <div class="gallery-grid gallery-grid--single">
-    <a href="https://www.staysafeonline.org/resources/online-safety-and-privacy" target="_blank" rel="noopener">
-      <img src="/images/cyber-gallery-2.jpg" alt="Learn about cyber safety">
-    </a>
-  </div>
 
+  <div class="media-row">
   <div class="threat-map">
     <iframe src="https://cybermap.kaspersky.com/en/widget/dynamic/dark" title="Kaspersky Cyberthreat Live Map" loading="lazy"></iframe>
+  </div>
+  <div class="gallery-grid gallery-grid--single">
+    <a href="https://www.staysafeonline.org/resources/online-safety-and-privacy" target="_blank" rel="noopener">
+      <img src="/images/cyber-gallery-2.jpg" alt="Learn about cyber safety" loading="lazy" width="1089" height="1120">
+    </a>
+  </div>
   </div>
 
   <hr class="divider">
@@ -69,7 +79,6 @@ require __DIR__ . '/includes/header.php';
       LinkedIn
     </a>
   </div>
-  <p class="footer">Built by Harrison Smith, <a href="https://github.com/1Fragz1" target="_blank" rel="noopener">Zachary Lavornia</a> and <a href="https://www.linkedin.com/in/morgan-stone-90b514419/" target="_blank" rel="noopener">Morgan Stone</a></p>
 </div>
 
 <?php require __DIR__ . '/includes/footer.php'; ?>

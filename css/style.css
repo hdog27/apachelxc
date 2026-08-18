@@ -87,7 +87,7 @@ a  { color: #a8d8ff; text-decoration: underline; font-weight: 600; }
   display: block;
   margin: 12px 0;
   color: #ffe066;
-  font-size: clamp(16px, 3vw, 30px);
+  font-size: clamp(24px, 6vw, 30px);
   font-weight: 900;
   text-decoration: underline;
   text-align: center;
@@ -146,6 +146,12 @@ a  { color: #a8d8ff; text-decoration: underline; font-weight: 600; }
 .repo-embed-body pre { background: rgba(0, 0, 0, 0.3); padding: 10px; border-radius: 8px; overflow-x: auto; }
 .repo-embed-body a { color: #9fd1ff; }
 .repo-embed-body ul { padding-left: 20px; }
+.repo-embed-body h4, .repo-embed-body h5, .repo-embed-body h6 { color: #fff; margin: 14px 0 6px; font-size: 0.95rem; }
+.repo-embed-body p { margin: 8px 0; }
+.repo-embed-body ol { padding-left: 22px; }
+.repo-embed-body li { margin: 3px 0; }
+.repo-embed-body img { max-width: 100%; height: auto; border-radius: 8px; margin: 10px 0; display: block; }
+.repo-embed-body hr { border: 0; border-top: 1px solid rgba(255, 255, 255, 0.15); margin: 14px 0; }
 
 /* ---------- Mobile -------------------------------------------------------- */
 @media (max-width: 600px) {
@@ -346,3 +352,146 @@ body .nav-links a::after,
 body header nav a::after {
   border-radius: 0.4em !important;
 }
+
+.site-credit{position:relative;z-index:1;text-align:center;font-size:12px;color:rgba(255,255,255,0.45);margin:24px auto 32px;max-width:640px;padding:0 16px}
+.site-credit a{color:rgba(255,255,255,0.65);text-decoration:none}
+.site-credit a:hover{text-decoration:underline}
+
+.card{position:relative;z-index:1}
+body{flex-direction:column}
+.site-credit{width:100%;flex:none}
+.site-credit strong{color:#fff}
+.site-credit a{color:rgba(255,255,255,0.75);text-decoration:underline}
+
+body{align-items:center}
+
+.grade-badge{display:inline-block;padding:8px 20px;border-radius:20px;background:rgba(80,255,120,0.18);border:1px solid rgba(80,255,120,0.45);font-size:16px;margin:8px 0}
+.grade-badge strong{font-size:22px;color:#7ee787}
+.safe-list{text-align:left;max-width:60ch;margin:12px auto;line-height:1.6}
+.safe-list li{margin-bottom:10px}
+
+
+
+.repo-embed-body{max-height:280px;overflow-y:auto;font-size:13px}
+.repo-embed-body h1,.repo-embed-body h2{font-size:15px;margin:10px 0 4px}
+.repo-embed-body h3{font-size:14px;margin:8px 0 4px}
+
+.OLD-nav-select{display:none}
+@media (max-width:640px){
+.top-nav .nav-btn{display:none}
+.OLD-nav-select{display:block;width:calc(100% - 24px);margin:0 auto;padding:11px 14px;border-radius:14px;background:rgba(20,25,35,0.55);border:1px solid rgba(255,255,255,0.18);color:#fff;font-size:15px;font-weight:600;font-family:inherit;text-align:center;-webkit-appearance:none;appearance:none}
+.OLD-nav-select option{background:#0d1117;color:#fff}
+}
+
+.OLD-nav-select{display:none}
+@media (max-width:640px){
+.top-nav .nav-btn{display:none}
+.OLD-nav-select{display:block;width:calc(100% - 24px);margin:0 auto;padding:11px 14px;border-radius:14px;background:rgba(20,25,35,0.55);border:1px solid rgba(255,255,255,0.18);color:#fff;font-size:15px;font-weight:600;font-family:inherit;text-align:center;-webkit-appearance:none;appearance:none}
+.OLD-nav-select option{background:#0d1117;color:#fff}
+}
+
+@media (max-width:640px){
+nav.top-nav a.nav-btn{display:none!important}
+nav.top-nav select.OLD-nav-select{display:block!important;width:calc(100% - 24px);margin:0 auto;padding:11px 14px;border-radius:14px;background:rgba(20,25,35,0.85);border:1px solid rgba(255,255,255,0.18);color:#fff;font-size:15px;font-weight:600;font-family:inherit;text-align:center;-webkit-appearance:none;appearance:none}
+}
+
+.status-line{font-size:15px;line-height:1.6;color:rgba(255,255,255,0.8)}
+
+.card img{height:auto}
+
+.top-nav{background:linear-gradient(rgba(10,14,22,0.78),rgba(10,14,22,0.62))}
+.nav-btn{color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.5)}
+
+/* cards: lighter glass */
+.card {
+  background: rgba(255,255,255,0.055);
+  backdrop-filter: blur(18px) saturate(130%);
+  -webkit-backdrop-filter: blur(18px) saturate(130%);
+  border: 1px solid rgba(255,255,255,0.13);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.09);
+}
+.device-box, .repo-embed { background: rgba(0,0,0,0.16); }
+
+/* lists shouldn't hug the card edge */
+.card ul { padding-left: 24px; box-sizing: border-box; }
+.card ul li { padding-left: 2px; }
+
+/* homelab intro notes: centred, no bullets, pipe separated */
+
+.vpn-reason { text-align: center; margin: 8px auto 0; max-width: 44ch; }
+
+/* liquid-glass-ish cards */
+.card {
+  background: linear-gradient(rgba(255,255,255,0.075), rgba(255,255,255,0.035));
+  backdrop-filter: blur(22px) saturate(165%);
+  -webkit-backdrop-filter: blur(22px) saturate(165%);
+  border: 1px solid rgba(255,255,255,0.15);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.30),
+              inset 0 1px 0 rgba(255,255,255,0.16),
+              inset 0 -1px 0 rgba(255,255,255,0.05);
+}
+
+
+.banner-row{display:flex;align-items:center;justify-content:center;gap:12px}
+.banner-row .banner-photo{flex:0 0 auto}
+.banner-flank{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px;font-size:12px;color:rgba(255,255,255,.72);line-height:1.25}
+#flank-l{align-items:flex-end;text-align:right}
+#flank-r{align-items:flex-start;text-align:left}
+.flank-item{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.flank-item b{display:block;font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:rgba(255,255,255,.38);font-weight:700}
+@media(max-width:520px){.banner-row{gap:7px}.banner-flank{font-size:10.5px;gap:8px}}
+
+.site-disclaimer{position:relative;z-index:1;text-align:center;font-size:11.5px;color:rgba(255,255,255,.38);margin:20px auto 0;max-width:640px;padding:0 16px}
+
+.media-row{display:flex;gap:12px;align-items:stretch;margin-top:14px}
+.media-row .threat-map{flex:1 1 62%;min-width:0}
+.media-row .threat-map iframe{width:100%;height:210px;border:0;border-radius:12px}
+.media-row .gallery-grid{flex:1 1 38%;min-width:0;margin:0}
+.media-row .gallery-grid,.media-row .gallery-grid a{display:block;height:210px}
+.media-row .gallery-grid img{width:100%;height:100%;object-fit:cover;border-radius:12px;display:block}
+@media(max-width:640px){
+  .media-row{gap:8px}
+  .media-row .threat-map iframe,.media-row .gallery-grid,.media-row .gallery-grid a{height:150px}
+  .card ul{padding-left:22px}
+  .card ul li{padding-left:4px;overflow-wrap:break-word}
+  .services-list{padding-left:20px}
+}
+
+@media(max-width:640px){.ip-highlight{font-size:20px;color:#7ee787;font-weight:800}}
+
+.media-row { align-items: flex-start !important; }
+.media-row .threat-map,
+.media-row .gallery-grid,
+.media-row .gallery-grid a { height: 200px !important; margin: 0 !important; }
+.media-row .threat-map iframe,
+.media-row .gallery-grid img { height: 200px !important; width: 100% !important; object-fit: cover; border-radius: 12px; display: block; }
+@media (max-width: 640px) {
+  .media-row .threat-map,
+  .media-row .gallery-grid,
+  .media-row .gallery-grid a,
+  .media-row .threat-map iframe,
+  .media-row .gallery-grid img { height: 145px !important; }
+}
+
+.hm-sneak{display:none}
+
+.top-nav .nav-btn[href="/safe"]{margin-left:16px;position:relative;opacity:.82;font-weight:600}
+.top-nav .nav-btn[href="/safe"]::before{content:"";position:absolute;left:-9px;top:20%;height:60%;width:1px;background:rgba(255,255,255,.22)}
+
+.vpn-reason{text-align:center !important;margin-left:auto !important;margin-right:auto !important}
+
+.teach-gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin:16px 0}
+.teach-gallery img{width:100%;height:190px;object-fit:cover;border-radius:14px;display:block}
+@media(max-width:640px){.teach-gallery img{height:150px}}
+
+@media(max-width:640px){.teach-gallery{grid-template-columns:1fr}.teach-gallery img{height:180px}}
+
+.teach-hero{width:100%;max-width:640px;height:auto;border-radius:16px;display:block;margin:16px auto 4px}
+.teach-gallery{margin-top:18px}
+@media(max-width:640px){.teach-gallery{grid-template-columns:1fr 1fr}.teach-gallery img{height:130px}}
+
+@media(min-width:641px){
+.nav-btn{transition:background .2s ease,transform .12s ease,box-shadow .18s ease}
+.nav-btn:active{transform:translateY(1px) scale(.96);background:rgba(255,255,255,.05);box-shadow:inset 0 2px 6px rgba(0,0,0,.45),0 0 10px rgba(120,180,255,.25)}
+}
+.repo-embed-body blockquote { margin: 10px 0; padding: 6px 12px; border-left: 3px solid rgba(159, 209, 255, 0.5); background: rgba(255, 255, 255, 0.04); border-radius: 0 6px 6px 0; }

@@ -109,3 +109,35 @@ body .vpn-badge.vpn-no {
   border-color: rgba(220, 70, 80, 0.55) !important;
   color: #ff9492 !important;
 }
+
+/* identity strip - tells TikTok traffic they're in the right place */
+.identity-strip {
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(255,255,255,0.72);
+  margin: 0 0 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.identity-strip strong { color: #fff; }
+.identity-strip a { color: #7ee787; text-decoration: none; font-weight: 600; }
+.identity-strip a:hover { text-decoration: underline; }
+
+/* why the badge fired */
+.vpn-reason {
+  font-size: 12px;
+  color: rgba(255,255,255,0.55);
+  margin: 6px 0 0;
+  max-width: 46ch;
+}
+
+
+
+.ld-overlay{position:fixed;inset:0;z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(4,7,12,.62);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.ld-box{max-width:420px;width:100%;padding:26px 24px;border-radius:20px;text-align:left;background:linear-gradient(150deg,rgba(255,255,255,.12),rgba(255,255,255,.05));backdrop-filter:blur(24px) saturate(170%);-webkit-backdrop-filter:blur(24px) saturate(170%);border:1px solid rgba(255,255,255,.17);box-shadow:0 18px 50px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.16)}
+.ld-box h3{margin:0 0 10px;font-size:20px;color:#ff9492}
+.ld-box p{margin:0 0 12px;font-size:14px;line-height:1.55;color:rgba(255,255,255,.86)}
+.ld-box code{background:rgba(0,0,0,.3);padding:1px 6px;border-radius:5px;font-size:13px;color:#ffe066}
+.ld-box .ld-tip{font-size:13px;color:rgba(255,255,255,.66)}
+.ld-close{margin-top:6px;padding:10px 22px;border-radius:999px;border:1px solid rgba(126,231,135,.45);background:rgba(126,231,135,.14);color:#7ee787;font:600 14px inherit;cursor:pointer}
+.ld-close:active{transform:scale(.96)}

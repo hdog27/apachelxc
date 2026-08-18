@@ -138,3 +138,42 @@ details.service-item > summary::after {
 details.service-item[open] > summary::after { content: "\2212"; }
 details.service-item > summary:hover { color: #d8b4f0; }
 details.service-item > p { margin: 2px 0 10px; }
+
+.hotspot-star{animation:hueShift 6s linear infinite}
+@keyframes hueShift{from{filter:hue-rotate(0deg)}to{filter:hue-rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.hotspot-star{animation:none}}
+
+/* hotspot positions, moved out of inline style for CSP */
+.hs1{top:10%;left:29%}
+.hs2{top:14%;left:50%}
+.hs3{top:28%;left:50%}
+.hs4{top:37%;left:73%}
+.hs5{top:40%;left:32%}
+.hs6{top:45%;left:50%}
+.hs7{top:55%;left:62%}
+.hs8{top:64%;left:42%}
+.hs9{top:70%;left:58%}
+.hs10{top:79%;left:40%}
+.hs11{top:88%;left:60%}
+.hs12{top:94%;left:45%}
+
+@media (max-width: 640px) {
+}
+
+.svc-parts{list-style:none;padding:0 !important;margin:10px 0 0;text-align:left}
+.svc-parts li{margin:0 0 7px;padding:0 0 0 12px;border-left:2px solid rgba(255,255,255,.13);font-size:13.5px;line-height:1.45;color:rgba(255,255,255,.72)}
+.svc-parts b{display:block;color:rgba(255,255,255,.92);font-size:13px;font-weight:700}
+
+.svc-parts{list-style:none;padding:0 !important;margin:10px 0 0;text-align:left}
+.svc-parts li{margin:0 0 7px;padding:0 0 0 12px;border-left:2px solid rgba(255,255,255,.13);font-size:13.5px;line-height:1.45;color:rgba(255,255,255,.72)}
+.svc-parts b{display:block;color:rgba(255,255,255,.92);font-size:13px;font-weight:700}
+
+
+
+ul.homelab-facts{list-style:none!important;padding:0!important;margin:14px auto 18px!important;max-width:34ch;text-align:left}
+ul.homelab-facts li{position:relative;padding:0 0 8px 20px!important;margin:0!important;line-height:1.5}
+ul.homelab-facts li::before{content:"";position:absolute;left:3px;top:.62em;width:5px;height:5px;border-radius:50%;background:#a98fd8}
+
+ul.homelab-facts{margin:8px auto 10px!important}
+ul.homelab-facts li{padding:0 0 3px 18px!important;line-height:1.4}
+ul.homelab-facts li::before{top:.55em;width:4px;height:4px}

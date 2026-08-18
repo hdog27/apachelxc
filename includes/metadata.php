@@ -10,25 +10,9 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 use GeoIp2\Database\Reader;
 
-$ip = $_SERVER['HTTP_CF_CONNECTING_IP'] ?? $_SERVER['REMOTE_ADDR'];
+require __DIR__ . '/clientip.php';
 
-// MaxMind GeoLite2 lookup for city/country (local, no external API call)
-$city = 'Unknown';
-$country = 'Unknown';
-try {
-  $geoReader = new Reader('/var/lib/GeoIP/GeoLite2-City.mmdb');
-  $record = $geoReader->city($ip);
-  $city = $record->city->name ?? 'Unknown';
-  $country = $record->country->name ?? 'Unknown';
-} catch (\Exception $e) {
-  // Private/reserved IP or not found in database - leave as Unknown
-}
-
-// ip-api.com kept only for ISP name + VPN/proxy/hosting detection
-$geo = @file_get_contents("http://ip-api.com/json/{$ip}?fields=isp,proxy,hosting");
-$data = json_decode($geo);
-$isp = $data->isp ?? 'Unknown';
-$vpn = ($data && (($data->proxy ?? false) || ($data->hosting ?? false))) ? 'VPN/Proxy Detected' : 'No VPN Detected';
+require __DIR__ . '/geo.php';
 $ua = $_SERVER['HTTP_USER_AGENT'];
 
 // Detect OS + version
@@ -54,7 +38,7 @@ if (preg_match('/Windows NT ([\d.]+)/i', $ua, $wm)) {
   $os = 'Linux';
   $os_emoji = '🖥️';
 } else {
-  $os = 'Unknown OS';
+  $os = 'Unrecognised OS';
   $os_emoji = '🖥️';
 }
 
@@ -75,7 +59,7 @@ if (preg_match('/Edg\/([\d.]+)/i', $ua, $em)) {
   $browser = 'Safari ' . $sm[1];
   $browser_emoji = '🌐';
 } else {
-  $browser = 'Unknown Browser';
+  $browser = htmlspecialchars(mb_substr($ua, 0, 72), ENT_QUOTES, 'UTF-8');
   $browser_emoji = '🌐';
 }
 
@@ -105,6 +89,17 @@ $device = $os_emoji . ' <strong>' . htmlspecialchars($os) . '</strong>'
 $log = date('Y-m-d H:i:s') . " - IP: $ip - Location: $city, $country - ISP: $isp - VPN: $vpn - Device: $device\n";
 file_put_contents('/var/log/visits.log', $log, FILE_APPEND);
 $visit_count = file_exists('/var/log/visits.log') ? count(file('/var/log/visits.log')) : 0;
+
+// unique visitors: one stamp file per IP hash, rolling 30 days
+$vdir  = '/var/cache/hmax-visits';
+$vfile = $vdir . '/count';
+$stamp = $vdir . '/' . hash('sha256', $ip);
+if (!is_readable($stamp) || (time() - filemtime($stamp)) > 2592000) {
+    @touch($stamp);
+    $n = (int) @file_get_contents($vfile);
+    @file_put_contents($vfile, $n + 1, LOCK_EX);
+}
+$unique_count = (int) @file_get_contents($vfile);
 
 // --------------------------------------------------------------------------
 // Active-nav helper: derive the current page from the running script name so

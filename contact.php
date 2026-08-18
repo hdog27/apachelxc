@@ -1,27 +1,41 @@
 <?php
-// ==========================================================================
-// contact.php - kept as-is from the original site (neither fork improved it).
-// ==========================================================================
 require_once __DIR__ . '/includes/metadata.php';
+$current_page     = 'contact';
+$page_title       = 'Contact | hmax.space';
+$page_description = 'Get in touch.';
 
-$page_title       = 'Contact — hmax.space';
-$page_description = 'Get in touch with Harrison — GitHub and LinkedIn.';
+// --- fill these in when ready; each block only renders once set/present ---
+$contact_email = '';                       // e.g. 'hello@hmax.space'
+$resume_path   = __DIR__ . '/files/resume.pdf';
 
 require __DIR__ . '/includes/header.php';
 ?>
-
 <div class="card">
-  <h2>Contact</h2>
-  <div class="contact-links">
-    <a class="contact-btn" href="https://github.com/hdog27" target="_blank" rel="noopener">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="20" height="20" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-      GitHub
-    </a>
-    <a class="contact-btn" href="https://www.linkedin.com/in/harrison-smith1234/" target="_blank" rel="noopener">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.03-1.85-3.03-1.85 0-2.14 1.45-2.14 2.94v5.66H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 11.02-4.12 2.06 2.06 0 01-.02 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg>
-      LinkedIn
-    </a>
-  </div>
-</div>
+  <h1>Contact</h1>
 
+  <p class="status-line">B.S. Cybersecurity in progress, associate's degree and Network Defense certification completed.<br>Open to internships and entry-level security roles.</p>
+
+  <hr class="divider">
+
+  <h2>About</h2>
+  <p>I work on network security, log collection and analysis, and self-hosted infrastructure. Most of it is built and documented in the homelab on this site, including the server hosting this page.</p>
+  <p>I don't know everything &mdash; there are plenty of people far more experienced in this field than me. I just enjoy it, and I try to learn more every day.</p>
+
+  <hr class="divider">
+
+  <div class="contact-links">
+    <a class="contact-btn" href="https://github.com/hdog27" target="_blank" rel="noopener">GitHub</a>
+    <a class="contact-btn" href="https://www.linkedin.com/in/harrison-smith1234/" target="_blank" rel="noopener">LinkedIn</a>
+<?php if ($contact_email !== ''): ?>
+    <a class="contact-btn" href="mailto:<?= htmlspecialchars($contact_email) ?>">Email</a>
+<?php endif; ?>
+<?php if (is_readable($resume_path)): ?>
+    <a class="contact-btn" href="/files/resume.pdf?v=<?= @filemtime($resume_path) ?>" target="_blank" rel="noopener">Resume (PDF)</a>
+<?php endif; ?>
+  </div>
+
+<?php if ($contact_email === '' && !is_readable($resume_path)): ?>
+  <p class="subtext">For business inquiries, reach out on LinkedIn.</p>
+<?php endif; ?>
+</div>
 <?php require __DIR__ . '/includes/footer.php'; ?>

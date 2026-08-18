@@ -1,0 +1,189 @@
+.hm-bar, .hm-drawer, .hm-scrim { display: none; }
+.hm-nav-wrap { display: none; }
+
+@media (max-width: 640px) {
+  .top-nav { display: none; }
+  body { padding-top: 60px !important; }
+
+  .hm-bar {
+    display: flex; align-items: center;
+    position: fixed; top: 0; left: 0; right: 0; height: 54px;
+    z-index: 1200; padding: 0 14px;
+    background: rgba(10,14,22,0.92);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(255,255,255,0.10);
+  }
+  .hm-burger {
+    width: 30px; height: 30px; padding: 0; flex: none;
+    background: none; border: 0; cursor: pointer;
+    display: flex; flex-direction: column; justify-content: center; gap: 5px;
+  }
+  .hm-burger span {
+    display: block; height: 2.5px; width: 22px; border-radius: 2px;
+    background: #7ee787; transition: transform .25s ease, opacity .2s ease;
+  }
+  .hm-bar.open .hm-burger span:nth-child(1) { transform: translateY(7.5px) rotate(45deg); }
+  .hm-bar.open .hm-burger span:nth-child(2) { opacity: 0; }
+  .hm-bar.open .hm-burger span:nth-child(3) { transform: translateY(-7.5px) rotate(-45deg); }
+  .hm-wordmark {
+    position: absolute; left: 50%; transform: translateX(-50%);
+    font-size: 15px; font-weight: 700; color: #fff; letter-spacing: .3px;
+  }
+
+  .hm-scrim {
+    display: block; position: fixed; inset: 0; z-index: 1150;
+    background: rgba(4,7,12,0.42);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    opacity: 0; pointer-events: none; transition: opacity .25s ease;
+  }
+  .hm-scrim.open { opacity: 1; pointer-events: auto; }
+
+  .hm-drawer {
+    display: flex; flex-direction: column; position: fixed; top: 54px; bottom: 0; left: 0;
+    width: 66vw; max-width: 268px; z-index: 1250;
+    padding: 10px 0 22px;
+    background: linear-gradient(150deg, rgba(255,255,255,0.11), rgba(255,255,255,0.045));
+    backdrop-filter: blur(26px) saturate(175%);
+    -webkit-backdrop-filter: blur(26px) saturate(175%);
+    border-right: 1px solid rgba(255,255,255,0.16);
+    box-shadow: 14px 0 44px rgba(0,0,0,0.34),
+                inset -1px 0 0 rgba(255,255,255,0.07),
+                inset 1px 0 0 rgba(255,255,255,0.15);
+    transform: translateX(-102%); transition: transform .28s cubic-bezier(.4,0,.2,1);
+    overflow: visible;
+  }
+  .hm-drawer.open { transform: translateX(0); }
+  .hm-drawer a {
+    display: block; padding: 15px 22px; color: rgba(255,255,255,0.88);
+    text-shadow: 0 1px 3px rgba(0,0,0,0.55);
+    font-size: 16px; font-weight: 600; text-decoration: none;
+    border-left: 3px solid transparent;
+  }
+  .hm-drawer a.active { color: #7ee787; border-left-color: #7ee787; background: linear-gradient(90deg, rgba(126,231,135,0.16), rgba(126,231,135,0.02)); }
+  .hm-drawer a:active { background: rgba(255,255,255,0.06); }
+}
+
+@media(max-width:640px){.hm-wordmark{font-size:12.5px;font-weight:600;color:rgba(255,255,255,.82);max-width:66%;text-align:center;line-height:1.2}}
+
+@media (max-width: 640px) {
+  .hm-drawer.open ~
+  .hm-drawer a[href="/safe"].active { color: #7ee787; }
+}
+
+@media (max-width: 640px) {
+  .hm-drawer .hm-sneak {
+    display: block;
+    position: absolute;
+    top: 52%;
+    right: auto;
+    left: 30%;
+    width: 64px;
+    height: 64px;
+    pointer-events: none;
+    image-rendering: pixelated;
+    background: url('/images/kitty.png') no-repeat 0 0;
+    background-size: 512px 512px;
+    opacity: 0;
+    transition: opacity .18s ease .28s;
+  }
+  .hm-drawer.open .hm-sneak {
+    opacity: 1;
+    animation: kittyIdle .9s steps(8) infinite;
+  }
+  @keyframes kittyIdle {
+    from { background-position: 0 0; }
+    to   { background-position: -512px 0; }
+  }
+}
+@media (max-width: 640px) and (prefers-reduced-motion: reduce) {
+  .hm-drawer.open .hm-sneak { animation: none; }
+}
+
+@media (max-width: 640px) {
+  .hm-drawer a[href="/safe"] {
+    margin-top: auto;
+    padding-top: 18px;
+    border-top: 1px solid rgba(255,255,255,0.12);
+    font-size: 14px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.62);
+  }
+  .hm-drawer a[href="/safe"].active { color: #7ee787; }
+}
+
+.hm-sneak{transition:opacity .18s ease .28s}
+@media(max-width:640px){
+@keyframes kf8{from{background-position-x:0}to{background-position-x:-512px}}
+@keyframes kf4{from{background-position-x:0}to{background-position-x:-256px}}
+@keyframes kf2{from{background-position-x:0}to{background-position-x:-128px}}
+.hm-drawer.open .k-idle-r{background-position-y:0;animation:kf8 .9s steps(8) infinite}
+.hm-drawer.open .k-walk-r{background-position-y:-64px;animation:kf4 .5s steps(4) infinite}
+.hm-drawer.open .k-jump-r{background-position-y:-128px;animation:kf2 .4s steps(2) infinite}
+.hm-drawer.open .k-fall-r{background-position-y:-192px;animation:kf2 .4s steps(2) infinite}
+.hm-drawer.open .k-idle-l{background-position-y:-256px;animation:kf8 .9s steps(8) infinite}
+.hm-drawer.open .k-walk-l{background-position-y:-320px;animation:kf4 .5s steps(4) infinite}
+}
+
+@media(max-width:640px){
+.hm-bar{overflow:hidden}
+.hm-runner{position:absolute;top:50%;margin-top:-40px;left:-56px;width:60px;height:60px;pointer-events:none;image-rendering:pixelated;background:url("/images/kitty.png") no-repeat;background-size:480px 480px;background-position:0 -60px;opacity:0}
+.hm-runner.run{opacity:1;animation:kfRunX .34s steps(4) infinite,kfDash 1.7s linear forwards}
+@keyframes kfRunX{from{background-position-x:0}to{background-position-x:-240px}}
+@keyframes kfDash{from{transform:translateX(0)}to{transform:translateX(calc(100vw + 60px))}}
+}
+
+@media (max-width: 640px) {
+  @keyframes kfStreak {
+    0%   { opacity: .95; transform: translateX(0); }
+    50%  { opacity: .45; transform: translateX(-3px); }
+    100% { opacity: .95; transform: translateX(0); }
+  }
+}
+
+.hm-deskcat { display: none; }
+
+@media (min-width: 641px) {
+  .hm-deskcat {
+    display: block;
+    position: relative;
+    flex: 0 0 auto;
+    align-self: center;
+    margin: -6px 0 -6px 4px;
+    width: 54px;
+    height: 54px;
+    pointer-events: none;
+    image-rendering: pixelated;
+    background: url('/images/kitty.png') no-repeat;
+    background-size: 432px 432px;
+    background-position: 0 0;
+    animation: dkIdle .95s steps(8) infinite;
+  }
+  @keyframes dkIdle { from { background-position-x: 0 } to { background-position-x: -432px } }
+}
+@media (min-width: 641px) and (prefers-reduced-motion: reduce) {
+  .hm-deskcat { animation: none; }
+}
+
+@media (max-width: 640px) {
+  .hm-paw {
+    position: absolute;
+    width: 12px; height: 12px;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse 2.4px 1.9px at 2.5px 3.2px, rgba(205,225,248,.6) 99%, transparent 100%),
+      radial-gradient(ellipse 2.4px 1.9px at 6px 1.9px, rgba(205,225,248,.6) 99%, transparent 100%),
+      radial-gradient(ellipse 2.4px 1.9px at 9.5px 3.4px, rgba(205,225,248,.6) 99%, transparent 100%),
+      radial-gradient(ellipse 3.8px 3px at 6px 8.2px, rgba(205,225,248,.6) 99%, transparent 100%);
+    animation: pawFade 1.25s ease-out forwards;
+  }
+  @keyframes pawFade {
+    0%   { opacity: .8; transform: scale(1) rotate(var(--r, 0deg)); }
+    100% { opacity: 0;  transform: scale(.88) rotate(var(--r, 0deg)); }
+  }
+}
+
+@media(min-width:641px){
+@keyframes dk4{from{background-position-x:0}to{background-position-x:-216px}}
+@keyframes dk2{from{background-position-x:0}to{background-position-x:-108px}}
+}
