@@ -23,35 +23,24 @@
   if (!isFinite(visitorLat)) visitorLat = 0;
   if (!isFinite(visitorLon)) visitorLon = 0;
 
-  // Deliberately generalized New England origin, not a home/server address.
+  // Deliberately generalized New England destination, not a home/server address.
   var originLat = 42.0;
   var originLon = -71.5;
 
-  // Coarse land silhouettes. They are intentionally lightweight rather than a
-  // third-party map dependency, but enough to make the globe unmistakably Earth.
+  // Coarse land silhouettes so the globe reads clearly as Earth without a
+  // third-party map dependency.
   var LAND = [
-    // North America
     [[72,-168],[70,-145],[60,-137],[56,-126],[49,-124],[44,-124],[38,-122],[32,-117],[25,-109],[19,-105],[17,-96],[21,-88],[29,-83],[31,-81],[38,-75],[45,-66],[51,-58],[58,-63],[65,-73],[70,-100],[72,-130],[72,-168]],
-    // Central America
     [[21,-105],[18,-98],[16,-92],[17,-88],[15,-84],[12,-83],[9,-79],[7,-78],[8,-82],[12,-87],[15,-92],[21,-105]],
-    // South America
     [[12,-81],[8,-76],[5,-72],[2,-68],[-5,-64],[-10,-58],[-16,-54],[-22,-46],[-29,-49],[-36,-56],[-44,-65],[-53,-71],[-55,-68],[-50,-59],[-40,-53],[-30,-49],[-20,-43],[-10,-36],[-4,-35],[2,-50],[7,-61],[11,-71],[12,-81]],
-    // Greenland
     [[83,-58],[80,-20],[72,-18],[61,-43],[60,-52],[69,-58],[76,-72],[83,-58]],
-    // Europe + Asia
     [[36,-10],[43,-9],[49,-5],[53,1],[57,8],[60,18],[66,24],[70,40],[69,58],[73,72],[70,100],[68,130],[61,150],[55,163],[48,150],[43,135],[38,121],[31,121],[24,114],[18,109],[8,105],[1,104],[7,95],[20,88],[23,80],[28,73],[26,63],[31,52],[36,44],[41,35],[45,29],[45,18],[41,13],[39,4],[36,-10]],
-    // Africa
     [[36,-17],[37,10],[32,31],[23,37],[12,44],[4,42],[-5,39],[-15,40],[-25,35],[-34,20],[-35,13],[-29,5],[-18,-5],[-5,-16],[8,-17],[18,-16],[28,-13],[36,-17]],
-    // Arabia / India
     [[31,34],[30,49],[23,58],[16,55],[13,45],[20,39],[31,34]],
     [[24,67],[28,78],[24,88],[17,88],[8,78],[8,73],[16,72],[24,67]],
-    // Japan-ish island line
     [[45,141],[39,142],[35,139],[31,131]],
-    // Australia
     [[-11,113],[-16,122],[-18,136],[-12,143],[-18,153],[-28,153],[-38,146],[-44,136],[-35,116],[-24,113],[-11,113]],
-    // Madagascar
     [[-13,48],[-18,50],[-25,47],[-26,44],[-18,43],[-13,48]],
-    // Antarctica (stylized rim)
     [[-66,-180],[-70,-140],[-68,-100],[-72,-60],[-69,-20],[-72,30],[-68,70],[-71,110],[-67,150],[-66,180]]
   ];
 
@@ -82,7 +71,6 @@
     return a + d*t;
   }
 
-  // Orthographic projection with a movable globe center.
   function project(lat, lon, centerLat, centerLon, radius) {
     var p = lat*Math.PI/180, l = lon*Math.PI/180;
     var p0 = centerLat*Math.PI/180, l0 = centerLon*Math.PI/180;
@@ -107,8 +95,7 @@
       var visible = [];
       for (var j=0; j<poly.length; j++) {
         var q = project(poly[j][0], poly[j][1], centerLat, centerLon, radius);
-        if (q.visible) visible.push(q);
-        else visible.push(null);
+        visible.push(q.visible ? q : null);
       }
       var run = [];
       function flush() {
@@ -165,7 +152,6 @@
 
     drawLand(centerLat,centerLon,radius,alpha);
 
-    // atmosphere + limb
     ctx.strokeStyle='rgba(102,190,255,'+(0.72*alpha)+')';
     ctx.lineWidth=1.4;
     ctx.beginPath(); ctx.arc(cx,cy,radius,0,Math.PI*2); ctx.stroke();
@@ -193,8 +179,8 @@
     ctx.beginPath();ctx.moveTo(a.x,a.y);
     var steps=42,upto=Math.max(1,Math.floor(steps*progress));
     for(var i=1;i<=upto;i++){
-      var t=i/steps,omt=1-t;
-      ctx.lineTo(omt*omt*a.x+2*omt*t*mx+t*t*b.x,omt*omt*a.y+2*omt*t*my+t*t*b.y);
+      var tt=i/steps,omt=1-tt;
+      ctx.lineTo(omt*omt*a.x+2*omt*tt*mx+tt*tt*b.x,omt*omt*a.y+2*omt*tt*my+tt*tt*b.y);
     }
     ctx.stroke();ctx.restore();
   }
@@ -202,54 +188,52 @@
   function tick(now){
     var t=clamp((now-started)/duration,0,1);
 
-    // 0-.22: close-up on generalized New England
-    // .22-.48: pull back to a recognizable Earth view
-    // .48-.72: rotate toward visitor through Cloudflare
-    // .72-1: zoom into visitor region
+    // Correct request direction:
+    // visitor close-up -> pull back to Earth -> Cloudflare -> zoom into hmax.space.
     var pullBack=smoothSegment(t,.05,.34);
     var travel=smoothSegment(t,.43,.73);
-    var visitorZoom=smoothSegment(t,.72,.96);
+    var originZoom=smoothSegment(t,.72,.96);
 
-    var centerLat=mix(originLat,visitorLat,travel);
-    var centerLon=shortestLon(originLon,visitorLon,travel);
+    var centerLat=mix(visitorLat,originLat,travel);
+    var centerLon=shortestLon(visitorLon,originLon,travel);
 
     var startScale=2.55;
     var worldScale=mix(startScale,1.0,pullBack);
-    var endScale=mix(1.0,1.82,visitorZoom);
-    var scale=visitorZoom>0 ? endScale : worldScale;
+    var endScale=mix(1.0,1.82,originZoom);
+    var scale=originZoom>0 ? endScale : worldScale;
     var radius=baseR*scale;
 
     ctx.clearRect(0,0,W,H);
     drawGlobe(centerLat,centerLon,radius,1);
 
-    var home=project(originLat,originLon,centerLat,centerLon,radius);
     var visitor=project(visitorLat,visitorLon,centerLat,centerLon,radius);
+    var home=project(originLat,originLon,centerLat,centerLon,radius);
     var pulse=(Math.sin(now/160)+1)/2;
 
-    if(home.visible && t<.77) drawNode(home.x,home.y,'HMAX.SPACE','New England · origin hidden','#58a6ff',pulse);
+    if(visitor.visible && t<.77) drawNode(visitor.x,visitor.y,'YOUR NETWORK',data.city||'approximate IP location','#7ee787',pulse);
 
-    // Cloudflare remains architectural rather than a fabricated physical POP.
+    // Cloudflare is shown as the architectural relay layer, not as a fake POP coordinate.
     var relay={
-      x:mix(home.x,visitor.x,.50),
-      y:Math.min(home.y,visitor.y)-Math.min(radius*.18,80),
-      visible:home.visible&&visitor.visible
+      x:mix(visitor.x,home.x,.50),
+      y:Math.min(visitor.y,home.y)-Math.min(radius*.18,80),
+      visible:visitor.visible&&home.visible
     };
 
     var first=smoothSegment(t,.27,.49);
     if(first>.02 && relay.visible){
-      drawArc(home,relay,first,'rgba(88,166,255,.96)');
+      drawArc(visitor,relay,first,'rgba(126,231,135,.96)');
       drawNode(relay.x,relay.y,'CLOUDFLARE',data.cfColo?('edge '+data.cfColo):'edge network','#a371f7',pulse);
     }
 
     var second=smoothSegment(t,.50,.76);
-    if(second>.02 && relay.visible) drawArc(relay,visitor,second,'rgba(126,231,135,.96)');
-    if(t>.67 && visitor.visible) drawNode(visitor.x,visitor.y,'YOUR NETWORK',data.city||'approximate IP location','#7ee787',pulse);
+    if(second>.02 && relay.visible) drawArc(relay,home,second,'rgba(88,166,255,.96)');
+    if(t>.67 && home.visible) drawNode(home.x,home.y,'HMAX.SPACE','New England · origin hidden','#58a6ff',pulse);
 
-    if(t<.20) stage.textContent='Starting from the hmax.space homelab...';
+    if(t<.20) stage.textContent='Starting from '+(data.city||'your network')+'...';
     else if(t<.42) stage.textContent='Pulling back to the public internet...';
-    else if(t<.63) stage.textContent='Passing through Cloudflare'+(data.cfColo?' ('+data.cfColo+')':'')+'...';
-    else if(t<.84) stage.textContent='Routing toward '+(data.city||'your network')+'...';
-    else stage.textContent=(data.ipVersion||'IP')+' request resolved · '+(data.city||'network located');
+    else if(t<.63) stage.textContent='Entering Cloudflare'+(data.cfColo?' ('+data.cfColo+')':'')+'...';
+    else if(t<.84) stage.textContent='Forwarding the request to hmax.space...';
+    else stage.textContent=(data.ipVersion||'IP')+' request delivered to the homelab';
 
     if(t<1) requestAnimationFrame(tick);
     else {
