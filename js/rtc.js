@@ -1,8 +1,67 @@
 // ==========================================================================
-// rtc.js - client-side WebRTC / hardware exposure report for the Cyber Lab.
+// rtc.js - client-side browser/network exposure report for the Cyber Lab.
 // No GPS, camera, microphone or other permission prompt is requested.
 // ==========================================================================
 (async function () {
+  // Load the dense v2 security-panel styles as a same-origin stylesheet so the
+  // existing page template does not need another risky rewrite.
+  try {
+    if (!document.querySelector('link[data-cyberlab-extras]')) {
+      var extraCss = document.createElement('link');
+      extraCss.rel = 'stylesheet';
+      extraCss.href = '/css/cyberlab-extras.css?v=2';
+      extraCss.setAttribute('data-cyberlab-extras', '1');
+      document.head.appendChild(extraCss);
+    }
+  } catch (e) {}
+
+  // Correct the persistent diagram to represent the inbound HTTP request:
+  // visitor -> Cloudflare -> hmax.space homelab.
+  try {
+    var routePanel = document.querySelector('.route-panel');
+    if (routePanel) {
+      var routeHeading = routePanel.querySelector('.section-copy h2');
+      var routeCopy = routePanel.querySelector('.section-copy p:last-child');
+      if (routeHeading) routeHeading.textContent = 'From your network, through Cloudflare, to my homelab.';
+      if (routeCopy) routeCopy.textContent = 'The opening animation follows your inbound request: it starts near your approximate IP location, pulls back to Earth, passes through Cloudflare, then zooms toward the generalized New England homelab destination.';
+
+      var summary = routePanel.querySelector('.route-summary');
+      if (summary) {
+        var visitorDot = summary.querySelector('.node-dot.visitor');
+        var cloudDot = summary.querySelector('.node-dot.cloud');
+        var homeDot = summary.querySelector('.node-dot.home');
+        var lines = summary.querySelectorAll('.route-line');
+        if (visitorDot && cloudDot && homeDot && lines.length >= 2) {
+          var visitorNode = visitorDot.parentNode;
+          var cloudNode = cloudDot.parentNode;
+          var homeNode = homeDot.parentNode;
+          summary.appendChild(visitorNode);
+          summary.appendChild(lines[1]);
+          summary.appendChild(cloudNode);
+          summary.appendChild(lines[0]);
+          summary.appendChild(homeNode);
+        }
+      }
+    }
+  } catch (e) {}
+
+  // Put the existing kitty beside VPN status. Safe = relaxed idle animation;
+  // no VPN = nervous/jumpy state. This uses the current sprite sheet and can
+  // later be replaced by a custom scared/happy animation without changing PHP.
+  try {
+    var vpnBadge = document.querySelector('.vpn-badge[data-vpn]');
+    if (vpnBadge && !vpnBadge.parentNode.classList.contains('vpn-status-wrap')) {
+      var vpnWrap = document.createElement('div');
+      vpnWrap.className = 'vpn-status-wrap';
+      vpnBadge.parentNode.insertBefore(vpnWrap, vpnBadge);
+      var vpnCat = document.createElement('span');
+      vpnCat.className = 'vpn-cat ' + (vpnBadge.getAttribute('data-vpn') === '1' ? 'vpn-cat-safe' : 'vpn-cat-risk');
+      vpnCat.setAttribute('aria-hidden', 'true');
+      vpnWrap.appendChild(vpnCat);
+      vpnWrap.appendChild(vpnBadge);
+    }
+  } catch (e) {}
+
   var result = {};
   result.cores = navigator.hardwareConcurrency || 'Unavailable';
   result.ram = navigator.deviceMemory ? (navigator.deviceMemory + ' GB (approx)') : 'Hidden by browser';
@@ -20,6 +79,17 @@
   result.httpProtocol = 'Unavailable';
   result.tlsVersion = 'Not reported';
   result.warp = 'Not reported';
+  result.cfColo = 'Not reported';
+  result.ipVersion = 'Not reported';
+
+  try {
+    var routeDataEl = document.getElementById('route-data');
+    if (routeDataEl) {
+      var routeData = JSON.parse(routeDataEl.textContent || '{}');
+      if (routeData.ipVersion) result.ipVersion = routeData.ipVersion;
+      if (routeData.cfColo) result.cfColo = routeData.cfColo;
+    }
+  } catch (e) {}
 
   try {
     localStorage.setItem('__hmax_test', '1');
@@ -37,10 +107,14 @@
     if (nav && nav.nextHopProtocol) result.httpProtocol = nav.nextHopProtocol;
   } catch (e) {}
 
-  // Cloudflare's same-origin trace endpoint exposes the edge-observed HTTP/TLS
-  // values for this connection and a WARP state without asking browser permissions.
+  // Cloudflare's same-origin trace endpoint reports the edge-observed transport
+  // for this browser connection. We intentionally ignore trace.ip here because
+  // the page already displays the server-observed public IP elsewhere.
   try {
-    var traceText = await fetch('/cdn-cgi/trace', { cache: 'no-store', credentials: 'omit' }).then(function (r) { return r.text(); });
+    var traceText = await fetch('/cdn-cgi/trace', {
+      cache: 'no-store',
+      credentials: 'omit'
+    }).then(function (r) { return r.text(); });
     var trace = {};
     traceText.split('\n').forEach(function (line) {
       var i = line.indexOf('=');
@@ -49,6 +123,7 @@
     if (trace.http) result.httpProtocol = trace.http;
     if (trace.tls) result.tlsVersion = trace.tls;
     if (trace.warp) result.warp = trace.warp;
+    if (trace.colo) result.cfColo = trace.colo;
   } catch (e) {}
 
   try {
@@ -92,6 +167,8 @@
       'WebRTC candidate IP(s): <strong>' + escapeHtml(result.localIps.join(', ') || 'None exposed') + '</strong>';
   }
 
+  // Count which fingerprinting signals were actually available. This is an
+  // educational exposure meter, NOT a uniqueness/fingerprint-confidence claim.
   var signals = [
     ['OS / browser', true],
     ['CPU core count', result.cores !== 'Unavailable'],
@@ -128,8 +205,10 @@
     ['Session storage', result.sessionStorage ? 'Available' : 'Blocked'],
     ['Touch input', result.touch ? 'Available' : 'Not detected'],
     ['MediaDevices API', result.mediaDevicesApi ? 'Exposed (no permission requested)' : 'Unavailable'],
+    ['Public IP stack', result.ipVersion],
     ['HTTP transport', prettyProtocol(result.httpProtocol)],
     ['TLS at Cloudflare edge', result.tlsVersion],
+    ['Cloudflare edge', result.cfColo],
     ['Cloudflare WARP', prettyWarp(result.warp)]
   ];
   var capGrid = document.getElementById('capability-grid');
@@ -139,8 +218,7 @@
     }).join('');
   }
 
-  // Update the compact transport cards. The original markup remains usable if
-  // Cloudflare trace is unavailable.
+  // Update the compact transport cards with values observed by Cloudflare.
   var transportEl = document.getElementById('http-transport');
   if (transportEl) transportEl.textContent = prettyProtocol(result.httpProtocol);
   var cards = document.querySelector('.protocol-cards');
@@ -152,9 +230,12 @@
       if (tlsStrong) tlsStrong.textContent = result.tlsVersion;
       if (tlsSmall) tlsSmall.textContent = 'Cloudflare edge-observed TLS';
     }
-    var warpCard = document.createElement('div');
-    warpCard.innerHTML = '<span>Cloudflare WARP</span><strong>' + escapeHtml(prettyWarp(result.warp)) + '</strong><small>Reported by Cloudflare trace</small>';
-    cards.appendChild(warpCard);
+    if (!cards.querySelector('[data-warp-card]')) {
+      var warpCard = document.createElement('div');
+      warpCard.setAttribute('data-warp-card', '1');
+      warpCard.innerHTML = '<span>Cloudflare WARP</span><strong>' + escapeHtml(prettyWarp(result.warp)) + '</strong><small>Reported by Cloudflare trace</small>';
+      cards.appendChild(warpCard);
+    }
   }
 
   fetch('/log_rtc.php', {
