@@ -65,14 +65,49 @@
 .control-unknown .control-dot { background:#d29922; box-shadow:0 0 12px rgba(210,153,34,.40); }
 .control-backend .control-dot { background:#8b949e; }
 
-/* VPN mascot uses the existing kitty sprite sheet. A custom scared/happy sprite can replace this later. */
-.vpn-status-wrap { display:flex; align-items:center; gap:8px; margin-top:8px; }
+/* VPN mascot: custom 256x320 sheet.
+   y 0-255 = original kitty animations
+   y 256 = sad_cry (8 x 32px)
+   y 288 = hacker_type (8 x 32px)
+   No VPN plays sad_cry twice, then hacker_type loops forever. */
+.vpn-status-wrap { display:flex; align-items:center; gap:10px; margin-top:8px; }
 .vpn-status-wrap .vpn-badge { margin-top:0!important; }
-.vpn-cat { display:inline-block; flex:0 0 auto; width:42px; height:42px; image-rendering:pixelated; background-image:url('/images/kitty.png'); background-repeat:no-repeat; background-size:336px 336px; }
-.vpn-cat-safe { background-position:0 0; animation:vpnCatHappy .95s steps(8) infinite; }
-.vpn-cat-risk { background-position:0 -84px; animation:vpnCatScared .38s steps(2) infinite alternate; transform-origin:50% 80%; }
-@keyframes vpnCatHappy { from { background-position-x:0; } to { background-position-x:-336px; } }
-@keyframes vpnCatScared { from { background-position-x:0; transform:translateY(0) rotate(-2deg); } to { background-position-x:-84px; transform:translateY(-2px) rotate(2deg); } }
+.vpn-cat {
+  display:inline-block;
+  flex:0 0 auto;
+  width:48px;
+  height:48px;
+  image-rendering:pixelated;
+  background-image:url('/images/kitty-custom-v2.png');
+  background-repeat:no-repeat;
+  background-size:384px 480px; /* native 256x320 scaled 1.5x */
+  background-position:0 0;
+}
+
+/* Existing "safe" class from rtc.js: calm original kitty row. */
+.vpn-cat-safe {
+  animation:vpnKittyIdle .95s steps(8) infinite;
+}
+
+/* Existing "risk" class from rtc.js: cry first, then switch to hacker forever. */
+.vpn-cat-risk {
+  animation:
+    vpnKittyCry .9s steps(8) 0s 2,
+    vpnKittyHack .78s steps(8) 1.8s infinite;
+}
+
+@keyframes vpnKittyIdle {
+  from { background-position:0 0; }
+  to   { background-position:-384px 0; }
+}
+@keyframes vpnKittyCry {
+  from { background-position:0 -384px; }
+  to   { background-position:-384px -384px; }
+}
+@keyframes vpnKittyHack {
+  from { background-position:0 -432px; }
+  to   { background-position:-384px -432px; }
+}
 
 @media (max-width:900px) {
   .protocol-cards { grid-template-columns:repeat(2,minmax(0,1fr)); }
@@ -84,12 +119,13 @@
   .protocol-cards > div { padding:10px; }
   .header-viewer > div { grid-template-columns:1fr; gap:4px; }
   .exposure-heading { align-items:flex-start; flex-direction:column; gap:4px; }
-  .vpn-cat { width:38px; height:38px; background-size:304px 304px; }
-  .vpn-cat-risk { background-position-y:-76px; }
-  @keyframes vpnCatHappy { from { background-position-x:0; } to { background-position-x:-304px; } }
-  @keyframes vpnCatScared { from { background-position-x:0; transform:translateY(0) rotate(-2deg); } to { background-position-x:-76px; transform:translateY(-2px) rotate(2deg); } }
+  .vpn-cat { width:42px; height:42px; background-size:336px 420px; }
+  @keyframes vpnKittyIdle { from { background-position:0 0; } to { background-position:-336px 0; } }
+  @keyframes vpnKittyCry { from { background-position:0 -336px; } to { background-position:-336px -336px; } }
+  @keyframes vpnKittyHack { from { background-position:0 -378px; } to { background-position:-336px -378px; } }
 }
 @media (prefers-reduced-motion:reduce) {
-  .vpn-cat-safe,.vpn-cat-risk { animation:none; }
+  .vpn-cat-safe { animation:none; background-position:0 0; }
+  .vpn-cat-risk { animation:none; background-position:0 -384px; }
   .exposure-track i { transition:none; }
 }
