@@ -22,6 +22,44 @@ $routePayload = [
   'cfRay' => $cfRay,
 ];
 
+// Selected request metadata. This allowlist is intentionally narrow: it shows
+// educational HTTP/browser context without turning the page into a raw $_SERVER dump.
+$headerAllowlist = [
+  'Accept-Language' => $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '',
+  'Accept-Encoding' => $_SERVER['HTTP_ACCEPT_ENCODING'] ?? '',
+  'Sec-CH-UA' => $_SERVER['HTTP_SEC_CH_UA'] ?? '',
+  'Sec-CH-UA-Mobile' => $_SERVER['HTTP_SEC_CH_UA_MOBILE'] ?? '',
+  'Sec-Fetch-Site' => $_SERVER['HTTP_SEC_FETCH_SITE'] ?? '',
+  'Sec-Fetch-Mode' => $_SERVER['HTTP_SEC_FETCH_MODE'] ?? '',
+  'Sec-Fetch-Dest' => $_SERVER['HTTP_SEC_FETCH_DEST'] ?? '',
+  'User-Agent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
+  'CF-Connecting-IP' => $_SERVER['HTTP_CF_CONNECTING_IP'] ?? $ip,
+  'CF-IPCountry' => $_SERVER['HTTP_CF_IPCOUNTRY'] ?? '',
+  'CF-Ray' => $cfRay,
+];
+$headerAllowlist = array_filter($headerAllowlist, function ($v) { return $v !== ''; });
+
+$cfVisitor = [];
+if (!empty($_SERVER['HTTP_CF_VISITOR'])) {
+  $tmp = json_decode($_SERVER['HTTP_CF_VISITOR'], true);
+  if (is_array($tmp)) $cfVisitor = $tmp;
+}
+$isHttps = (($cfVisitor['scheme'] ?? '') === 'https') || (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+
+// These response protections are set in this repo's .htaccess. CrowdSec and
+// Suricata are backend controls and are deliberately NOT marked as browser-
+// verified because the public page should not expose privileged status APIs.
+$securityControls = [
+  ['name' => 'Cloudflare edge', 'state' => $cfRay ? 'verified' : 'unknown', 'detail' => $cfRay ? 'CF-Ray present' : 'No CF-Ray header'],
+  ['name' => 'HTTPS', 'state' => $isHttps ? 'verified' : 'unknown', 'detail' => $isHttps ? 'Encrypted browser connection' : 'Could not verify at origin'],
+  ['name' => 'Content Security Policy', 'state' => 'verified', 'detail' => 'default-src self + restricted frame/script policy'],
+  ['name' => 'HSTS', 'state' => 'verified', 'detail' => '1 year + includeSubDomains'],
+  ['name' => 'Frame protection', 'state' => 'verified', 'detail' => 'CSP frame-ancestors self'],
+  ['name' => 'Permissions Policy', 'state' => 'verified', 'detail' => 'GPS/camera/mic disabled for this page'],
+  ['name' => 'CrowdSec', 'state' => 'backend', 'detail' => 'Backend control — not publicly queried'],
+  ['name' => 'Suricata telemetry', 'state' => 'backend', 'detail' => 'Backend control — not publicly queried'],
+];
+
 require __DIR__ . '/includes/header.php';
 ?>
 
@@ -91,7 +129,7 @@ require __DIR__ . '/includes/header.php';
     <div class="section-copy">
       <p class="panel-label">CONNECTION PATH</p>
       <h2>From my rack, through Cloudflare, to your network.</h2>
-      <p>The opening animation visualizes the architecture serving this request. The homelab location is intentionally generalized, and the visitor point comes from IP geolocation.</p>
+      <p>The opening animation visualizes the architecture serving this request. It starts near my generalized New England origin, pulls back to Earth, then zooms toward your approximate IP location.</p>
     </div>
     <div class="route-summary" aria-label="Connection path summary">
       <div class="route-node"><span class="node-dot home"></span><strong>HOMELAB</strong><small>New England · location hidden</small></div>
@@ -109,7 +147,48 @@ require __DIR__ . '/includes/header.php';
       <h2>What your browser reports without a GPS prompt.</h2>
     </div>
     <div class="device-box" id="device-box"><?= $device ?><br><span id="rtc-info">Gathering WebRTC / hardware fingerprint...</span></div>
+
+    <div class="exposure-wrap">
+      <div class="exposure-heading">
+        <strong id="exposure-meter">Checking signals…</strong>
+        <span>Not a uniqueness score</span>
+      </div>
+      <div class="exposure-track"><i id="exposure-meter-fill"></i></div>
+      <div class="signal-list" id="signal-list"></div>
+    </div>
+
+    <details class="cyber-details">
+      <summary>Browser capability &amp; privacy report</summary>
+      <dl class="capability-grid" id="capability-grid"><div><dt>Status</dt><dd>Checking browser APIs…</dd></div></dl>
+    </details>
+
     <p class="privacy-note">Some fields may be reduced, randomized or hidden by your browser. That is a privacy feature, not an error.</p>
+  </section>
+
+  <section class="panel protocol-panel">
+    <div class="panel-heading-row">
+      <div>
+        <p class="panel-label">TRANSPORT &amp; REQUEST METADATA</p>
+        <h2>How this browser request reached the site.</h2>
+      </div>
+      <span class="live-dot">REQUEST</span>
+    </div>
+    <div class="protocol-cards">
+      <div><span>HTTPS</span><strong><?= $isHttps ? 'Yes' : 'Unknown' ?></strong><small>Browser → Cloudflare</small></div>
+      <div><span>HTTP transport</span><strong id="http-transport">Detecting…</strong><small>Browser navigation protocol</small></div>
+      <div><span>TLS version</span><strong>Edge-terminated</strong><small>Exact version is not exposed to PHP here</small></div>
+      <div><span>Cloudflare Ray</span><strong><?= $cfRay ? htmlspecialchars($cfRay) : 'Not reported' ?></strong><small>Request correlation identifier</small></div>
+    </div>
+
+    <details class="cyber-details">
+      <summary>View selected request headers</summary>
+      <div class="header-viewer">
+        <?php foreach ($headerAllowlist as $name => $value): ?>
+          <div><code><?= htmlspecialchars($name) ?></code><span><?= htmlspecialchars(mb_substr($value, 0, 240)) ?></span></div>
+        <?php endforeach; ?>
+      </div>
+      <p class="privacy-note">This is an allowlisted teaching view, not a raw server-variable dump.</p>
+    </details>
   </section>
 
   <section class="dashboard-grid">
@@ -117,7 +196,7 @@ require __DIR__ . '/includes/header.php';
       <div class="panel-heading-row">
         <div>
           <p class="panel-label">LIVE INTERNET NOISE</p>
-          <h2>What the public internet is throwing at hmax.space.</h2>
+          <h2>Traffic hitting hmax.space · last 24 hours.</h2>
         </div>
         <span class="live-dot">24H</span>
       </div>
@@ -128,6 +207,8 @@ require __DIR__ . '/includes/header.php';
         <div><strong><?= number_format($noise['suspected_scanners']) ?></strong><span>suspected scanners</span></div>
         <div><strong><?= number_format($noise['networks']) ?></strong><span>source networks</span></div>
       </div>
+
+      <h3 class="mini-heading">Common probes</h3>
       <div class="probe-list">
         <?php if (!empty($noise['top_probes'])): ?>
           <?php $maxProbe = max(array_column($noise['top_probes'], 'count')); ?>
@@ -142,14 +223,34 @@ require __DIR__ . '/includes/header.php';
           <p class="empty-state">No matching high-signal probes in the current 24-hour window.</p>
         <?php endif; ?>
       </div>
-      <?php if ($noise['latest']): ?>
-        <p class="latest-probe">Latest classified probe: <code><?= htmlspecialchars($noise['latest']['path']) ?></code> · <?= htmlspecialchars($noise['latest']['type']) ?></p>
+
+      <?php if (!empty($noise['taxonomy'])): ?>
+      <h3 class="mini-heading taxonomy-title">Scanner taxonomy</h3>
+      <div class="taxonomy-grid">
+        <?php foreach ($noise['taxonomy'] as $type => $count): ?>
+          <div><span><?= htmlspecialchars($type) ?></span><strong><?= number_format($count) ?></strong></div>
+        <?php endforeach; ?>
+      </div>
       <?php endif; ?>
+
+      <?php if ($noise['latest']): ?>
+        <div class="latest-probe-box">
+          <span>Latest suspicious request</span>
+          <strong><?= number_format($noise['latest']['age_seconds']) ?> sec ago · <?= htmlspecialchars($noise['latest']['country']) ?></strong>
+          <code><?= htmlspecialchars($noise['latest']['path']) ?></code>
+          <small><?= htmlspecialchars($noise['latest']['type']) ?></small>
+        </div>
+      <?php endif; ?>
+
+      <details class="cyber-details noise-explain">
+        <summary>What are these?</summary>
+        <p>Public servers are continuously probed by automated scanners searching for exposed files, vulnerable applications and misconfigured services. These are real requests reaching this server; the labels are heuristic classifications based on the requested path.</p>
+      </details>
       <?php else: ?>
         <p class="empty-state">Live parser is ready, but the Apache access log is not readable by PHP yet. The page fails closed instead of exposing raw log data.</p>
       <?php endif; ?>
 
-      <p class="privacy-note">Raw visitor IP addresses are never rendered here. “Scanner” is a heuristic based on suspicious request paths, not a claim about a person.</p>
+      <p class="privacy-note">No visitor IP addresses are displayed here. Raw IPs are only hashed in-memory for aggregate counting.</p>
     </article>
 
     <article class="panel project-panel">
@@ -162,6 +263,23 @@ require __DIR__ . '/includes/header.php';
         <a href="/homelab">See the infrastructure →</a>
       </div>
     </article>
+  </section>
+
+  <section class="panel controls-panel">
+    <div class="section-copy compact">
+      <p class="panel-label">SECURITY CONTROLS</p>
+      <h2>Protections around this page.</h2>
+      <p>Green means this page can verify or directly configure the control. Gray means it exists in the backend but the public site intentionally does not query a privileged status API.</p>
+    </div>
+    <div class="control-grid">
+      <?php foreach ($securityControls as $control): ?>
+      <div class="control-item control-<?= htmlspecialchars($control['state']) ?>">
+        <span class="control-dot"></span>
+        <strong><?= htmlspecialchars($control['name']) ?></strong>
+        <small><?= htmlspecialchars($control['detail']) ?></small>
+      </div>
+      <?php endforeach; ?>
+    </div>
   </section>
 
   <section class="panel currently-panel">
@@ -197,5 +315,20 @@ require __DIR__ . '/includes/header.php';
     </div>
   </section>
 </main>
+
+<script>
+(function(){
+  try {
+    var n = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+    var p = n && n.nextHopProtocol ? n.nextHopProtocol : '';
+    var el = document.getElementById('http-transport');
+    if (!el) return;
+    if (p === 'h3') el.textContent = 'HTTP/3';
+    else if (p === 'h2') el.textContent = 'HTTP/2';
+    else if (p === 'http/1.1') el.textContent = 'HTTP/1.1';
+    else el.textContent = p || 'Not reported';
+  } catch(e) {}
+})();
+</script>
 
 <?php require __DIR__ . '/includes/footer.php'; ?>
