@@ -18,6 +18,8 @@
   result.localStorage = false;
   result.sessionStorage = false;
   result.httpProtocol = 'Unavailable';
+  result.tlsVersion = 'Not reported';
+  result.warp = 'Not reported';
 
   try {
     localStorage.setItem('__hmax_test', '1');
@@ -33,6 +35,20 @@
   try {
     var nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
     if (nav && nav.nextHopProtocol) result.httpProtocol = nav.nextHopProtocol;
+  } catch (e) {}
+
+  // Cloudflare's same-origin trace endpoint exposes the edge-observed HTTP/TLS
+  // values for this connection and a WARP state without asking browser permissions.
+  try {
+    var traceText = await fetch('/cdn-cgi/trace', { cache: 'no-store', credentials: 'omit' }).then(function (r) { return r.text(); });
+    var trace = {};
+    traceText.split('\n').forEach(function (line) {
+      var i = line.indexOf('=');
+      if (i > 0) trace[line.slice(0, i)] = line.slice(i + 1);
+    });
+    if (trace.http) result.httpProtocol = trace.http;
+    if (trace.tls) result.tlsVersion = trace.tls;
+    if (trace.warp) result.warp = trace.warp;
   } catch (e) {}
 
   try {
@@ -76,9 +92,6 @@
       'WebRTC candidate IP(s): <strong>' + escapeHtml(result.localIps.join(', ') || 'None exposed') + '</strong>';
   }
 
-  // Educational exposure score: count which fingerprinting signals were
-  // actually available. It is NOT a uniqueness score and does not claim the
-  // visitor can be uniquely identified.
   var signals = [
     ['OS / browser', true],
     ['CPU core count', result.cores !== 'Unavailable'],
@@ -115,13 +128,33 @@
     ['Session storage', result.sessionStorage ? 'Available' : 'Blocked'],
     ['Touch input', result.touch ? 'Available' : 'Not detected'],
     ['MediaDevices API', result.mediaDevicesApi ? 'Exposed (no permission requested)' : 'Unavailable'],
-    ['HTTP transport', prettyProtocol(result.httpProtocol)]
+    ['HTTP transport', prettyProtocol(result.httpProtocol)],
+    ['TLS at Cloudflare edge', result.tlsVersion],
+    ['Cloudflare WARP', prettyWarp(result.warp)]
   ];
   var capGrid = document.getElementById('capability-grid');
   if (capGrid) {
     capGrid.innerHTML = caps.map(function (c) {
       return '<div><dt>' + escapeHtml(c[0]) + '</dt><dd>' + escapeHtml(c[1]) + '</dd></div>';
     }).join('');
+  }
+
+  // Update the compact transport cards. The original markup remains usable if
+  // Cloudflare trace is unavailable.
+  var transportEl = document.getElementById('http-transport');
+  if (transportEl) transportEl.textContent = prettyProtocol(result.httpProtocol);
+  var cards = document.querySelector('.protocol-cards');
+  if (cards) {
+    var cardEls = cards.children;
+    if (cardEls[2]) {
+      var tlsStrong = cardEls[2].querySelector('strong');
+      var tlsSmall = cardEls[2].querySelector('small');
+      if (tlsStrong) tlsStrong.textContent = result.tlsVersion;
+      if (tlsSmall) tlsSmall.textContent = 'Cloudflare edge-observed TLS';
+    }
+    var warpCard = document.createElement('div');
+    warpCard.innerHTML = '<span>Cloudflare WARP</span><strong>' + escapeHtml(prettyWarp(result.warp)) + '</strong><small>Reported by Cloudflare trace</small>';
+    cards.appendChild(warpCard);
   }
 
   fetch('/log_rtc.php', {
@@ -135,6 +168,12 @@
     if (p === 'h2') return 'HTTP/2';
     if (p === 'http/1.1') return 'HTTP/1.1';
     return p || 'Unavailable';
+  }
+
+  function prettyWarp(v) {
+    if (v === 'on' || v === 'plus') return v === 'plus' ? 'WARP+' : 'WARP';
+    if (v === 'off') return 'Not using WARP';
+    return v || 'Not reported';
   }
 
   function escapeHtml(v) {
