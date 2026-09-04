@@ -2,11 +2,13 @@
 // Run as root from cron once per minute.
 // Reads raw Apache access.log, emits only sanitized aggregate telemetry to
 // /var/cache/hmax-noise.json for the public PHP page to consume.
+// Pass --debug when running manually to print parser diagnostics.
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
 $logFile = '/var/log/apache2/access.log';
 $cacheFile = '/var/cache/hmax-noise.json';
+$debug = in_array('--debug', $argv ?? [], true);
 
 $empty = [
     'window' => '24h',
@@ -19,19 +21,43 @@ $empty = [
     'updated' => time(),
 ];
 
+function debug_line($message) {
+    global $debug;
+    if ($debug) fwrite(STDOUT, $message . PHP_EOL);
+}
+
+function apache_timestamp($raw) {
+    $raw = trim($raw);
+
+    // Standard Apache combined-log timestamp:
+    // 04/Sep/2026:13:09:01 -0400
+    $dt = DateTimeImmutable::createFromFormat('d/M/Y:H:i:s O', $raw);
+    if ($dt instanceof DateTimeImmutable) return $dt->getTimestamp();
+
+    // Some custom formats omit the numeric timezone.
+    $dt = DateTimeImmutable::createFromFormat('d/M/Y:H:i:s', $raw);
+    if ($dt instanceof DateTimeImmutable) return $dt->getTimestamp();
+
+    // Final fallback for unusual but still parseable Apache timestamps.
+    $normalized = preg_replace('~^(\d{2}/[A-Za-z]{3}/\d{4}):(\d{2}:\d{2}:\d{2})(.*)$~', '$1 $2$3', $raw);
+    $fallback = strtotime($normalized ?: $raw);
+    return $fallback !== false ? $fallback : null;
+}
+
 if (!is_readable($logFile)) {
     file_put_contents($cacheFile, json_encode($empty, JSON_UNESCAPED_SLASHES), LOCK_EX);
     chmod($cacheFile, 0644);
+    debug_line('ERROR: access log is not readable: ' . $logFile);
     exit(0);
 }
 
 $patterns = [
-    'Credential / secret hunting' => '~/(?:\.env(?:\.|$)|env\.bak|config\.env|aws/credentials|\.aws|id_rsa|\.ssh|credentials(?:\.|/)|secrets?(?:\.|/))~i',
-    'Git / source exposure' => '~/(?:\.git(?:/|$)|\.svn(?:/|$))~i',
-    'WordPress probes' => '~/(?:wp-login\.php|wp-admin(?:/|$)|xmlrpc\.php|wp-content|wp-includes)~i',
-    'PHP / debug probes' => '~(?:phpinfo|\?pp=env|debug(?:/|\?|$)|_profiler|phpmyadmin|/pma(?:/|$))~i',
-    'Known exploit paths' => '~/(?:vendor/phpunit|actuator|cgi-bin|boaform|HNAP1|manager/html|solr|jenkins|console/login)~i',
-    'Backup / config hunting' => '~/(?:backup|bak|old|config)(?:\.|/).*?(?:zip|tar|gz|sql|yml|yaml|json|ini|php)?(?:\?|$)~i',
+    'Credential / secret hunting' => '~(?:^|/)(?:\.env(?:[./?]|$)|env\.bak|config\.env|aws/credentials|\.aws(?:/|$)|id_rsa|\.ssh(?:/|$)|credentials(?:[./?]|$)|secrets?(?:[./?]|$))~i',
+    'Git / source exposure' => '~(?:^|/)(?:\.git(?:/|$)|\.svn(?:/|$))~i',
+    'WordPress probes' => '~(?:^|/)(?:wp-login\.php|wp-admin(?:/|$)|xmlrpc\.php|wp-content(?:/|$)|wp-includes(?:/|$))~i',
+    'PHP / debug probes' => '~(?:phpinfo|[?&]pp=env(?:&|$)|debug(?:/|\?|$)|_profiler|phpmyadmin|(?:^|/)pma(?:/|$))~i',
+    'Known exploit paths' => '~(?:^|/)(?:vendor/phpunit|actuator|cgi-bin|boaform|HNAP1|manager/html|solr|jenkins|console/login)~i',
+    'Backup / config hunting' => '~(?:^|/)(?:backup|bak|old|config)(?:[./_-]|/).*?(?:zip|tar|gz|sql|yml|yaml|json|ini|php)?(?:\?|$)~i',
 ];
 
 $cutoff = time() - 86400;
@@ -42,21 +68,47 @@ $scannerIps = [];
 $networkKeys = [];
 $latest = null;
 
+$lineCount = 0;
+$regexMatches = 0;
+$timestampMatches = 0;
+$recentMatches = 0;
+$firstRejectedTimestamp = null;
+
 $maxBytes = 16 * 1024 * 1024;
 $size = @filesize($logFile);
 $fh = @fopen($logFile, 'rb');
 if (!$fh) {
     file_put_contents($cacheFile, json_encode($empty, JSON_UNESCAPED_SLASHES), LOCK_EX);
     chmod($cacheFile, 0644);
+    debug_line('ERROR: fopen failed: ' . $logFile);
     exit(0);
 }
-if ($size && $size > $maxBytes) @fseek($fh, -$maxBytes, SEEK_END);
+if ($size && $size > $maxBytes) {
+    @fseek($fh, -$maxBytes, SEEK_END);
+    // Discard the partial line created by seeking into the file.
+    fgets($fh);
+}
 
 while (($line = fgets($fh)) !== false) {
-    if (!preg_match('~^(\S+).*?\[([^\]]+)\]\s+"([A-Z]+)\s+([^\s"]+)~', $line, $m)) continue;
+    $lineCount++;
+
+    // Standard combined Apache log, e.g.:
+    // 203.0.113.10 - - [04/Sep/2026:13:09:01 -0400] "GET /.env HTTP/2.0" 404 ...
+    if (!preg_match('~^(\S+)\s+\S+\s+\S+\s+\[([^\]]+)\]\s+"([A-Z]+)\s+([^\s"]+)~', $line, $m)) {
+        // Tolerant fallback for custom prefixes between client IP and timestamp.
+        if (!preg_match('~^(\S+).*?\[([^\]]+)\]\s+"([A-Z]+)\s+([^\s"]+)~', $line, $m)) continue;
+    }
+    $regexMatches++;
+
     $ipAddr = $m[1];
-    $ts = strtotime(preg_replace('~:(\d{2}):(\d{2}):(\d{2})\s~', ' $1:$2:$3 ', $m[2]));
-    if (!$ts || $ts < $cutoff) continue;
+    $ts = apache_timestamp($m[2]);
+    if (!$ts) {
+        if ($firstRejectedTimestamp === null) $firstRejectedTimestamp = $m[2];
+        continue;
+    }
+    $timestampMatches++;
+    if ($ts < $cutoff) continue;
+    $recentMatches++;
 
     $requestCount++;
     $path = $m[4];
@@ -129,3 +181,13 @@ $tmp = $cacheFile . '.tmp';
 file_put_contents($tmp, json_encode($out, JSON_UNESCAPED_SLASHES), LOCK_EX);
 chmod($tmp, 0644);
 rename($tmp, $cacheFile);
+
+debug_line('log bytes: ' . ($size ?: 0));
+debug_line('lines scanned: ' . $lineCount);
+debug_line('request regex matches: ' . $regexMatches);
+debug_line('timestamps parsed: ' . $timestampMatches);
+debug_line('requests inside 24h: ' . $recentMatches);
+debug_line('suspicious unique IPs: ' . count($scannerIps));
+debug_line('suspicious source networks: ' . count($networkKeys));
+if ($firstRejectedTimestamp !== null) debug_line('first rejected timestamp: ' . $firstRejectedTimestamp);
+debug_line('cache: ' . $cacheFile);
