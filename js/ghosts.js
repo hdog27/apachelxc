@@ -2,48 +2,85 @@
   var badge = document.querySelector('.vpn-badge[data-vpn="0"]');
   if (!badge) return;
   if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
   function haunt() {
-    var r = badge.getBoundingClientRect();
-    var pageY = r.top + window.scrollY, H = 700, W = document.documentElement.clientWidth;
+    var panel = badge.closest('.connection-panel');
+    if (!panel) return;
+
+    var old = panel.querySelector('canvas.vpn-ghost-layer');
+    if (old) old.remove();
+
+    var panelRect = panel.getBoundingClientRect();
+    var badgeRect = badge.getBoundingClientRect();
+    var W = Math.max(1, panel.clientWidth);
+    var H = Math.max(1, panel.clientHeight);
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    panel.style.position = 'relative';
+    panel.style.overflow = 'hidden';
+
     var cvs = document.createElement('canvas');
-    cvs.style.cssText = 'position:absolute;left:0;top:' + (pageY - 260) + 'px;width:' + W + 'px;height:' + H + 'px;pointer-events:none;z-index:899';
-    document.body.appendChild(cvs);
-    var dpr = window.devicePixelRatio || 1;
-    cvs.width = W * dpr; cvs.height = H * dpr;
-    var ctx = cvs.getContext('2d'); ctx.scale(dpr, dpr);
-    var gs = [], last = 0, t = 0;
+    cvs.className = 'vpn-ghost-layer';
+    cvs.style.position = 'absolute';
+    cvs.style.inset = '0';
+    cvs.style.width = '100%';
+    cvs.style.height = '100%';
+    cvs.style.pointerEvents = 'none';
+    cvs.style.zIndex = '5';
+    panel.appendChild(cvs);
+
+    cvs.width = Math.round(W * dpr);
+    cvs.height = Math.round(H * dpr);
+    var ctx = cvs.getContext('2d');
+    ctx.scale(dpr, dpr);
+
+    var originX = badgeRect.left - panelRect.left + badgeRect.width / 2;
+    var originY = badgeRect.top - panelRect.top + badgeRect.height / 2;
+    var ghosts = [];
+    var last = 0;
+    var elapsed = 0;
+
     for (var i = 0; i < 5; i++) {
-      gs.push({
-        x: r.left + 10 + Math.random() * (r.width - 20),
-        y: 260 + r.height / 2,
-        vy: 0.25 + Math.random() * 0.2,
-        sway: 0.6 + Math.random() * 0.8,
+      ghosts.push({
+        x: originX + (Math.random() - 0.5) * Math.max(100, badgeRect.width * .8),
+        y: originY + 18 + Math.random() * 18,
+        vy: .35 + Math.random() * .28,
+        sway: .65 + Math.random() * .9,
         phase: Math.random() * 6.28,
-        size: 13 + Math.random() * 5,
-        delay: i * 22 + Math.random() * 12
+        size: 15 + Math.random() * 6,
+        delay: i * 140 + Math.random() * 100
       });
     }
+
     (function tick(now) {
-      var dt = last ? Math.min((now - last) / 16.667, 3) : 1; last = now; t += dt;
+      if (!document.body.contains(cvs)) return;
+      var dtMs = last ? Math.min(now - last, 50) : 16.7;
+      last = now;
+      elapsed += dtMs;
       ctx.clearRect(0, 0, W, H);
-      
       var alive = false;
-      for (var j = 0; j < gs.length; j++) {
-        var g = gs[j], age = t - g.delay;
+
+      for (var j = 0; j < ghosts.length; j++) {
+        var g = ghosts[j];
+        var age = elapsed - g.delay;
         if (age < 0) { alive = true; continue; }
-        if (age > 190) continue;
+        if (age > 2200) continue;
         alive = true;
-        g.y -= g.vy * dt;
-        var a = age < 30 ? age / 30 : Math.max(0, 1 - (age - 30) / 160);
+        g.y -= g.vy * (dtMs / 16.7);
+        var alpha = age < 250 ? age / 250 : Math.max(0, 1 - (age - 250) / 1950);
         ctx.save();
-        ctx.globalAlpha = a * 0.85;
+        ctx.globalAlpha = alpha * .85;
         ctx.font = g.size + 'px serif';
         ctx.textAlign = 'center';
-        ctx.fillText('\uD83D\uDC7B', g.x + Math.sin(g.phase + age / 26) * g.sway * 7, g.y);
-        }
-      if (alive) { requestAnimationFrame(tick); } else { cvs.remove(); }
-    })();
+        ctx.fillText('👻', g.x + Math.sin(g.phase + age / 250) * g.sway * 8, g.y);
+        ctx.restore();
+      }
+
+      if (alive) requestAnimationFrame(tick);
+      else cvs.remove();
+    })(performance.now());
   }
-  setTimeout(haunt, 500);
+
+  setTimeout(haunt, 560);
   badge.addEventListener('click', haunt);
 })();
