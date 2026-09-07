@@ -3,6 +3,8 @@ require_once __DIR__ . '/includes/metadata.php';
 $current_page     = 'start';
 $page_title       = 'How do I get started? | hmax.space';
 $page_description = 'How to start a homelab and get into cybersecurity, from someone still learning.';
+$page_css         = 'content-wide.css';
+$body_class       = 'wide-content-page';
 require __DIR__ . '/includes/header.php';
 ?>
 <div class="card">
