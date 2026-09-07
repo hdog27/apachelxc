@@ -3,6 +3,8 @@ require_once __DIR__ . '/includes/metadata.php';
 $current_page     = 'safe';
 $page_title       = 'Is this site safe? | hmax.space';
 $page_description = 'A plain-English explanation of the security protections on this website, and how you can check them yourself.';
+$page_css         = 'content-wide.css';
+$body_class       = 'wide-content-page';
 $grade            = 'A';
 $scan_url         = 'https://securityheaders.com/?q=hmax.space&followRedirects=on';
 require __DIR__ . '/includes/header.php';
