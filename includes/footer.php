@@ -14,5 +14,6 @@
 <?php if (!empty($page_js)) foreach ($page_js as $js): ?>
 <script src="/js/<?= htmlspecialchars($js) ?>?v=<?= @filemtime(__DIR__ . "/../js/" . $js) ?>"></script>
 <?php endforeach; ?>
+<script src="/js/site-polish.js?v=<?= @filemtime(__DIR__ . "/../js/site-polish.js") ?>"></script>
 </body>
 </html>
