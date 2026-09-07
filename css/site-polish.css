@@ -1,0 +1,52 @@
+/* Final cross-page polish fixes. */
+
+/* Homelab quick facts: force clean dot/text columns. */
+.homelab-facts li {
+  position:static!important;
+  display:grid!important;
+  grid-template-columns:8px minmax(0,1fr)!important;
+  column-gap:10px!important;
+  align-items:start!important;
+  padding:4px 0!important;
+}
+.homelab-facts li::before {
+  position:static!important;
+  display:block!important;
+  content:""!important;
+  width:5px!important;
+  height:5px!important;
+  margin-top:.52em!important;
+  border-radius:50%!important;
+  background:#a371f7!important;
+}
+
+/* VPN mascot fallback. JS adds .vpn-cat if rtc.js skipped it. */
+.vpn-status-wrap {
+  display:flex!important;
+  align-items:center!important;
+  gap:10px!important;
+  min-height:48px;
+}
+.vpn-status-wrap .vpn-badge { margin-top:0!important; }
+.vpn-cat {
+  display:inline-block!important;
+  flex:0 0 48px!important;
+  width:48px!important;
+  height:48px!important;
+  image-rendering:pixelated;
+  background-image:url('/images/kitty-custom-v2.png')!important;
+  background-repeat:no-repeat!important;
+  background-size:384px 480px!important;
+}
+.vpn-cat-safe { animation:siteKittyIdle .95s steps(8) infinite!important; }
+.vpn-cat-risk { animation:siteKittyCry .9s steps(8) 0s 2,siteKittyHack .78s steps(8) 1.8s infinite!important; }
+@keyframes siteKittyIdle { from{background-position:0 0} to{background-position:-384px 0} }
+@keyframes siteKittyCry { from{background-position:0 -384px} to{background-position:-384px -384px} }
+@keyframes siteKittyHack { from{background-position:0 -432px} to{background-position:-384px -432px} }
+
+@media(max-width:640px){
+  .vpn-cat{flex-basis:42px!important;width:42px!important;height:42px!important;background-size:336px 420px!important}
+  @keyframes siteKittyIdle { from{background-position:0 0} to{background-position:-336px 0} }
+  @keyframes siteKittyCry { from{background-position:0 -336px} to{background-position:-336px -336px} }
+  @keyframes siteKittyHack { from{background-position:0 -378px} to{background-position:-336px -378px} }
+}
