@@ -1,179 +1,157 @@
-/* ==========================================================================
-   homelab.css - Homelab page only
-   Ported from Zack's fork: interactive rack image with hotspots and the
-   Services list with vertical purple accent bars. Only the rules the
-   surviving elements need are kept (his full Bolt sheet was mostly unused).
-   ========================================================================== */
-
-.homelab-intro { margin-bottom: 16px; }
-
-/* ---------- Rack image + hotspots ---------------------------------------- */
+/* Homelab desktop layout */
+.homelab-page { display:block; }
+.homelab-card {
+  width:min(1180px, calc(100vw - 40px));
+  max-width:none;
+  margin:0 auto;
+  padding:34px;
+  text-align:left;
+}
+.homelab-hero {
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:34px;
+  padding-bottom:26px;
+  margin-bottom:28px;
+  border-bottom:1px solid rgba(255,255,255,.12);
+}
+.homelab-hero h1 { margin:2px 0 8px; }
+.homelab-intro { max-width:680px; margin:0; }
+.eyebrow {
+  margin:0 0 4px!important;
+  color:#7ee787!important;
+  font-size:11px!important;
+  font-weight:800;
+  letter-spacing:.12em;
+}
+.homelab-facts {
+  list-style:none;
+  margin:0;
+  padding:0;
+  min-width:280px;
+  text-align:left;
+  font-size:13px;
+  color:rgba(255,255,255,.66);
+}
+.homelab-facts li { position:relative; padding:4px 0 4px 16px; }
+.homelab-facts li::before {
+  content:"";
+  position:absolute;
+  left:0; top:.78em;
+  width:5px; height:5px;
+  border-radius:50%;
+  background:#a371f7;
+}
+.homelab-layout {
+  display:grid;
+  grid-template-columns:minmax(360px,.9fr) minmax(460px,1.1fr);
+  gap:42px;
+  align-items:start;
+}
+.compact-heading h2 { margin:0 0 6px; font-size:22px; }
+.compact-heading p:last-child { margin:0; font-size:14px; color:rgba(255,255,255,.58); }
+.homelab-rack-column {
+  position:sticky;
+  top:92px;
+  min-width:0;
+}
 .rack-hotspot-wrap {
-  position: relative;
-  max-width: 480px;
-  margin: 20px auto;
+  position:relative;
+  width:min(100%, 470px);
+  margin:18px auto 0;
 }
 .rack-photo {
-  display: block;
-  width: 100%;
-  height: auto;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  display:block;
+  width:100%;
+  height:auto;
+  border-radius:16px;
+  box-shadow:0 20px 60px rgba(0,0,0,.38);
 }
-.hotspot {
-  position: absolute;
-  transform: translate(-50%, -50%);
-  cursor: pointer;
-}
+.hotspot { position:absolute; transform:translate(-50%,-50%); cursor:pointer; }
 .hotspot-dot {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  color: #fff;
-  font-size: 0.8rem;
-  font-weight: 600;
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.08);
-  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  display:flex; align-items:center; justify-content:center;
+  width:30px; height:30px; border-radius:50%;
+  background:rgba(255,255,255,.25);
+  border:1px solid rgba(255,255,255,.7);
+  color:#fff; font-size:.8rem; font-weight:700;
+  backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px);
+  box-shadow:0 0 0 4px rgba(255,255,255,.08);
 }
-.hotspot.open .hotspot-dot,
-.hotspot:hover .hotspot-dot,
-.hotspot:focus-within .hotspot-dot {
-  background: rgba(158, 83, 212, 0.42);
-  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1), 0 0 18px rgba(158, 83, 212, 0.48);
-  transform: scale(1.06);
+.hotspot.open .hotspot-dot,.hotspot:hover .hotspot-dot,.hotspot:focus-within .hotspot-dot {
+  background:rgba(163,113,247,.55);
+  box-shadow:0 0 0 4px rgba(255,255,255,.1),0 0 20px rgba(163,113,247,.55);
 }
 .hotspot-tooltip {
-  position: absolute;
-  bottom: 130%;
-  left: 50%;
-  z-index: 10;
-  min-width: 150px;
-  max-width: 210px;
-  padding: 10px 12px;
-  background: rgba(20, 25, 35, 0.55);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 10px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  color: #dce8f5;
-  font-size: 0.78rem;
-  line-height: 1.3;
-  opacity: 0;
-  pointer-events: none;
-  transform: translateX(-50%) translateY(4px);
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  position:absolute; bottom:135%; left:50%; z-index:20;
+  width:220px; padding:11px 12px;
+  background:rgba(12,20,33,.88);
+  backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+  border:1px solid rgba(255,255,255,.17); border-radius:11px;
+  box-shadow:0 10px 30px rgba(0,0,0,.38);
+  color:#dce8f5; font-size:12px; line-height:1.45;
+  opacity:0; pointer-events:none;
+  transform:translateX(-50%) translateY(4px);
+  transition:.15s ease;
 }
-.hotspot-tooltip strong { display: block; margin-bottom: 4px; color: #fff; font-size: 0.85rem; }
-.hotspot.open .hotspot-tooltip {
-  opacity: 1;
-  pointer-events: auto;
-  transform: translateX(-50%) translateY(0);
-}
-
-/* ---------- Services list with vertical accent bars (Zack's look) -------- */
-.services-list { margin-top: 12px; text-align: left; }
+.hotspot-tooltip strong { display:block; margin-bottom:4px; color:#fff; font-size:13px; }
+.hotspot.open .hotspot-tooltip { opacity:1; pointer-events:auto; transform:translateX(-50%) translateY(0); }
+.hotspot.below .hotspot-tooltip { bottom:auto; top:135%; }
+.services-heading { margin-bottom:14px; }
+.services-list { display:grid; gap:8px; }
 .service-item {
-  margin-bottom: 16px;
-  padding-left: 14px;
-  border-left: 2px solid rgba(158, 83, 212, 0.62);
+  margin:0;
+  padding:0;
+  border:1px solid rgba(255,255,255,.09);
+  border-left:2px solid rgba(163,113,247,.68);
+  border-radius:11px;
+  background:rgba(0,0,0,.13);
+  overflow:hidden;
 }
-.service-item h4 { margin: 0 0 8px; color: #fff; font-size: 1.1rem; }
-.service-item p  { margin: 0; color: #dce8f5; font-size: 0.9rem; line-height: 1.4; }
-
-/* hotspots near the top edge open their tooltip downward */
-.hotspot.below .hotspot-tooltip { bottom: auto; top: 130%; }
-
-/* quick facts under the intro */
-.homelab-facts {
-  list-style: none;
-  display: inline-block;
-  text-align: left;
-  margin: 0 0 18px;
-  padding: 0;
-  font-size: 0.82rem;
-  opacity: 0.72;
+.service-item > summary {
+  position:relative;
+  list-style:none;
+  cursor:pointer;
+  padding:14px 42px 14px 14px;
+  color:#fff;
+  font-size:14px;
+  font-weight:750;
+  user-select:none;
 }
-.homelab-facts li { margin: 3px 0; padding-left: 14px; position: relative; }
-.homelab-facts li::before {
-  content: "";
-  position: absolute;
-  left: 0; top: 0.5em;
-  width: 5px; height: 5px;
-  border-radius: 50%;
-  background: #9e53d4;
+.service-item > summary::-webkit-details-marker { display:none; }
+.service-item > summary span {
+  display:block;
+  margin-top:3px;
+  color:rgba(255,255,255,.48);
+  font-size:11px;
+  font-weight:600;
 }
-
-/* ---------- collapsible services + tighter rack image (override) --------- */
-.rack-hotspot-wrap { max-width: 380px; }
-@media (max-width: 520px) { .rack-hotspot-wrap { max-width: 290px; } }
-
-details.service-item > summary {
-  cursor: pointer;
-  list-style: none;
-  font-weight: 700;
-  color: #fff;
-  font-size: 0.95rem;
-  padding: 9px 26px 9px 0;
-  position: relative;
-  user-select: none;
+.service-item > summary::after {
+  content:"+";
+  position:absolute; right:15px; top:50%; transform:translateY(-50%);
+  color:#a371f7; font-size:20px;
 }
-details.service-item > summary::-webkit-details-marker { display: none; }
-details.service-item > summary::after {
-  content: "+";
-  position: absolute;
-  right: 4px; top: 50%;
-  transform: translateY(-50%);
-  color: #9e53d4;
-  font-size: 1.1rem;
-  line-height: 1;
+.service-item[open] > summary::after { content:"−"; }
+.service-item[open] > summary { border-bottom:1px solid rgba(255,255,255,.07); }
+.service-item > p { margin:0; padding:13px 15px 15px; font-size:13px; line-height:1.55; color:rgba(255,255,255,.72); }
+.svc-parts { list-style:none; padding:0 15px 15px!important; margin:0; }
+.svc-parts li { margin:0 0 8px; padding-left:11px; border-left:2px solid rgba(255,255,255,.13); font-size:12px; line-height:1.45; color:rgba(255,255,255,.65); }
+.svc-parts b { display:block; color:#fff; font-size:12px; }
+.hotspot-star { animation:hueShift 6s linear infinite; }
+@keyframes hueShift { from{filter:hue-rotate(0deg)} to{filter:hue-rotate(360deg)} }
+.hs1{top:10%;left:29%}.hs2{top:14%;left:50%}.hs3{top:28%;left:50%}.hs4{top:37%;left:73%}.hs5{top:40%;left:32%}.hs6{top:45%;left:50%}.hs7{top:55%;left:62%}.hs8{top:64%;left:42%}.hs9{top:70%;left:58%}.hs10{top:79%;left:40%}.hs11{top:88%;left:60%}.hs12{top:94%;left:45%}
+@media (max-width:900px) {
+  .homelab-card { width:min(760px,calc(100vw - 28px)); padding:28px 22px; }
+  .homelab-hero { display:block; }
+  .homelab-facts { margin-top:16px; }
+  .homelab-layout { grid-template-columns:1fr; gap:34px; }
+  .homelab-rack-column { position:static; }
+  .rack-hotspot-wrap { width:min(100%,390px); }
 }
-details.service-item[open] > summary::after { content: "\2212"; }
-details.service-item > summary:hover { color: #d8b4f0; }
-details.service-item > p { margin: 2px 0 10px; }
-
-.hotspot-star{animation:hueShift 6s linear infinite}
-@keyframes hueShift{from{filter:hue-rotate(0deg)}to{filter:hue-rotate(360deg)}}
-@media (prefers-reduced-motion:reduce){.hotspot-star{animation:none}}
-
-/* hotspot positions, moved out of inline style for CSP */
-.hs1{top:10%;left:29%}
-.hs2{top:14%;left:50%}
-.hs3{top:28%;left:50%}
-.hs4{top:37%;left:73%}
-.hs5{top:40%;left:32%}
-.hs6{top:45%;left:50%}
-.hs7{top:55%;left:62%}
-.hs8{top:64%;left:42%}
-.hs9{top:70%;left:58%}
-.hs10{top:79%;left:40%}
-.hs11{top:88%;left:60%}
-.hs12{top:94%;left:45%}
-
-@media (max-width: 640px) {
+@media (max-width:600px) {
+  .homelab-card { width:calc(100vw - 28px); padding:24px 18px; }
+  .homelab-hero { margin-bottom:22px; padding-bottom:20px; }
+  .rack-hotspot-wrap { width:min(100%,310px); }
+  .service-item > summary { font-size:13px; }
 }
-
-.svc-parts{list-style:none;padding:0 !important;margin:10px 0 0;text-align:left}
-.svc-parts li{margin:0 0 7px;padding:0 0 0 12px;border-left:2px solid rgba(255,255,255,.13);font-size:13.5px;line-height:1.45;color:rgba(255,255,255,.72)}
-.svc-parts b{display:block;color:rgba(255,255,255,.92);font-size:13px;font-weight:700}
-
-.svc-parts{list-style:none;padding:0 !important;margin:10px 0 0;text-align:left}
-.svc-parts li{margin:0 0 7px;padding:0 0 0 12px;border-left:2px solid rgba(255,255,255,.13);font-size:13.5px;line-height:1.45;color:rgba(255,255,255,.72)}
-.svc-parts b{display:block;color:rgba(255,255,255,.92);font-size:13px;font-weight:700}
-
-
-
-ul.homelab-facts{list-style:none!important;padding:0!important;margin:14px auto 18px!important;max-width:34ch;text-align:left}
-ul.homelab-facts li{position:relative;padding:0 0 8px 20px!important;margin:0!important;line-height:1.5}
-ul.homelab-facts li::before{content:"";position:absolute;left:3px;top:.62em;width:5px;height:5px;border-radius:50%;background:#a98fd8}
-
-ul.homelab-facts{margin:8px auto 10px!important}
-ul.homelab-facts li{padding:0 0 3px 18px!important;line-height:1.4}
-ul.homelab-facts li::before{top:.55em;width:4px;height:4px}
+@media (prefers-reduced-motion:reduce) { .hotspot-star{animation:none} }
