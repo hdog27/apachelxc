@@ -4,14 +4,20 @@
     if(!document.querySelector('link[data-site-polish]')){
       var l=document.createElement('link');
       l.rel='stylesheet';
-      l.href='/css/site-polish.css?v=1';
+      l.href='/css/site-polish.css?v=2';
       l.setAttribute('data-site-polish','1');
       document.head.appendChild(l);
     }
   }catch(e){}
 
-  // rtc.js used to skip creating the cat when a wrapper already existed.
-  // Repair that state without disturbing the badge or fingerprint logic.
+  // Remove the redundant explanatory line under the Metadata Security Lab.
+  try{
+    var explain=document.querySelector('.lab-intro-panel .lab-explain');
+    if(explain) explain.remove();
+  }catch(e){}
+
+  // Deterministic VPN kitty. Do not rely on competing CSS animations for the
+  // sprite coordinates; advance the 8 frames directly instead.
   try{
     var badge=document.querySelector('.vpn-badge[data-vpn]');
     if(badge){
@@ -22,43 +28,67 @@
         badge.parentNode.insertBefore(wrap,badge);
         wrap.appendChild(badge);
       }
-      if(!wrap.querySelector('.vpn-cat')){
-        var cat=document.createElement('span');
-        cat.className='vpn-cat '+(badge.getAttribute('data-vpn')==='1'?'vpn-cat-safe':'vpn-cat-risk');
-        cat.setAttribute('aria-hidden','true');
-        wrap.insertBefore(cat,badge);
+
+      var old=wrap.querySelector('.vpn-cat');
+      if(old) old.remove();
+
+      var cat=document.createElement('span');
+      cat.className='vpn-cat vpn-cat-manual';
+      cat.setAttribute('aria-hidden','true');
+      cat.style.display='inline-block';
+      cat.style.width='48px';
+      cat.style.height='48px';
+      cat.style.flex='0 0 48px';
+      cat.style.backgroundImage="url('/images/kitty-custom-v2.png?v=2')";
+      cat.style.backgroundRepeat='no-repeat';
+      cat.style.backgroundSize='384px 480px';
+      cat.style.backgroundPosition='0 0';
+      cat.style.imageRendering='pixelated';
+      cat.style.position='relative';
+      cat.style.zIndex='8';
+      wrap.insertBefore(cat,badge);
+
+      var vpnOn=badge.getAttribute('data-vpn')==='1';
+      var frame=0;
+      var phase=vpnOn?'idle':'cry';
+      var cryLoops=0;
+      var lastFrame=0;
+
+      function rowY(){
+        if(phase==='cry') return -384;
+        if(phase==='hack') return -432;
+        return 0;
       }
+      function animateCat(now){
+        if(!cat.isConnected) return;
+        if(!lastFrame || now-lastFrame>=105){
+          lastFrame=now;
+          cat.style.backgroundPosition=(-frame*48)+'px '+rowY()+'px';
+          frame++;
+          if(frame>=8){
+            frame=0;
+            if(phase==='cry'){
+              cryLoops++;
+              if(cryLoops>=2) phase='hack';
+            }
+          }
+        }
+        requestAnimationFrame(animateCat);
+      }
+      requestAnimationFrame(animateCat);
     }
   }catch(e){}
 
-  // Distance-aware intro zoom. The globe code still controls the route/camera;
-  // this only adjusts the first part of the visual scale and eases back to 1x.
+  // The previous distance-aware pass CSS-scaled the already-rendered WebGL
+  // canvases, which made the Earth look soft/pixelated. Undo any such transform;
+  // route-globe.js renders its own zoom natively at device resolution.
   try{
     var overlay=document.getElementById('route-intro');
-    var dataEl=document.getElementById('route-data');
-    if(overlay&&dataEl){
-      var d=JSON.parse(dataEl.textContent||'{}');
-      var lat=Number(d.lat),lon=Number(d.lon);
-      if(isFinite(lat)&&isFinite(lon)){
-        var hlat=42.0,hlon=-71.5;
-        function r(v){return v*Math.PI/180;}
-        var a=r(lat),b=r(hlat),dl=r(hlon-lon);
-        var c=Math.sin(a)*Math.sin(b)+Math.cos(a)*Math.cos(b)*Math.cos(dl);
-        c=Math.max(-1,Math.min(1,c));
-        var deg=Math.acos(c)*180/Math.PI;
-        // Nearby = much tighter. Opposite side = only slightly tighter.
-        var startScale=2.25-(Math.min(deg,180)/180)*.95;
-        startScale=Math.max(1.30,Math.min(2.25,startScale));
-        var canvases=overlay.querySelectorAll('canvas');
-        for(var i=0;i<canvases.length;i++){
-          canvases[i].style.transformOrigin='50% 50%';
-          canvases[i].animate([
-            {transform:'scale('+startScale.toFixed(3)+')',offset:0},
-            {transform:'scale('+startScale.toFixed(3)+')',offset:.12},
-            {transform:'scale(1)',offset:.34},
-            {transform:'scale(1)',offset:1}
-          ],{duration:4700,easing:'ease-in-out',fill:'both'});
-        }
+    if(overlay){
+      var canvases=overlay.querySelectorAll('canvas');
+      for(var i=0;i<canvases.length;i++){
+        canvases[i].getAnimations().forEach(function(a){a.cancel();});
+        canvases[i].style.transform='none';
       }
     }
   }catch(e){}
