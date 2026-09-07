@@ -1,92 +1,97 @@
 <?php
 // ==========================================================================
 // metadata.php - all server-side logic for hmax.space
-// Moved verbatim from the original single-file index.php. Included by every
-// page so the Cyber Lab visitor telemetry stays available site-wide.
-// Do NOT replace any of these values with static text - they are generated
-// live, per request.
+// Visitor metadata is generated live per request.
 // ==========================================================================
 
 require_once __DIR__ . '/../vendor/autoload.php';
 use GeoIp2\Database\Reader;
 
 require __DIR__ . '/clientip.php';
-
 require __DIR__ . '/geo.php';
-$ua = $_SERVER['HTTP_USER_AGENT'];
 
-// Detect OS + version
+$ua = $_SERVER['HTTP_USER_AGENT'] ?? '';
+
+function hmax_clean_version($raw, $maxParts = null) {
+  $v = str_replace('_', '.', trim((string)$raw));
+  $parts = array_values(array_filter(explode('.', $v), function ($p) { return $p !== ''; }));
+  while (count($parts) > 1 && end($parts) === '0') array_pop($parts);
+  if ($maxParts !== null && count($parts) > $maxParts) $parts = array_slice($parts, 0, $maxParts);
+  return implode('.', $parts);
+}
+
+// Detect OS + concise human-readable version.
+$device_name = 'Computer';
+$platform_name = '';
+$os_emoji = '🖥️';
 if (preg_match('/Windows NT ([\d.]+)/i', $ua, $wm)) {
   $nt = $wm[1];
   $win_map = ['10.0'=>'10/11','6.3'=>'8.1','6.2'=>'8','6.1'=>'7'];
-  $win_ver = $win_map[$nt] ?? $nt;
-  $os = 'Windows ' . $win_ver;
-  $os_emoji = '🖥️';
+  $device_name = 'Windows PC';
+  $platform_name = 'Windows ' . ($win_map[$nt] ?? hmax_clean_version($nt, 2));
 } elseif (preg_match('/iPhone.*CPU iPhone OS ([\d_]+)/i', $ua, $im)) {
-  $os = 'iPhone iOS ' . str_replace('_', '.', $im[1]);
+  $device_name = 'iPhone';
+  $platform_name = 'iOS ' . hmax_clean_version($im[1], 3);
   $os_emoji = '📱';
 } elseif (preg_match('/iPad.*CPU OS ([\d_]+)/i', $ua, $im)) {
-  $os = 'iPad iOS ' . str_replace('_', '.', $im[1]);
+  $device_name = 'iPad';
+  $platform_name = 'iPadOS ' . hmax_clean_version($im[1], 3);
   $os_emoji = '📱';
 } elseif (preg_match('/Android ([\d.]+)/i', $ua, $am)) {
-  $os = 'Android ' . $am[1];
+  $device_name = 'Android';
+  $platform_name = 'Android ' . hmax_clean_version($am[1], 3);
   $os_emoji = '📱';
 } elseif (preg_match('/Mac OS X ([\d_]+)/i', $ua, $mm)) {
-  $os = 'macOS ' . str_replace('_', '.', $mm[1]);
+  $device_name = 'Mac';
+  $platform_name = 'macOS ' . hmax_clean_version($mm[1], 3);
   $os_emoji = '💻';
 } elseif (preg_match('/Linux/i', $ua)) {
-  $os = 'Linux';
-  $os_emoji = '🖥️';
-} else {
-  $os = 'Unrecognised OS';
-  $os_emoji = '🖥️';
+  $device_name = 'Linux PC';
+  $platform_name = 'Linux';
 }
 
-// Detect Browser + version
-if (preg_match('/Edg\/([\d.]+)/i', $ua, $em)) {
-  $browser = 'Edge ' . $em[1];
-  $browser_emoji = '🌐';
-} elseif (preg_match('/OPR\/([\d.]+)|Opera\/([\d.]+)/i', $ua, $om)) {
-  $browser = 'Opera ' . ($om[1] ?: $om[2]);
-  $browser_emoji = '🌐';
-} elseif (preg_match('/Firefox\/([\d.]+)/i', $ua, $fm)) {
-  $browser = 'Firefox ' . $fm[1];
+// Detect browser, including iOS browser tokens so we never dump the raw UA as
+// a fake browser name.
+$browser = 'Browser';
+$browser_emoji = '🌐';
+if (preg_match('/EdgiOS\/([\d.]+)/i', $ua, $m)) {
+  $browser = 'Edge ' . hmax_clean_version($m[1], 2);
+} elseif (preg_match('/CriOS\/([\d.]+)/i', $ua, $m)) {
+  $browser = 'Chrome ' . hmax_clean_version($m[1], 2);
+} elseif (preg_match('/FxiOS\/([\d.]+)/i', $ua, $m)) {
+  $browser = 'Firefox ' . hmax_clean_version($m[1], 2);
   $browser_emoji = '🦊';
-} elseif (preg_match('/Chrome\/([\d.]+)/i', $ua, $cm)) {
-  $browser = 'Chrome ' . $cm[1];
-  $browser_emoji = '🌐';
-} elseif (preg_match('/Version\/([\d.]+).*Safari/i', $ua, $sm)) {
-  $browser = 'Safari ' . $sm[1];
-  $browser_emoji = '🌐';
-} else {
-  $browser = htmlspecialchars(mb_substr($ua, 0, 72), ENT_QUOTES, 'UTF-8');
-  $browser_emoji = '🌐';
+} elseif (preg_match('/Edg\/([\d.]+)/i', $ua, $m)) {
+  $browser = 'Edge ' . hmax_clean_version($m[1], 2);
+} elseif (preg_match('/OPR\/([\d.]+)|Opera\/([\d.]+)/i', $ua, $m)) {
+  $browser = 'Opera ' . hmax_clean_version(($m[1] ?: $m[2]), 2);
+} elseif (preg_match('/Firefox\/([\d.]+)/i', $ua, $m)) {
+  $browser = 'Firefox ' . hmax_clean_version($m[1], 2);
+  $browser_emoji = '🦊';
+} elseif (preg_match('/Chrome\/([\d.]+)/i', $ua, $m)) {
+  $browser = 'Chrome ' . hmax_clean_version($m[1], 2);
+} elseif (preg_match('/Version\/([\d.]+).*Safari/i', $ua, $m)) {
+  $browser = 'Safari ' . hmax_clean_version($m[1], 2);
 }
 
-// Detect device type
-if (preg_match('/Mobile|Android.*Mobile/i', $ua)) {
-  $device_type = 'Mobile';
-} elseif (preg_match('/iPad|Tablet/i', $ua)) {
-  $device_type = 'Tablet';
-} else {
-  $device_type = 'Desktop';
-}
-
-// Detect rendering engine
+$engine = '';
 if (preg_match('/AppleWebKit\/([\d.]+)/i', $ua, $wk)) {
-  $engine = 'WebKit ' . $wk[1];
-} elseif (preg_match('/Gecko\/([\d.]+)/i', $ua, $gk)) {
-  $engine = 'Gecko ' . $gk[1];
-} else {
-  $engine = '';
+  $engine = 'WebKit ' . hmax_clean_version($wk[1], 3);
+} elseif (preg_match('/Gecko\/([\d.]+)/i', $ua, $gk) && stripos($ua, 'like Gecko') === false) {
+  $engine = 'Gecko ' . hmax_clean_version($gk[1], 3);
 }
 
-$device = $os_emoji . ' <strong>' . htmlspecialchars($os) . '</strong>'
-  . ' &nbsp;|&nbsp; ' . $browser_emoji . ' <strong>' . htmlspecialchars($browser) . '</strong>'
-  . ' &nbsp;|&nbsp; 📲 <strong>' . $device_type . '</strong>'
-  . ($engine ? ' &nbsp;|&nbsp; ⚙️ <strong>' . htmlspecialchars($engine) . '</strong>' : '');
+// A compact top summary. Device type is intentionally not repeated when the
+// device name already says iPhone/iPad/Android.
+$deviceParts = [];
+$deviceParts[] = '<span>' . $os_emoji . ' <strong>' . htmlspecialchars($device_name) . '</strong>'
+  . ($platform_name ? ' <small>' . htmlspecialchars($platform_name) . '</small>' : '') . '</span>';
+$deviceParts[] = '<span>' . $browser_emoji . ' <strong>' . htmlspecialchars($browser) . '</strong></span>';
+if ($engine) $deviceParts[] = '<span>⚙️ <strong>' . htmlspecialchars($engine) . '</strong></span>';
+$device = '<div class="device-summary">' . implode('', $deviceParts) . '</div>';
 
-$log = date('Y-m-d H:i:s') . " - IP: $ip - Location: $city, $country - ISP: $isp - VPN: $vpn - Device: $device\n";
+$logDevice = trim($device_name . ' ' . $platform_name . ' | ' . $browser . ($engine ? ' | ' . $engine : ''));
+$log = date('Y-m-d H:i:s') . " - IP: $ip - Location: $city, $country - ISP: $isp - VPN: $vpn - Device: $logDevice\n";
 file_put_contents('/var/log/visits.log', $log, FILE_APPEND);
 $visit_count = file_exists('/var/log/visits.log') ? count(file('/var/log/visits.log')) : 0;
 
@@ -101,11 +106,7 @@ if (!is_readable($stamp) || (time() - filemtime($stamp)) > 2592000) {
 }
 $unique_count = (int) @file_get_contents($vfile);
 
-// --------------------------------------------------------------------------
-// Active-nav helper: derive the current page from the running script name so
-// the nav highlight is set server-side (no JS needed).
-// --------------------------------------------------------------------------
-$current_page = basename($_SERVER['SCRIPT_NAME'], '.php'); // index | homelab | projects | contact
+$current_page = basename($_SERVER['SCRIPT_NAME'], '.php');
 function nav_active($page, $current) {
   return $page === $current ? ' active' : '';
 }
