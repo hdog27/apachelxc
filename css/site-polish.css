@@ -20,7 +20,7 @@
   background:#a371f7!important;
 }
 
-/* VPN mascot fallback. JS adds .vpn-cat if rtc.js skipped it. */
+/* VPN mascot fallback. JS creates the actual deterministic sprite. */
 .vpn-status-wrap {
   display:flex!important;
   align-items:center!important;
@@ -38,15 +38,92 @@
   background-repeat:no-repeat!important;
   background-size:384px 480px!important;
 }
-.vpn-cat-safe { animation:siteKittyIdle .95s steps(8) infinite!important; }
-.vpn-cat-risk { animation:siteKittyCry .9s steps(8) 0s 2,siteKittyHack .78s steps(8) 1.8s infinite!important; }
-@keyframes siteKittyIdle { from{background-position:0 0} to{background-position:-384px 0} }
-@keyframes siteKittyCry { from{background-position:0 -384px} to{background-position:-384px -384px} }
-@keyframes siteKittyHack { from{background-position:0 -432px} to{background-position:-384px -432px} }
+
+/* Compact, readable device summary instead of a raw-UA-looking line. */
+.device-summary {
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-bottom:12px;
+  color:#fff;
+}
+.device-summary > span {
+  display:inline-flex;
+  align-items:baseline;
+  gap:5px;
+  padding:5px 8px;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:999px;
+  background:rgba(255,255,255,.035);
+  line-height:1.2;
+}
+.device-summary strong { color:#fff!important; font-weight:650!important; }
+.device-summary small { color:rgba(255,255,255,.58); font-size:.84em; }
+.fingerprint-panel #rtc-info {
+  display:block;
+  color:rgba(255,255,255,.78);
+  line-height:1.7;
+}
+.fingerprint-panel #rtc-info strong { color:#fff; font-weight:600; }
+
+/* Visitor stats now sit high in the Cyber Lab flow. */
+.visit-counter-top {
+  margin:0!important;
+  padding:10px 16px;
+  text-align:center!important;
+  font-size:12px!important;
+  line-height:1.45!important;
+  color:rgba(255,255,255,.55)!important;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:13px;
+  background:rgba(0,0,0,.14);
+}
+.visit-counter-top strong { color:#fff; }
 
 @media(max-width:640px){
   .vpn-cat{flex-basis:42px!important;width:42px!important;height:42px!important;background-size:336px 420px!important}
-  @keyframes siteKittyIdle { from{background-position:0 0} to{background-position:-336px 0} }
-  @keyframes siteKittyCry { from{background-position:0 -336px} to{background-position:-336px -336px} }
-  @keyframes siteKittyHack { from{background-position:0 -378px} to{background-position:-336px -378px} }
+
+  /* Connection path: keep animated dots inside the line and away from labels. */
+  .route-panel { gap:18px!important; }
+  .route-panel .section-copy { margin-bottom:0!important; }
+  .route-summary {
+    grid-template-columns:minmax(0,1fr) 42px minmax(0,1fr) 42px minmax(0,1fr)!important;
+    gap:2px!important;
+    width:100%;
+  }
+  .route-node { gap:7px!important; }
+  .route-node strong {
+    font-size:9px!important;
+    line-height:1.15!important;
+    letter-spacing:.075em!important;
+    white-space:normal;
+  }
+  .route-line { width:100%; overflow:hidden; }
+  .route-line:after {
+    width:4px!important;
+    height:4px!important;
+    top:-1.5px!important;
+    animation:routePulseMobile 1.8s linear infinite!important;
+  }
+  @keyframes routePulseMobile {
+    from{transform:translateX(0);opacity:0}
+    10%{opacity:1}
+    90%{opacity:1}
+    to{transform:translateX(36px);opacity:0}
+  }
+  .ray-id { text-align:center!important; overflow-wrap:anywhere; }
+
+  .device-summary { gap:6px; margin-bottom:10px; }
+  .device-summary > span { padding:4px 7px; font-size:12px; }
+  .fingerprint-panel .device-box {
+    font-size:12px!important;
+    line-height:1.55!important;
+    padding:14px!important;
+  }
+  .fingerprint-panel #rtc-info { line-height:1.65; }
+
+  .visit-counter-top {
+    padding:9px 12px;
+    font-size:11px!important;
+  }
 }
