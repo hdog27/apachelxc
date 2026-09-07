@@ -3,6 +3,8 @@ require_once __DIR__ . '/includes/metadata.php';
 $current_page     = 'teaching';
 $page_title       = 'Teaching | hmax.space';
 $page_description = 'Hands-on cybersecurity teaching and mentoring using a live homelab environment.';
+$page_css         = 'content-wide.css';
+$body_class       = 'wide-content-page';
 $photos           = glob(__DIR__ . '/images/teaching*.{jpg,jpeg,png,webp}', GLOB_BRACE);
 sort($photos);
 $hero = null; $rest = [];
