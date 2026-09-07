@@ -1,0 +1,71 @@
+/* Shared desktop treatment for text-heavy portfolio pages. */
+.wide-content-page { display:block; }
+.wide-content-page .card {
+  width:min(1120px, calc(100vw - 40px));
+  max-width:none;
+  margin:0 auto;
+  padding:44px 54px;
+}
+.wide-content-page .card > p,
+.wide-content-page .card > h1,
+.wide-content-page .card > h2,
+.wide-content-page .card > h3,
+.wide-content-page .card > ul,
+.wide-content-page .card > .divider {
+  max-width:920px;
+  margin-left:auto;
+  margin-right:auto;
+}
+.wide-content-page .card > p { line-height:1.68; }
+.wide-content-page .card > h2 { margin-top:28px; }
+.wide-content-page .safe-list {
+  max-width:920px;
+  margin:12px auto 26px;
+  text-align:left;
+}
+.wide-content-page .teach-hero {
+  display:block;
+  width:min(100%, 920px);
+  max-height:560px;
+  object-fit:cover;
+  margin:22px auto 26px;
+  border-radius:16px;
+}
+.wide-content-page .teach-gallery {
+  width:min(100%, 920px);
+  margin:24px auto 0;
+}
+
+/* Fix the desktop quick-fact dots so they never sit on top of the text. */
+.homelab-facts li {
+  position:static!important;
+  display:grid!important;
+  grid-template-columns:8px minmax(0,1fr);
+  column-gap:9px;
+  align-items:start;
+  padding:4px 0!important;
+}
+.homelab-facts li::before {
+  position:static!important;
+  display:block;
+  content:"";
+  width:5px!important;
+  height:5px!important;
+  margin-top:.52em;
+  border-radius:50%;
+  background:#a371f7;
+}
+
+@media (max-width:900px) {
+  .wide-content-page .card {
+    width:min(760px, calc(100vw - 28px));
+    padding:32px 26px;
+  }
+}
+@media (max-width:600px) {
+  .wide-content-page .card {
+    width:calc(100vw - 28px);
+    padding:26px 20px;
+  }
+  .wide-content-page .card > h2 { margin-top:22px; }
+}
