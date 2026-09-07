@@ -2,12 +2,10 @@
 require_once __DIR__ . '/includes/metadata.php';
 
 $page_title       = 'Projects | hmax.space';
-$page_description = 'Homelab and security projects: Apache visitor logging on Proxmox, a segmented Protectli firewall lab, an Airgeddon evil twin captive portal and an ESP32 HyperHDR LED controller.';
+$page_description = 'Hands-on security, networking and infrastructure projects from my homelab.';
 $page_css         = 'projects.css';
 $body_class       = 'projects-page';
 
-// The live Apache checkout already has an untracked /media directory. Keep the
-// video out of Git and automatically surface the first local project video.
 $featured_video = null;
 $media_dir = __DIR__ . '/media';
 if (is_dir($media_dir)) {
@@ -35,10 +33,10 @@ require __DIR__ . '/includes/header.php';
   <article class="project-card project-featured card">
     <div class="project-copy">
       <p class="project-kicker">FEATURED BUILD</p>
-      <h2>Evil Twin Captive Portal</h2>
-      <p>Red team homelab build pairing Airgeddon with a custom captive portal to demonstrate evil twin Wi-Fi attacks for authorized teaching and lab demos.</p>
+      <h2>Metasploitable + Suricata + Pushover Alerts</h2>
+      <p>An isolated attack-and-detection demo: generate traffic against Metasploitable, let Suricata detect it, then push the alert to my phone through Pushover. It shows the whole path from attack traffic to a defender-visible notification.</p>
       <div class="project-actions">
-        <a class="project-btn primary" href="https://github.com/hdog27/airgeddon-evil-twin-captive-portal" target="_blank" rel="noopener">View on GitHub →</a>
+        <a class="project-btn primary" href="/homelab">See the lab setup →</a>
       </div>
     </div>
     <div class="project-media">
