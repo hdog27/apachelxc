@@ -14,8 +14,6 @@
     wrap.appendChild(badge);
   }
 
-  var originalParent = wrap.parentNode;
-  var originalNextSibling = wrap.nextSibling;
   var bannerRow = document.querySelector('.lab-intro-panel .banner-row');
   var mobileQuery = window.matchMedia('(max-width: 700px)');
 
@@ -24,13 +22,6 @@
     '.vpn-kitty-native,[data-vpn-kitty],[data-vpn-kitty-frame]'
   );
   for (var i = 0; i < old.length; i += 1) old[i].remove();
-
-  wrap.style.setProperty('display', 'flex', 'important');
-  wrap.style.setProperty('align-items', 'center', 'important');
-  wrap.style.setProperty('justify-content', 'center', 'important');
-  wrap.style.setProperty('gap', '10px', 'important');
-  wrap.style.setProperty('width', '100%', 'important');
-  wrap.style.setProperty('min-height', '54px', 'important');
 
   var FRAME_SIZE = 32;
   var DESKTOP_DISPLAY_SIZE = 48;
@@ -57,6 +48,7 @@
   cat.style.setProperty('overflow', 'hidden', 'important');
   cat.style.setProperty('background-repeat', 'no-repeat', 'important');
   cat.style.setProperty('image-rendering', 'pixelated', 'important');
+  cat.style.setProperty('filter', 'drop-shadow(0 4px 7px rgba(0, 0, 0, 0.52))', 'important');
   wrap.insertBefore(cat, badge);
 
   var frameTimer = null;
@@ -81,38 +73,52 @@
     setCatSize();
 
     if (mobile && bannerRow) {
-      bannerRow.parentNode.insertBefore(wrap, bannerRow.nextSibling);
-      wrap.setAttribute('data-kitty-placement', 'mobile-hero');
-      wrap.style.setProperty('gap', '12px', 'important');
-      wrap.style.setProperty('width', 'calc(100% - 20px)', 'important');
-      wrap.style.setProperty('max-width', '280px', 'important');
-      wrap.style.setProperty('min-height', '80px', 'important');
-      wrap.style.setProperty('margin', '12px auto 4px', 'important');
-      wrap.style.setProperty('padding', '8px 12px', 'important');
-      wrap.style.setProperty('box-sizing', 'border-box', 'important');
-      wrap.style.setProperty('border', '1px solid rgba(78, 226, 255, 0.24)', 'important');
-      wrap.style.setProperty('border-radius', '14px', 'important');
-      wrap.style.setProperty('background', 'rgba(4, 15, 30, 0.76)', 'important');
-      wrap.style.setProperty('box-shadow', '0 10px 28px rgba(0, 0, 0, 0.28)', 'important');
+      bannerRow.style.setProperty('position', 'relative', 'important');
+      bannerRow.style.setProperty('overflow', 'visible', 'important');
+      bannerRow.appendChild(cat);
+      cat.setAttribute('data-kitty-placement', 'mobile-globe');
+      cat.style.setProperty('position', 'absolute', 'important');
+      cat.style.setProperty('right', '-2px', 'important');
+      cat.style.setProperty('bottom', '-5px', 'important');
+      cat.style.setProperty('z-index', '6', 'important');
+      cat.style.setProperty('pointer-events', 'none', 'important');
+
+      wrap.style.setProperty('display', 'flex', 'important');
+      wrap.style.setProperty('align-items', 'center', 'important');
+      wrap.style.setProperty('justify-content', 'center', 'important');
+      wrap.style.setProperty('gap', '0', 'important');
+      wrap.style.setProperty('width', '100%', 'important');
+      wrap.style.setProperty('min-height', '34px', 'important');
+      wrap.style.setProperty('margin', '10px 0 0', 'important');
+      wrap.style.setProperty('padding', '0', 'important');
+      wrap.style.setProperty('border', '0', 'important');
+      wrap.style.setProperty('background', 'transparent', 'important');
+      wrap.style.setProperty('box-shadow', 'none', 'important');
       return;
     }
 
-    if (originalNextSibling && originalNextSibling.parentNode === originalParent) {
-      originalParent.insertBefore(wrap, originalNextSibling);
-    } else {
-      originalParent.appendChild(wrap);
-    }
-    wrap.removeAttribute('data-kitty-placement');
-    wrap.style.setProperty('gap', '10px', 'important');
-    wrap.style.setProperty('width', '100%', 'important');
+    wrap.insertBefore(cat, badge);
+    cat.removeAttribute('data-kitty-placement');
+    cat.style.setProperty('position', 'relative', 'important');
+    cat.style.setProperty('right', 'auto', 'important');
+    cat.style.setProperty('bottom', 'auto', 'important');
+    cat.style.setProperty('z-index', '1', 'important');
+    cat.style.setProperty('pointer-events', 'none', 'important');
+
+    wrap.style.setProperty('display', 'flex', 'important');
+    wrap.style.setProperty('align-items', 'center', 'important');
+    wrap.style.setProperty('justify-content', 'center', 'important');
+    wrap.style.setProperty('gap', '8px', 'important');
+    wrap.style.setProperty('width', 'max-content', 'important');
     wrap.style.setProperty('max-width', 'none', 'important');
-    wrap.style.setProperty('min-height', '54px', 'important');
-    wrap.style.setProperty('margin', '0', 'important');
-    wrap.style.setProperty('padding', '0', 'important');
-    wrap.style.setProperty('border', '0', 'important');
-    wrap.style.setProperty('border-radius', '0', 'important');
-    wrap.style.setProperty('background', 'transparent', 'important');
-    wrap.style.setProperty('box-shadow', 'none', 'important');
+    wrap.style.setProperty('min-height', '52px', 'important');
+    wrap.style.setProperty('margin', '12px auto 0', 'important');
+    wrap.style.setProperty('padding', '3px 10px 3px 7px', 'important');
+    wrap.style.setProperty('box-sizing', 'border-box', 'important');
+    wrap.style.setProperty('border', '1px solid rgba(78, 226, 255, 0.16)', 'important');
+    wrap.style.setProperty('border-radius', '13px', 'important');
+    wrap.style.setProperty('background', 'rgba(4, 15, 30, 0.34)', 'important');
+    wrap.style.setProperty('box-shadow', '0 8px 20px rgba(0, 0, 0, 0.16)', 'important');
   }
 
   function showFrame(row, frame, state) {
@@ -152,6 +158,11 @@
 
   function start() {
     if (stateTimer !== null) window.clearTimeout(stateTimer);
+    if (mobileQuery.matches) {
+      play(HACKER_ROW, 'hack');
+      return;
+    }
+
     var vpnOn = badge.getAttribute('data-vpn') === '1';
     if (vpnOn) {
       play(IDLE_ROW, 'idle');
@@ -166,23 +177,10 @@
 
   applyResponsiveLayout();
   start();
-  badge.setAttribute('tabindex', '0');
-  badge.setAttribute('aria-label', 'Replay VPN kitty animation');
-  badge.addEventListener('click', function (event) {
-    event.stopImmediatePropagation();
-    event.stopPropagation();
-    start();
-  });
-  badge.addEventListener('keydown', function (event) {
-    if (event.key !== 'Enter' && event.key !== ' ') return;
-    event.preventDefault();
-    event.stopPropagation();
-    start();
-  });
 
   function handleViewportChange() {
     applyResponsiveLayout();
-    showFrame(currentRow, currentFrame, currentState);
+    start();
   }
 
   if (mobileQuery.addEventListener) {
