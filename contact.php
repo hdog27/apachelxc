@@ -22,6 +22,15 @@ require __DIR__ . '/includes/header.php';
     <h2 id="about-heading">About</h2>
     <p>I work on network security, log collection and analysis, and self-hosted infrastructure. Most of it is built and documented in the homelab on this site, including the server hosting this page.</p>
     <p>I’m always learning and expanding the lab as I go. Most of what’s here came from building something, breaking it, and figuring out how to make it better.</p>
+
+    <div class="credential-card" aria-label="Cisco certification">
+      <div class="credential-mark">CISCO</div>
+      <div>
+        <span class="credential-label">CERTIFICATION</span>
+        <strong>Cisco Networking Academy — Network Defense</strong>
+        <small>Completed network security / defense coursework and credentialing.</small>
+      </div>
+    </div>
   </section>
 
   <section class="contact-cta" aria-label="Contact links">
