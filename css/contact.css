@@ -20,7 +20,39 @@
 .contact-about { padding:28px 0; border-bottom:1px solid rgba(255,255,255,.12); }
 .contact-about h2 { margin:0 0 14px; font-size:24px; }
 .contact-about p { max-width:760px; font-size:16px; line-height:1.65; }
-.contact-about p:last-child { margin-bottom:0; }
+.contact-about p:last-of-type { margin-bottom:0; }
+
+.credential-card {
+  display:flex;
+  align-items:center;
+  gap:14px;
+  max-width:760px;
+  margin-top:22px;
+  padding:15px 17px;
+  border:1px solid rgba(88,166,255,.22);
+  border-radius:14px;
+  background:linear-gradient(135deg,rgba(88,166,255,.10),rgba(126,231,135,.05));
+}
+.credential-mark {
+  flex:0 0 auto;
+  padding:9px 10px;
+  border:1px solid rgba(88,166,255,.28);
+  border-radius:9px;
+  color:#8dc7ff;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.12em;
+}
+.credential-card > div:last-child { min-width:0; display:grid; gap:3px; }
+.credential-label {
+  color:#7ee787;
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:.1em;
+}
+.credential-card strong { color:#fff; font-size:14px; line-height:1.35; }
+.credential-card small { color:rgba(255,255,255,.55); font-size:11px; line-height:1.4; }
+
 .contact-cta { padding-top:26px; }
 .contact-links { justify-content:flex-start; margin:0; gap:10px; }
 .contact-btn { padding:10px 18px; }
@@ -31,4 +63,6 @@
   .contact-about { padding:24px 0; }
   .contact-cta { padding-top:22px; }
   .contact-links { justify-content:flex-start; }
+  .credential-card { align-items:flex-start; padding:13px 14px; }
+  .credential-mark { padding:7px 8px; font-size:9px; }
 }
