@@ -20,6 +20,7 @@
 <script src="/js/site-polish.js?v=<?= @filemtime(__DIR__ . "/../js/site-polish.js") ?>"></script>
 <?php if (($body_class ?? '') === 'cyberlab'): ?>
 <script src="/js/vpn-kitty.js?v=<?= @filemtime(__DIR__ . "/../js/vpn-kitty.js") ?>"></script>
+<script src="/js/cyberlab-layout.js?v=<?= @filemtime(__DIR__ . "/../js/cyberlab-layout.js") ?>"></script>
 <?php endif; ?>
 </body>
 </html>
