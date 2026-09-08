@@ -18,5 +18,8 @@
 <script src="/js/<?= htmlspecialchars($js) ?>?v=<?= @filemtime(__DIR__ . "/../js/" . $js) ?>"></script>
 <?php endforeach; ?>
 <script src="/js/site-polish.js?v=<?= @filemtime(__DIR__ . "/../js/site-polish.js") ?>"></script>
+<?php if (($body_class ?? '') === 'cyberlab'): ?>
+<script src="/js/vpn-kitty.js?v=<?= @filemtime(__DIR__ . "/../js/vpn-kitty.js") ?>"></script>
+<?php endif; ?>
 </body>
 </html>
