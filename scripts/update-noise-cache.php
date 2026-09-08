@@ -17,6 +17,7 @@ $empty = [
     'networks' => 0,
     'top_probes' => [],
     'taxonomy' => [],
+    'activity' => [],
     'latest' => null,
     'updated' => time(),
 ];
@@ -29,16 +30,12 @@ function debug_line($message) {
 function apache_timestamp($raw) {
     $raw = trim($raw);
 
-    // Standard Apache combined-log timestamp:
-    // 04/Sep/2026:13:09:01 -0400
     $dt = DateTimeImmutable::createFromFormat('d/M/Y:H:i:s O', $raw);
     if ($dt instanceof DateTimeImmutable) return $dt->getTimestamp();
 
-    // Some custom formats omit the numeric timezone.
     $dt = DateTimeImmutable::createFromFormat('d/M/Y:H:i:s', $raw);
     if ($dt instanceof DateTimeImmutable) return $dt->getTimestamp();
 
-    // Final fallback for unusual but still parseable Apache timestamps.
     $normalized = preg_replace('~^(\d{2}/[A-Za-z]{3}/\d{4}):(\d{2}:\d{2}:\d{2})(.*)$~', '$1 $2$3', $raw);
     $fallback = strtotime($normalized ?: $raw);
     return $fallback !== false ? $fallback : null;
@@ -60,13 +57,24 @@ $patterns = [
     'Backup / config hunting' => '~(?:^|/)(?:backup|bak|old|config)(?:[./_-]|/).*?(?:zip|tar|gz|sql|yml|yaml|json|ini|php)?(?:\?|$)~i',
 ];
 
-$cutoff = time() - 86400;
+$now = time();
+$cutoff = $now - 86400;
 $requestCount = 0;
 $probeCounts = [];
 $taxonomy = array_fill_keys(array_keys($patterns), 0);
 $scannerIps = [];
 $networkKeys = [];
 $latest = null;
+
+// Exactly 24 local-hour buckets. These count suspicious requests only.
+$currentHour = intdiv($now, 3600) * 3600;
+$activityCounts = [];
+$activityNetworks = [];
+for ($i = 23; $i >= 0; $i--) {
+    $bucketTs = $currentHour - ($i * 3600);
+    $activityCounts[$bucketTs] = 0;
+    $activityNetworks[$bucketTs] = [];
+}
 
 $lineCount = 0;
 $regexMatches = 0;
@@ -85,17 +93,13 @@ if (!$fh) {
 }
 if ($size && $size > $maxBytes) {
     @fseek($fh, -$maxBytes, SEEK_END);
-    // Discard the partial line created by seeking into the file.
     fgets($fh);
 }
 
 while (($line = fgets($fh)) !== false) {
     $lineCount++;
 
-    // Standard combined Apache log, e.g.:
-    // 203.0.113.10 - - [04/Sep/2026:13:09:01 -0400] "GET /.env HTTP/2.0" 404 ...
     if (!preg_match('~^(\S+)\s+\S+\s+\S+\s+\[([^\]]+)\]\s+"([A-Z]+)\s+([^\s"]+)~', $line, $m)) {
-        // Tolerant fallback for custom prefixes between client IP and timestamp.
         if (!preg_match('~^(\S+).*?\[([^\]]+)\]\s+"([A-Z]+)\s+([^\s"]+)~', $line, $m)) continue;
     }
     $regexMatches++;
@@ -131,7 +135,15 @@ while (($line = fgets($fh)) !== false) {
     } else {
         $net = 'unknown';
     }
-    $networkKeys[hash('sha256', $net)] = true;
+
+    $networkHash = hash('sha256', $net);
+    $networkKeys[$networkHash] = true;
+
+    $bucketTs = intdiv($ts, 3600) * 3600;
+    if (array_key_exists($bucketTs, $activityCounts)) {
+        $activityCounts[$bucketTs]++;
+        $activityNetworks[$bucketTs][$networkHash] = true;
+    }
 
     if (!$latest || $ts > $latest['ts']) {
         $latest = ['ts' => $ts, 'path' => $path, 'type' => $label, 'ip' => $ipAddr];
@@ -144,6 +156,15 @@ arsort($taxonomy);
 $top = [];
 foreach (array_slice($probeCounts, 0, 5, true) as $path => $count) {
     $top[] = ['path' => mb_substr($path, 0, 70), 'count' => $count];
+}
+
+$activity = [];
+foreach ($activityCounts as $bucketTs => $count) {
+    $activity[] = [
+        'ts' => (int)$bucketTs,
+        'count' => (int)$count,
+        'networks' => count($activityNetworks[$bucketTs]),
+    ];
 }
 
 $latestPublic = null;
@@ -173,6 +194,7 @@ $out = [
     'networks' => count($networkKeys),
     'top_probes' => $top,
     'taxonomy' => $taxonomy,
+    'activity' => $activity,
     'latest' => $latestPublic,
     'updated' => time(),
 ];
@@ -189,5 +211,6 @@ debug_line('timestamps parsed: ' . $timestampMatches);
 debug_line('requests inside 24h: ' . $recentMatches);
 debug_line('suspicious unique IPs: ' . count($scannerIps));
 debug_line('suspicious source networks: ' . count($networkKeys));
+debug_line('activity buckets: ' . count($activity));
 if ($firstRejectedTimestamp !== null) debug_line('first rejected timestamp: ' . $firstRejectedTimestamp);
 debug_line('cache: ' . $cacheFile);
