@@ -37,10 +37,11 @@ require __DIR__ . '/includes/header.php';
       <p>An isolated attack-and-detection demo: generate traffic against Metasploitable, let Suricata detect it, then push the alert to my phone through Pushover. It shows the whole path from attack traffic to a defender-visible notification.</p>
       <div class="project-actions">
         <a class="project-btn primary" href="/homelab">See the lab setup →</a>
+        <a class="project-btn" href="https://github.com/hdog27/homelab-IDS-alerts" target="_blank" rel="noopener">GitHub →</a>
       </div>
     </div>
     <div class="project-media">
-      <video src="<?= htmlspecialchars($featured_video) ?>" autoplay muted loop playsinline controls preload="metadata"></video>
+      <video id="featured-build-video" src="<?= htmlspecialchars($featured_video) ?>" autoplay muted loop playsinline controls preload="auto"></video>
     </div>
   </article>
 <?php endif; ?>
@@ -99,5 +100,25 @@ require __DIR__ . '/includes/header.php';
     </article>
   </section>
 </main>
+
+<?php if ($featured_video): ?>
+<script>
+(function(){
+  var video=document.getElementById('featured-build-video');
+  if(!video) return;
+  video.muted=true;
+  video.defaultMuted=true;
+  video.playsInline=true;
+  function tryPlay(){
+    var p=video.play();
+    if(p&&p.catch) p.catch(function(){});
+  }
+  if(video.readyState>=2) tryPlay();
+  video.addEventListener('loadeddata',tryPlay,{once:true});
+  video.addEventListener('canplay',tryPlay,{once:true});
+  document.addEventListener('visibilitychange',function(){ if(!document.hidden) tryPlay(); });
+})();
+</script>
+<?php endif; ?>
 
 <?php require __DIR__ . '/includes/footer.php'; ?>
