@@ -12,6 +12,7 @@ function hmax_noise_empty() {
         'networks' => 0,
         'top_probes' => [],
         'taxonomy' => [],
+        'activity' => [],
         'latest' => null,
         'updated' => null,
     ];
@@ -31,6 +32,9 @@ function hmax_noise_stats() {
     foreach ($required as $key) {
         if (!array_key_exists($key, $data)) return hmax_noise_empty();
     }
+
+    // Backwards compatible with a cache written before hourly activity existed.
+    if (!isset($data['activity']) || !is_array($data['activity'])) $data['activity'] = [];
 
     // Treat very stale data as unavailable rather than pretending it is live.
     if (empty($data['updated']) || (time() - (int)$data['updated']) > 300) {
