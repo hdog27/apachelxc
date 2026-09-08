@@ -37,3 +37,14 @@
   build();
   new MutationObserver(build).observe(box,{childList:true,subtree:true,characterData:true});
 })();
+
+// Load the Cyber Lab teaching interactions after the core page scripts.
+// Kept separate from rtc.js so the existing telemetry path is unchanged.
+(function(){
+  if(document.querySelector('script[data-cyberlab-interactions]')) return;
+  var s=document.createElement('script');
+  s.src='/js/cyberlab-interactions.js?v=1';
+  s.defer=true;
+  s.setAttribute('data-cyberlab-interactions','1');
+  document.head.appendChild(s);
+})();
