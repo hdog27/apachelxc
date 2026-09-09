@@ -64,7 +64,7 @@ require __DIR__ . '/includes/header.php';
           <p>Runs on the Protectli and does most of the heavy lifting. This is the box that got me into all of this.</p>
           <ul class="svc-parts">
             <li><b>VLAN routing &amp; firewall policy</b>Decides what is allowed to talk to what.</li>
-            <li><b>Suricata</b>IDS/IPS inspecting traffic for known attack patterns.</li>
+            <li><b>Suricata lab telemetry</b>The attack-range project demonstrates detection and phone alerts. The OPNsense built-in IDS/IPS was disabled in the September 8, 2026 inventory; this page does not verify a live sensor location, capture interface or inline blocking mode. See the <a href="/projects">detection project</a> for the demonstrated workflow.</li>
             <li><b>CrowdSec</b>Blocks IPs flagged by a shared community threat feed.</li>
             <li><b>Unbound DNS</b>Handles local DNS and privacy controls.</li>
             <li><b>Threat feeds</b>Drops traffic to and from known-bad address lists.</li>

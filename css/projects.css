@@ -76,7 +76,17 @@
 .repo-embed-body {
   max-height:330px;
   scrollbar-width:thin;
+  overflow:auto;
+  min-width:0;
+  overflow-wrap:anywhere;
 }
+.repo-embed-body img { display:block; max-width:100%; height:auto; }
+.repo-embed-body pre { max-width:100%; overflow:auto; overflow-wrap:normal; }
+.repo-embed-body table { display:block; max-width:100%; overflow:auto; border-collapse:collapse; }
+.repo-embed-body th,.repo-embed-body td { padding:8px; border:1px solid rgba(255,255,255,.18); text-align:left; }
+.repo-embed-body :focus-visible { outline:2px solid #7ee787; outline-offset:2px; }
+.repo-embed-body:focus-visible { outline:2px solid #7ee787; }
+.project-history { color:#b7c9dc; }
 @media (min-width:1050px) {
   .project-grid .project-card { min-height:610px; }
 }

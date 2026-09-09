@@ -6,8 +6,9 @@
 $city = $region = $country = $isp = 'Unknown';
 $latitude = null;
 $longitude = null;
-$vpn = 'No VPN Detected';
-$vpnReason = '';
+$vpn = 'VPN status unknown';
+$vpnReason = 'This lookup cannot establish whether a VPN is in use.';
+$vpnDetected = false;
 
 // CF-Ray is useful for correlating a request in Cloudflare logs. The suffix
 // is presented only as an edge code because routing can change what the
@@ -51,8 +52,9 @@ if (filter_var($ip, FILTER_VALIDATE_IP)) {
     } catch (\Throwable $e) { /* not in db */ }
 
     if ($isp !== 'Unknown' && preg_match('/' . $HOSTING_ASNS . '/i', $isp)) {
-        $vpn = 'VPN/Proxy Detected';
-        $vpnReason = $isp . ': VPN/hosting provider, not residential.';
+        $vpn = 'Possible VPN / hosting network';
+        $vpnDetected = true;
+        $vpnReason = $isp . ': provider-name match only; hosting is not proof of VPN use.';
     } else {
         $cacheFile = '/var/cache/hmax-geo/' . hash('sha256', $ip) . '.json';
         $d = null;
@@ -79,10 +81,14 @@ if (filter_var($ip, FILTER_VALIDATE_IP)) {
         }
 
         if (is_array($d) && ($d['proxy'] ?? false)) {
-            $vpn = 'VPN/Proxy Detected';
+            $vpn = 'Possible VPN / proxy';
+            $vpnDetected = true;
             $vpnReason = 'Listed in a public VPN/proxy database.';
+        } elseif (is_array($d)) {
+            $vpn = 'No proxy flag returned';
+            $vpnReason = 'A negative database result does not rule out a VPN.';
         }
     }
 }
 
-$vpnDetected = ($vpn === 'VPN/Proxy Detected');
+// Used only to illustrate a positive heuristic, never a safety verdict.

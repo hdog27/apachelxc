@@ -121,7 +121,8 @@ require __DIR__ . '/includes/header.php';
       </span>
       <?php if (!empty($vpnReason)): ?><p class="vpn-reason"><?= htmlspecialchars($vpnReason) ?></p><?php endif; ?>
 
-      <p class="location-note">IP geolocation is approximate, not GPS. VPNs, mobile networks and ISP routing can move this location far from the device.</p>
+      <p class="location-note">IP geolocation is approximate, not GPS. VPN/proxy labels are fallible lookup hints, not a privacy or safety verdict.</p>
+      <p class="location-note">CPU threads and RAM estimates are browser-reported, not a hardware inventory. Web quota is estimated browser storage allowance, not disk capacity. <a href="/safe#privacy">How this data is processed</a>.</p>
     </article>
   </section>
 

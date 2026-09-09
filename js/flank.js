@@ -59,15 +59,15 @@
   function build(){
     var txt=box.innerText||box.textContent||'', items=[], seen={};
 
-    add(items,seen,'CPU',navigator.hardwareConcurrency?String(navigator.hardwareConcurrency):'');
-    add(items,seen,'RAM',navigator.deviceMemory?(navigator.deviceMemory+' GB'):'');
+    add(items,seen,'CPU THREADS',navigator.hardwareConcurrency?String(navigator.hardwareConcurrency):'');
+    add(items,seen,'RAM EST.',navigator.deviceMemory?(navigator.deviceMemory+' GB'):'');
 
     var gpuMatch=txt.match(/GPU:\s*([^\n]+)/i);
     add(items,seen,'GPU',gpuMatch?shortGpu(gpuMatch[1]):'');
 
     add(items,seen,'SCREEN',screen.width+'×'+screen.height);
     add(items,seen,'TIME ZONE',shortZone());
-    add(items,seen,'STORAGE',storageQuota());
+    add(items,seen,'WEB QUOTA',storageQuota());
     add(items,seen,'OS',osName());
 
     if(navigator.maxTouchPoints>0) add(items,seen,'TOUCH',navigator.maxTouchPoints+' pt');
