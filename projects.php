@@ -49,6 +49,22 @@ require __DIR__ . '/includes/header.php';
   <section class="project-grid" aria-label="Project list">
     <article class="project-card card">
       <div class="project-copy">
+        <p class="project-kicker">CLOUD SECURITY</p>
+        <h2>Cloud Firewall Guard | AWS</h2>
+        <p>A GitHub Actions pipeline that rejects unsafe SSH rules before deployment, uses temporary AWS credentials through OIDC, and verifies the approved firewall rule in AWS.</p>
+        <div class="project-actions">
+          <a class="project-btn primary" href="https://github.com/hdog27/cloud-firewall-guard-showcase" target="_blank" rel="noopener">Build walkthrough →</a>
+          <a class="project-btn" href="https://github.com/hdog27/cloud-firewall-guard" target="_blank" rel="noopener">View the code →</a>
+        </div>
+      </div>
+      <div class="repo-embed" data-user="hdog27" data-repo="cloud-firewall-guard-showcase">
+        <div class="repo-embed-header"><span class="repo-embed-name">hdog27/cloud-firewall-guard-showcase</span><a href="https://github.com/hdog27/cloud-firewall-guard-showcase" target="_blank" rel="noopener" class="repo-embed-link">Open walkthrough →</a></div>
+        <div class="repo-embed-body"><p class="repo-embed-loading">Loading README…</p></div>
+      </div>
+    </article>
+
+    <article class="project-card card">
+      <div class="project-copy">
         <p class="project-kicker">WIRELESS SECURITY</p>
         <h2>Evil Twin Captive Portal | Airgeddon</h2>
         <p>Custom captive portal and Airgeddon workflow for demonstrating evil twin Wi-Fi attacks in an isolated, authorized lab.</p>
@@ -123,3 +139,4 @@ require __DIR__ . '/includes/header.php';
 <?php endif; ?>
 
 <?php require __DIR__ . '/includes/footer.php'; ?>
+
