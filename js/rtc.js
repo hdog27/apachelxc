@@ -159,7 +159,7 @@
   var box = document.getElementById('rtc-info');
   if (box) {
     box.innerHTML =
-      'CPU Cores: <strong>' + escapeHtml(result.cores) + '</strong> &nbsp;|&nbsp; ' +
+      'CPU threads (reported): <strong>' + escapeHtml(result.cores) + '</strong> &nbsp;|&nbsp; ' +
       'RAM (approx): <strong>' + escapeHtml(result.ram) + '</strong><br>' +
       'GPU: <strong>' + escapeHtml(result.gpu) + '</strong><br>' +
       'Screen: <strong>' + escapeHtml(result.screenInfo) + '</strong> &nbsp;|&nbsp; TZ: <strong>' + escapeHtml(result.timezone) + '</strong><br>' +

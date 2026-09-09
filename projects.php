@@ -64,7 +64,8 @@ require __DIR__ . '/includes/header.php';
       <div class="project-copy">
         <p class="project-kicker">NETWORK SECURITY</p>
         <h2>HomeLab Network Security | Protectli V1410</h2>
-        <p>Segmented home lab on a Protectli V1410 with virtualization, firewalling, VPN routing and isolated networks.</p>
+        <p>The current lab uses OPNsense on the Protectli V1410 for firewall policy, VLAN routing and WireGuard, with workloads on a separate Proxmox machine.</p>
+        <p class="project-history">The embedded README documents the earlier pfSense build. For the current OPNsense setup, see <a href="/homelab">the homelab overview</a>.</p>
         <div class="project-actions"><a class="project-btn" href="https://github.com/hdog27/Protectli-v1410-HomeLab-Net-Security" target="_blank" rel="noopener">GitHub →</a></div>
       </div>
       <div class="repo-embed" data-user="hdog27" data-repo="Protectli-v1410-HomeLab-Net-Security">

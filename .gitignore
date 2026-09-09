@@ -2,3 +2,4 @@
 *.bak-*
 *.log
 .htpasswd
+node_modules/
