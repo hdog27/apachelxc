@@ -34,10 +34,14 @@
   // Do not add another implementation here; multiple renderers were the cause
   // of the disappearing/glitching mascot.
 
-  // Autoplay the featured project demo wherever browser policy permits.
+  // Autoplay muted project demos wherever browser policy permits.
   try{
-    var video=document.querySelector('.project-featured video');
-    if(video){
+    var videos=Array.prototype.slice.call(document.querySelectorAll('video[data-autoplay-video]'));
+    var tryPlay=function(video){
+      var p=video.play();
+      if(p&&p.catch)p.catch(function(){});
+    };
+    videos.forEach(function(video){
       video.muted=true;
       video.defaultMuted=true;
       video.autoplay=true;
@@ -47,15 +51,16 @@
       video.setAttribute('autoplay','');
       video.setAttribute('loop','');
       video.setAttribute('playsinline','');
-      var tryPlay=function(){
-        var p=video.play();
-        if(p&&p.catch)p.catch(function(){});
-      };
-      if(video.readyState>=2) tryPlay();
-      else video.addEventListener('canplay',tryPlay,{once:true});
-      document.addEventListener('visibilitychange',function(){
-        if(!document.hidden)tryPlay();
-      });
-    }
+      video.setAttribute('webkit-playsinline','');
+      if(video.readyState>=2) tryPlay(video);
+      else video.addEventListener('canplay',function(){tryPlay(video);},{once:true});
+    });
+    var tryAll=function(){videos.forEach(tryPlay);};
+    document.addEventListener('visibilitychange',function(){
+      if(!document.hidden)tryAll();
+    });
+    window.addEventListener('pageshow',tryAll);
+    document.addEventListener('touchstart',tryAll,{once:true,passive:true});
+    document.addEventListener('pointerdown',tryAll,{once:true,passive:true});
   }catch(e){}
 })();

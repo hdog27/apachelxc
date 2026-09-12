@@ -7,11 +7,14 @@ $page_css         = 'projects.css';
 $body_class       = 'projects-page';
 
 $featured_video = null;
+$rackthing_video = '/media/rackthing-demo.mp4';
 $media_dir = __DIR__ . '/media';
 if (is_dir($media_dir)) {
     $matches = [];
     foreach (['mp4','webm','mov'] as $ext) {
-        foreach (glob($media_dir . '/*.' . $ext) ?: [] as $file) $matches[] = $file;
+        foreach (glob($media_dir . '/*.' . $ext) ?: [] as $file) {
+            if (basename($file) !== basename($rackthing_video)) $matches[] = $file;
+        }
     }
     if ($matches) {
         usort($matches, function ($a, $b) { return @filemtime($b) <=> @filemtime($a); });
@@ -41,7 +44,7 @@ require __DIR__ . '/includes/header.php';
       </div>
     </div>
     <div class="project-media">
-      <video id="featured-build-video" src="<?= htmlspecialchars($featured_video) ?>" autoplay muted loop playsinline controls preload="auto"></video>
+      <video id="featured-build-video" data-autoplay-video src="<?= htmlspecialchars($featured_video) ?>" autoplay muted loop playsinline webkit-playsinline controls preload="auto" aria-label="Metasploitable and Suricata project demonstration"></video>
     </div>
   </article>
 <?php endif; ?>
@@ -60,6 +63,20 @@ require __DIR__ . '/includes/header.php';
       <div class="repo-embed" data-user="hdog27" data-repo="cloud-firewall-guard-showcase">
         <div class="repo-embed-header"><span class="repo-embed-name">hdog27/cloud-firewall-guard-showcase</span><a href="https://github.com/hdog27/cloud-firewall-guard-showcase" target="_blank" rel="noopener" class="repo-embed-link">Open walkthrough →</a></div>
         <div class="repo-embed-body"><p class="repo-embed-loading">Loading README…</p></div>
+      </div>
+    </article>
+
+    <article class="project-card project-video-card card">
+      <div class="project-copy">
+        <p class="project-kicker">EMBEDDED / HOMELAB</p>
+        <h2>RackThing | Spotify Car Thing Dashboard</h2>
+        <p>A custom dashboard that repurposes a Spotify Car Thing as a compact touchscreen for my homelab rack, with Spotify controls, network status, weather, and optional Home Assistant and OPNsense integrations.</p>
+        <div class="project-actions">
+          <a class="project-btn primary" href="https://github.com/hdog27/RackThing" target="_blank" rel="noopener">View RackThing on GitHub →</a>
+        </div>
+      </div>
+      <div class="project-media rackthing-media">
+        <video data-autoplay-video src="<?= htmlspecialchars($rackthing_video) ?>" autoplay muted loop playsinline webkit-playsinline controls preload="auto" aria-label="RackThing running on a Spotify Car Thing"></video>
       </div>
     </article>
 
@@ -117,26 +134,6 @@ require __DIR__ . '/includes/header.php';
     </article>
   </section>
 </main>
-
-<?php if ($featured_video): ?>
-<script>
-(function(){
-  var video=document.getElementById('featured-build-video');
-  if(!video) return;
-  video.muted=true;
-  video.defaultMuted=true;
-  video.playsInline=true;
-  function tryPlay(){
-    var p=video.play();
-    if(p&&p.catch) p.catch(function(){});
-  }
-  if(video.readyState>=2) tryPlay();
-  video.addEventListener('loadeddata',tryPlay,{once:true});
-  video.addEventListener('canplay',tryPlay,{once:true});
-  document.addEventListener('visibilitychange',function(){ if(!document.hidden) tryPlay(); });
-})();
-</script>
-<?php endif; ?>
 
 <?php require __DIR__ . '/includes/footer.php'; ?>
 
