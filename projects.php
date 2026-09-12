@@ -66,7 +66,7 @@ require __DIR__ . '/includes/header.php';
       </div>
     </article>
 
-    <article class="project-card project-video-card card">
+    <article class="project-card card">
       <div class="project-copy">
         <p class="project-kicker">EMBEDDED / HOMELAB</p>
         <h2>RackThing | Spotify Car Thing Dashboard</h2>
