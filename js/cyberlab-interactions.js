@@ -275,6 +275,14 @@
       status.textContent = 'Waiting for parser refresh';
       return;
     }
+    var total = activity.reduce(function (sum, bucket) { return sum + (Number(bucket.count) || 0); }, 0);
+    if (total === 0) {
+      bars.innerHTML = '<div class="activity-empty">No high-signal scanner requests were detected in this 24-hour window.</div>';
+      status.textContent = 'Quiet window';
+      readout.textContent = 'Normal requests are counted above but do not appear in this suspicious-activity chart.';
+      section.classList.add('is-loaded');
+      return;
+    }
     var max = Math.max.apply(null, activity.map(function (bucket) { return Number(bucket.count) || 0; }).concat([1]));
     bars.textContent = '';
     activity.forEach(function (bucket, index) {

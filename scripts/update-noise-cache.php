@@ -6,7 +6,10 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-$logFile = '/var/log/apache2/access.log';
+$logFiles = [
+    '/var/log/apache2/access.log.1',
+    '/var/log/apache2/access.log',
+];
 $cacheFile = '/var/cache/hmax-noise.json';
 $debug = in_array('--debug', $argv ?? [], true);
 
@@ -41,10 +44,11 @@ function apache_timestamp($raw) {
     return $fallback !== false ? $fallback : null;
 }
 
-if (!is_readable($logFile)) {
+$readableLogs = array_values(array_filter($logFiles, 'is_readable'));
+if (!$readableLogs) {
     file_put_contents($cacheFile, json_encode($empty, JSON_UNESCAPED_SLASHES), LOCK_EX);
     chmod($cacheFile, 0644);
-    debug_line('ERROR: access log is not readable: ' . $logFile);
+    debug_line('ERROR: no Apache access logs are readable');
     exit(0);
 }
 
@@ -82,74 +86,76 @@ $timestampMatches = 0;
 $recentMatches = 0;
 $firstRejectedTimestamp = null;
 
-$maxBytes = 16 * 1024 * 1024;
-$size = @filesize($logFile);
-$fh = @fopen($logFile, 'rb');
-if (!$fh) {
-    file_put_contents($cacheFile, json_encode($empty, JSON_UNESCAPED_SLASHES), LOCK_EX);
-    chmod($cacheFile, 0644);
-    debug_line('ERROR: fopen failed: ' . $logFile);
-    exit(0);
-}
-if ($size && $size > $maxBytes) {
-    @fseek($fh, -$maxBytes, SEEK_END);
-    fgets($fh);
-}
-
-while (($line = fgets($fh)) !== false) {
-    $lineCount++;
-
-    if (!preg_match('~^(\S+)\s+\S+\s+\S+\s+\[([^\]]+)\]\s+"([A-Z]+)\s+([^\s"]+)~', $line, $m)) {
-        if (!preg_match('~^(\S+).*?\[([^\]]+)\]\s+"([A-Z]+)\s+([^\s"]+)~', $line, $m)) continue;
-    }
-    $regexMatches++;
-
-    $ipAddr = $m[1];
-    $ts = apache_timestamp($m[2]);
-    if (!$ts) {
-        if ($firstRejectedTimestamp === null) $firstRejectedTimestamp = $m[2];
+$maxBytesPerLog = 16 * 1024 * 1024;
+$totalLogBytes = 0;
+foreach ($readableLogs as $logFile) {
+    $size = @filesize($logFile);
+    $totalLogBytes += $size ?: 0;
+    $fh = @fopen($logFile, 'rb');
+    if (!$fh) {
+        debug_line('WARNING: fopen failed: ' . $logFile);
         continue;
     }
-    $timestampMatches++;
-    if ($ts < $cutoff) continue;
-    $recentMatches++;
-
-    $requestCount++;
-    $path = $m[4];
-    $label = null;
-    foreach ($patterns as $name => $regex) {
-        if (preg_match($regex, $path)) { $label = $name; break; }
-    }
-    if ($label === null) continue;
-
-    $probeCounts[$path] = ($probeCounts[$path] ?? 0) + 1;
-    $taxonomy[$label]++;
-    $scannerIps[hash('sha256', $ipAddr)] = true;
-
-    if (filter_var($ipAddr, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
-        $parts = explode('.', $ipAddr);
-        $net = $parts[0] . '.' . $parts[1] . '.' . $parts[2] . '.0/24';
-    } elseif (filter_var($ipAddr, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
-        $packed = @inet_pton($ipAddr);
-        $net = $packed ? bin2hex(substr($packed, 0, 6)) . '::/48' : 'ipv6';
-    } else {
-        $net = 'unknown';
+    if ($size && $size > $maxBytesPerLog) {
+        @fseek($fh, -$maxBytesPerLog, SEEK_END);
+        fgets($fh);
     }
 
-    $networkHash = hash('sha256', $net);
-    $networkKeys[$networkHash] = true;
+    while (($line = fgets($fh)) !== false) {
+        $lineCount++;
 
-    $bucketTs = intdiv($ts, 3600) * 3600;
-    if (array_key_exists($bucketTs, $activityCounts)) {
-        $activityCounts[$bucketTs]++;
-        $activityNetworks[$bucketTs][$networkHash] = true;
-    }
+        if (!preg_match('~^(\S+)\s+\S+\s+\S+\s+\[([^\]]+)\]\s+"([A-Z]+)\s+([^\s"]+)~', $line, $m)) {
+            if (!preg_match('~^(\S+).*?\[([^\]]+)\]\s+"([A-Z]+)\s+([^\s"]+)~', $line, $m)) continue;
+        }
+        $regexMatches++;
 
-    if (!$latest || $ts > $latest['ts']) {
-        $latest = ['ts' => $ts, 'path' => $path, 'type' => $label, 'ip' => $ipAddr];
+        $ipAddr = $m[1];
+        $ts = apache_timestamp($m[2]);
+        if (!$ts) {
+            if ($firstRejectedTimestamp === null) $firstRejectedTimestamp = $m[2];
+            continue;
+        }
+        $timestampMatches++;
+        if ($ts < $cutoff) continue;
+        $recentMatches++;
+
+        $requestCount++;
+        $path = $m[4];
+        $label = null;
+        foreach ($patterns as $name => $regex) {
+            if (preg_match($regex, $path)) { $label = $name; break; }
+        }
+        if ($label === null) continue;
+
+        $probeCounts[$path] = ($probeCounts[$path] ?? 0) + 1;
+        $taxonomy[$label]++;
+        $scannerIps[hash('sha256', $ipAddr)] = true;
+
+        if (filter_var($ipAddr, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+            $parts = explode('.', $ipAddr);
+            $net = $parts[0] . '.' . $parts[1] . '.' . $parts[2] . '.0/24';
+        } elseif (filter_var($ipAddr, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+            $packed = @inet_pton($ipAddr);
+            $net = $packed ? bin2hex(substr($packed, 0, 6)) . '::/48' : 'ipv6';
+        } else {
+            $net = 'unknown';
+        }
+
+        $networkHash = hash('sha256', $net);
+        $networkKeys[$networkHash] = true;
+
+        $bucketTs = intdiv($ts, 3600) * 3600;
+        if (array_key_exists($bucketTs, $activityCounts)) {
+            $activityCounts[$bucketTs]++;
+            $activityNetworks[$bucketTs][$networkHash] = true;
+        }
+
+        if (!$latest || $ts > $latest['ts']) {
+            $latest = ['ts' => $ts, 'path' => $path, 'type' => $label, 'ip' => $ipAddr];
+        }
     }
+    fclose($fh);
 }
-fclose($fh);
 
 arsort($probeCounts);
 arsort($taxonomy);
@@ -204,7 +210,8 @@ file_put_contents($tmp, json_encode($out, JSON_UNESCAPED_SLASHES), LOCK_EX);
 chmod($tmp, 0644);
 rename($tmp, $cacheFile);
 
-debug_line('log bytes: ' . ($size ?: 0));
+debug_line('log files: ' . implode(', ', $readableLogs));
+debug_line('log bytes: ' . $totalLogBytes);
 debug_line('lines scanned: ' . $lineCount);
 debug_line('request regex matches: ' . $regexMatches);
 debug_line('timestamps parsed: ' . $timestampMatches);

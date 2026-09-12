@@ -204,9 +204,9 @@ require __DIR__ . '/includes/header.php';
 
       <?php if ($noise['available']): ?>
       <div class="noise-stats">
-        <div><strong><?= number_format($noise['requests']) ?></strong><span>requests</span></div>
+        <div><strong><?= number_format($noise['requests']) ?></strong><span>all requests</span></div>
         <div><strong><?= number_format($noise['suspected_scanners']) ?></strong><span>suspected scanners</span></div>
-        <div><strong><?= number_format($noise['networks']) ?></strong><span>source networks</span></div>
+        <div><strong><?= number_format($noise['networks']) ?></strong><span>scanner networks</span></div>
       </div>
 
       <h3 class="mini-heading">Common probes</h3>
