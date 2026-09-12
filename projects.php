@@ -7,13 +7,16 @@ $page_css         = 'projects.css';
 $body_class       = 'projects-page';
 
 $featured_video = null;
-$rackthing_video = '/media/rackthing-demo.mp4';
+$rackthing_video_name = 'rackthing-demo.mp4';
+$rackthing_video_path = __DIR__ . '/media/' . $rackthing_video_name;
+$rackthing_video_version = @filemtime($rackthing_video_path) ?: 1;
+$rackthing_video = '/media/' . rawurlencode($rackthing_video_name) . '?v=' . $rackthing_video_version;
 $media_dir = __DIR__ . '/media';
 if (is_dir($media_dir)) {
     $matches = [];
     foreach (['mp4','webm','mov'] as $ext) {
         foreach (glob($media_dir . '/*.' . $ext) ?: [] as $file) {
-            if (basename($file) !== basename($rackthing_video)) $matches[] = $file;
+            if (basename($file) !== $rackthing_video_name) $matches[] = $file;
         }
     }
     if ($matches) {
@@ -68,7 +71,7 @@ require __DIR__ . '/includes/header.php';
 
     <article class="project-card card">
       <div class="project-copy">
-        <p class="project-kicker">EMBEDDED / HOMELAB</p>
+        <p class="project-kicker">SOFTWARE DEVELOPMENT</p>
         <h2>RackThing | Spotify Car Thing Dashboard</h2>
         <p>A custom dashboard that repurposes a Spotify Car Thing as a compact touchscreen for my homelab rack, with Spotify controls, network status, weather, and optional Home Assistant and OPNsense integrations.</p>
         <div class="project-actions">
