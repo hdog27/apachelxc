@@ -53,7 +53,7 @@ if (!isset($body_class))       { $body_class = ''; }
 <aside class="hm-drawer"><div class="hm-sneak" aria-hidden="true"></div></aside>
 
 <nav class="top-nav">
-  <a class="nav-btn<?= nav_active('homelab', $current_page) ?>" href="/homelab">Homelab</a>
+  <a class="nav-btn<?= in_array($current_page, ['homelab', 'network'], true) ? ' active' : '' ?>" href="/homelab">Homelab</a>
   <a class="nav-btn<?= nav_active('index', $current_page) ?>" href="/">Cyber Lab</a>
   <a class="nav-btn<?= nav_active('projects', $current_page) ?>" href="/projects">Projects</a>
   <a class="nav-btn<?= nav_active("start", $current_page) ?>" href="/start">Get Started</a>

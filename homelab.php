@@ -23,6 +23,16 @@ require __DIR__ . '/includes/header.php';
     </ul>
   </header>
 
+  <a class="network-explorer-link" href="/network">
+    <span>
+      <span class="eyebrow">INTERACTIVE ARCHITECTURE</span>
+      <strong>Explore My Network</strong>
+      <small>Follow traffic from Cloudflare and OPNsense through trust zones, Proxmox workloads, and security telemetry.</small>
+    </span>
+    <span class="network-explorer-flow" aria-hidden="true">EDGE → POLICY → SEGMENTATION → EVIDENCE</span>
+    <span class="network-explorer-arrow" aria-hidden="true">→</span>
+  </a>
+
   <div class="homelab-layout">
     <section class="homelab-rack-column" aria-labelledby="rack-heading">
       <div class="section-heading compact-heading">
