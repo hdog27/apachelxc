@@ -1,7 +1,6 @@
 /* Reference-engine liquid glass experiment.
-   Uses one fixed wallpaper layer plus one fullscreen WebGL canvas. The canvas
-   runs the physics-style edge refraction from archisvaze/liquid-glass while all
-   existing page content stays in normal DOM flow above it. */
+   The refraction itself comes from archisvaze/liquid-glass. This stylesheet only
+   integrates the reference renderer into hmax.space's existing DOM/layout. */
 
 html {
   background: #040608;
@@ -9,24 +8,28 @@ html {
 
 body {
   position: relative;
-  isolation: isolate;
+  min-height: 100vh;
   background: transparent !important;
 }
 
 /* Keep the original CSS stars untouched in the repo. They are hidden only on
-   this wallpaper/refraction test because the shader must sample the exact same
-   pixels that are visibly behind the cards. */
+   this wallpaper/refraction test because the reference shader must sample the
+   same pixels that are visibly behind the glass. */
 body .stars-layer {
   display: none !important;
 }
 
+/* IMPORTANT: these layers deliberately use non-negative z-index values.
+   Negative fixed layers were ending up behind the root/html paint layer in
+   some Chromium/WebView configurations, which produced the black-page failure
+   seen on desktop and TikTok's in-app browser. */
 #liquid-glass-wallpaper {
   position: fixed;
   inset: 0;
-  z-index: -2;
+  z-index: 0;
   pointer-events: none;
   background-color: #040608;
-  background-image: url('/images/liquid-glass-test-bg.jpg?v=4');
+  background-image: url('/images/liquid-glass-test-bg.jpg?v=5');
   background-position: center center;
   background-size: cover;
   background-repeat: no-repeat;
@@ -36,7 +39,7 @@ body .stars-layer {
 #liquid-glass-stage {
   position: fixed;
   inset: 0;
-  z-index: -1;
+  z-index: 1;
   width: 100vw;
   height: 100vh;
   display: block;
@@ -44,9 +47,17 @@ body .stars-layer {
   transform: translateZ(0);
 }
 
-/* The WebGL canvas itself supplies the background pixels, refraction, blur,
-   specular highlight and inner shading. Existing borders/content remain DOM so
-   navigation, text selection, links and mobile scrolling behave normally. */
+/* JS adds this class only to direct body children whose original computed
+   position is static. That lifts normal page content above the fixed WebGL
+   layer without changing the site's already-positioned nav/drawer behavior. */
+body > .liquid-page-content {
+  position: relative;
+  z-index: 2;
+}
+
+/* The reference WebGL canvas supplies the sampled background, physics-based
+   refraction, blur, specular highlight and inner shading. Existing borders and
+   content remain normal DOM so navigation, links and scrolling stay intact. */
 html.archis-webgl-ready .liquid-webgl-surface {
   background: rgba(7, 12, 20, .025) !important;
   -webkit-backdrop-filter: none !important;
