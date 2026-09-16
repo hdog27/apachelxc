@@ -6,7 +6,8 @@
   // math is the reference repo's rounded-rect / thickness / bezel / IOR model;
   // this file only adapts that renderer to the site's existing cards/layout.
   const BACKDROP_URL = '/images/liquid-glass-test-bg.jpg';
-  const CARD_SELECTOR = '.card, .panel, .identity-hero';
+  const BASE_CARD_SELECTOR = '.card, .panel, .identity-hero';
+  const MOBILE_BREAKPOINT = 820;
   const SHADOW_MARGIN = 42;
 
   const SETTINGS = {
@@ -14,6 +15,10 @@
     bezel: 60,
     ior: 3.0,
     blur: 1.5,
+    // The reference shader skips its 16-tap blur path below 0.5. Keeping
+    // refraction/specular intact while doing that on phones substantially cuts
+    // GPU work during scrolling.
+    mobileBlur: 0.3,
     specular: 0.55,
     tint: 0.08,
     shadow: 0.5
@@ -29,6 +34,9 @@
     }
   `;
 
+  // This is the archisvaze/liquid-glass WebGL refraction model: rounded-rect
+  // SDF -> curved surface -> thickness/bezel/IOR refraction -> background
+  // sampling -> specular/rim/shadow. Site integration happens outside it.
   const fragmentSource = `
     precision highp float;
     varying vec2 vUv;
@@ -174,11 +182,26 @@
     return shader;
   }
 
+  function isCyberLabMobile() {
+    return document.body.classList.contains('cyberlab') &&
+      window.matchMedia('(max-width: ' + MOBILE_BREAKPOINT + 'px)').matches;
+  }
+
   function getOuterCards() {
-    return Array.from(document.querySelectorAll(CARD_SELECTOR)).filter((card) => {
+    // On phones cyberlab-layout intentionally combines Metadata + Connection
+    // into one rounded .lab-grid card. Target that visual card instead of its
+    // two radius:0 child panels, otherwise the reference shader has essentially
+    // no bezel to refract and it looks like a plain frosted fallback.
+    const selector = isCyberLabMobile()
+      ? BASE_CARD_SELECTOR + ', .lab-grid'
+      : BASE_CARD_SELECTOR;
+    const candidates = Array.from(document.querySelectorAll(selector));
+    const candidateSet = new Set(candidates);
+
+    return candidates.filter((card) => {
       let parent = card.parentElement;
       while (parent && parent !== document.body) {
-        if (parent.matches && parent.matches(CARD_SELECTOR)) return false;
+        if (candidateSet.has(parent)) return false;
         parent = parent.parentElement;
       }
       return true;
@@ -195,7 +218,7 @@
   }
 
   function start() {
-    const cards = getOuterCards();
+    let cards = getOuterCards();
     if (!cards.length) return;
 
     const wallpaper = document.createElement('div');
@@ -281,6 +304,25 @@
 
     const image = new Image();
     image.decoding = 'async';
+    let ready = false;
+    let cardRadii = new Map();
+
+    function refreshCards() {
+      const nextCards = getOuterCards();
+      const nextSet = new Set(nextCards);
+
+      cards.forEach((card) => {
+        if (!nextSet.has(card)) card.classList.remove('liquid-webgl-surface');
+      });
+
+      cards = nextCards;
+      cardRadii = new Map();
+      cards.forEach((card) => {
+        const style = getComputedStyle(card);
+        cardRadii.set(card, Math.max(1, parseFloat(style.borderTopLeftRadius) || 20));
+        if (ready) card.classList.add('liquid-webgl-surface');
+      });
+    }
 
     image.addEventListener('error', () => {
       console.error('Liquid Glass wallpaper failed to load:', BACKDROP_URL);
@@ -296,8 +338,12 @@
       gl.uniform1i(u.bgTex, 0);
       gl.uniform1f(u.bgAspect, image.naturalWidth / image.naturalHeight);
 
-      cards.forEach((card) => card.classList.add('liquid-webgl-surface'));
+      ready = true;
+      refreshCards();
       document.documentElement.classList.add('archis-webgl-ready');
+      // cyberlab-layout.css is injected near the footer; refresh once more after
+      // it has had time to apply the mobile .lab-grid radius.
+      window.setTimeout(refreshCards, 250);
       requestAnimationFrame(render);
     }, { once: true });
 
@@ -310,10 +356,14 @@
     let lastWidth = 0;
     let lastHeight = 0;
     let running = true;
+    let currentModeMobile = window.innerWidth <= MOBILE_BREAKPOINT;
 
     function resize(stageRect) {
-      const mobile = stageRect.width < 768;
-      const dpr = Math.min(window.devicePixelRatio || 1, mobile ? 1.25 : 1.5);
+      const mobile = stageRect.width <= MOBILE_BREAKPOINT;
+      // The old 1.25x cap is what made the rim visibly stair-step on Retina
+      // phones. 2x is still below a modern iPhone's native 3x DPR, and the
+      // mobile no-blur fast path offsets most of the extra fragment work.
+      const dpr = Math.min(window.devicePixelRatio || 1, mobile ? 2.0 : 1.5);
       const width = Math.max(1, Math.round(stageRect.width * dpr));
       const height = Math.max(1, Math.round(stageRect.height * dpr));
 
@@ -324,7 +374,7 @@
         lastWidth = width;
         lastHeight = height;
       }
-      return dpr;
+      return { dpr, mobile };
     }
 
     function render() {
@@ -336,7 +386,15 @@
         return;
       }
 
-      const dpr = resize(stageRect);
+      const size = resize(stageRect);
+      const dpr = size.dpr;
+      const mobile = size.mobile;
+
+      if (mobile !== currentModeMobile) {
+        currentModeMobile = mobile;
+        refreshCards();
+      }
+
       gl.useProgram(program);
       gl.clearColor(0, 0, 0, 0);
       gl.scissor(0, 0, canvas.width, canvas.height);
@@ -346,7 +404,7 @@
       gl.uniform1f(u.thickness, SETTINGS.thickness);
       gl.uniform1f(u.bezel, SETTINGS.bezel);
       gl.uniform1f(u.ior, SETTINGS.ior);
-      gl.uniform1f(u.blur, SETTINGS.blur);
+      gl.uniform1f(u.blur, mobile ? SETTINGS.mobileBlur : SETTINGS.blur);
       gl.uniform1f(u.specular, SETTINGS.specular);
       gl.uniform1f(u.tint, SETTINGS.tint);
       gl.uniform1f(u.shadow, SETTINGS.shadow);
@@ -369,8 +427,7 @@
         const top = rect.top - stageRect.top;
         const centerX = left + rect.width * 0.5;
         const centerY = top + rect.height * 0.5;
-        const style = getComputedStyle(card);
-        const radius = Math.max(1, parseFloat(style.borderTopLeftRadius) || 20);
+        const radius = cardRadii.get(card) || 20;
 
         const sx = Math.max(0, Math.floor((left - SHADOW_MARGIN) * dpr));
         const sy = Math.max(
@@ -397,6 +454,20 @@
       }
 
       requestAnimationFrame(render);
+    }
+
+    // Re-read card grouping/radii after responsive layout changes without doing
+    // getComputedStyle() work on every animation frame.
+    let resizeTimer = 0;
+    window.addEventListener('resize', () => {
+      window.clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(refreshCards, 120);
+    }, { passive: true });
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', () => {
+        window.clearTimeout(resizeTimer);
+        resizeTimer = window.setTimeout(refreshCards, 120);
+      }, { passive: true });
     }
 
     canvas.addEventListener('webglcontextlost', (event) => {
