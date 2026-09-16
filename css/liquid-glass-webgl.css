@@ -4,12 +4,14 @@
 
 html {
   background: #040608;
+  overscroll-behavior-y: none;
 }
 
 body {
   position: relative;
   min-height: 100vh;
   background: transparent !important;
+  overscroll-behavior-y: none;
 }
 
 /* Keep the original CSS stars untouched in the repo. They are hidden only on
