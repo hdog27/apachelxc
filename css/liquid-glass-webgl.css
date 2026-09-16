@@ -2,30 +2,34 @@
    Intentionally scoped to the Cyber Lab page and exactly one outer card first.
    The page wallpaper and WebGL shader both use the same source image. */
 
+/* Make the test unmistakable even if WebGL fails: this branch always uses the
+   shared wallpaper on Cyber Lab. !important is required because cyberlab.css is
+   loaded after this stylesheet and normally owns the body background. */
+body.cyberlab {
+  background-color: #040608 !important;
+  background-image: url('/images/liquid-glass-test-bg.jpg?v=2') !important;
+  background-position: center center !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+  background-attachment: fixed !important;
+}
+
+/* Hide the original stars only for this isolated wallpaper test. Nothing in
+   stars.css is edited, so switching branches restores them unchanged. */
+body.cyberlab .stars-layer {
+  display: none !important;
+}
+
+/* Invisible viewport reference used only for shader coordinate math. The real
+   visible backdrop is the body background above. */
 #liquid-glass-test-backdrop {
   position: fixed;
   inset: 0;
+  width: 100vw;
+  height: 100vh;
   z-index: -1;
   pointer-events: none;
   opacity: 0;
-  background: #040608 url('/images/liquid-glass-test-bg.jpg') center center / cover no-repeat;
-}
-
-html.archis-webgl-ready body.cyberlab {
-  position: relative;
-  isolation: isolate;
-  background: transparent !important;
-}
-
-html.archis-webgl-ready #liquid-glass-test-backdrop {
-  opacity: 1;
-}
-
-/* The old animated star field is temporarily hidden ONLY for this wallpaper
-   experiment. It is not replaced or rewritten. Removing this experiment
-   restores the original stars unchanged. */
-html.archis-webgl-ready body.cyberlab .stars-layer {
-  opacity: 0 !important;
 }
 
 html.archis-webgl-ready body.cyberlab .identity-hero.liquid-webgl-surface {
