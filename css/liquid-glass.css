@@ -2,23 +2,25 @@
    rules preserve the site's optical rim and interactive HTML above it. */
 .liquid-glass-root { position: relative; }
 
-/* The renderer can only refract children of its local root. This dark scene
-   mirrors the site's fixed background, giving every surface pixels to bend
-   even when it is not overlapping another card. */
+#liquid-page-scene {
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+}
+
+/* Coordinate-matched crop of the visible canvas. The renderer samples this
+   exact scene, rather than an unrelated repeated CSS background. */
 .liquid-scene-source {
   position: absolute;
   z-index: -2;
-  inset: -80px;
+  inset: 0;
   pointer-events: none;
-  background-color: #081321;
-  background-image:
-    radial-gradient(circle at 22% 18%, rgba(52,122,214,.34), transparent 38%),
-    radial-gradient(circle at 82% 8%, rgba(30,95,190,.28), transparent 34%),
-    linear-gradient(rgba(81,151,225,.10) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(81,151,225,.10) 1px, transparent 1px),
-    radial-gradient(circle, rgba(255,255,255,.9) 0 1px, transparent 1.5px);
-  background-size: auto, auto, 52px 52px, 52px 52px, 137px 113px;
 }
+
+body > .stars-layer { opacity: 0; }
 
 .liquid-refract {
   isolation: isolate;
