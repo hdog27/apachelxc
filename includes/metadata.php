@@ -93,18 +93,49 @@ $device = '<div class="device-summary">' . implode('', $deviceParts) . '</div>';
 $logDevice = trim($device_name . ' ' . $platform_name . ' | ' . $browser . ($engine ? ' | ' . $engine : ''));
 $log = date('Y-m-d H:i:s') . " - IP: $ip - Location: $city, $country - ISP: $isp - VPN: $vpn - Device: $logDevice\n";
 file_put_contents('/var/log/visits.log', $log, FILE_APPEND);
-$visit_count = file_exists('/var/log/visits.log') ? count(file('/var/log/visits.log')) : 0;
 
-// unique visitors: one stamp file per IP hash, rolling 30 days
-$vdir  = '/var/cache/hmax-visits';
-$vfile = $vdir . '/count';
-$stamp = $vdir . '/' . hash('sha256', $ip);
-if (!is_readable($stamp) || (time() - filemtime($stamp)) > 2592000) {
-    @touch($stamp);
-    $n = (int) @file_get_contents($vfile);
-    @file_put_contents($vfile, $n + 1, LOCK_EX);
+// Lifetime counters live independently of the rotating request log. Updates
+// are performed under an exclusive lock so concurrent requests cannot erase
+// one another. The recovered unique floor preserves the last known pre-reset
+// total; it is not derived from social-media reach.
+$vdir = '/var/cache/hmax-visits';
+if (!is_dir($vdir)) @mkdir($vdir, 0750, true);
+
+function hmax_increment_counter($path, $floor = 0) {
+  $handle = @fopen($path, 'c+');
+  if (!$handle) return $floor;
+  if (!flock($handle, LOCK_EX)) { fclose($handle); return $floor; }
+  rewind($handle);
+  $value = max($floor, (int)stream_get_contents($handle)) + 1;
+  ftruncate($handle, 0);
+  rewind($handle);
+  fwrite($handle, (string)$value);
+  fflush($handle);
+  flock($handle, LOCK_UN);
+  fclose($handle);
+  return $value;
 }
-$unique_count = (int) @file_get_contents($vfile);
+
+function hmax_read_counter($path, $floor = 0) {
+  $value = is_readable($path) ? (int)@file_get_contents($path) : 0;
+  return max($floor, $value);
+}
+
+$log_floor = file_exists('/var/log/visits.log') ? count(file('/var/log/visits.log')) : 0;
+$visit_count = hmax_increment_counter($vdir . '/lifetime-loads', $log_floor);
+
+$unique_floor = 5000;
+$unique_file = $vdir . '/lifetime-unique';
+$legacy_unique = (int)@file_get_contents($vdir . '/count');
+$unique_floor = max($unique_floor, $legacy_unique);
+$stamp = $vdir . '/' . hash('sha256', $ip);
+if (!is_file($stamp)) {
+  $unique_count = @touch($stamp)
+    ? hmax_increment_counter($unique_file, $unique_floor)
+    : hmax_read_counter($unique_file, $unique_floor);
+} else {
+  $unique_count = hmax_read_counter($unique_file, $unique_floor);
+}
 
 $current_page = basename($_SERVER['SCRIPT_NAME'], '.php');
 function nav_active($page, $current) {
