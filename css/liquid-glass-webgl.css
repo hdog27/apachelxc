@@ -69,3 +69,53 @@ html.archis-webgl-ready .liquid-webgl-surface {
     inset 0 1px 0 rgba(255,255,255,.16),
     0 12px 36px rgba(0,0,0,.18) !important;
 }
+
+/* Desktop nav gets its own lightweight WebGL stage inside .top-nav. Keeping it
+   inside the nav stacking context lets the refracted pixels sit above the bar's
+   own frosted background while the text, rim and existing purple glow stay DOM. */
+@media (min-width: 641px) {
+  #liquid-glass-nav-stage {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    width: 100vw;
+    height: 100vh;
+    display: block;
+    pointer-events: none;
+  }
+
+  .top-nav > .nav-btn,
+  .top-nav > .hm-deskcat {
+    position: relative;
+    z-index: 1;
+  }
+
+  html.archis-nav-webgl-ready .top-nav .nav-btn.liquid-nav-webgl-surface {
+    background: rgba(7, 12, 20, .025) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    border-color: rgba(217, 176, 255, .68) !important;
+    box-shadow:
+      inset 0 1px 1px rgba(255,255,255,0.30),
+      inset 0 -1px 1px rgba(0,0,0,0.22),
+      0 2px 5px rgba(0,0,0,0.32),
+      0 0 0.85em -0.15em var(--nav-glow) !important;
+  }
+
+  html.archis-nav-webgl-ready .top-nav .nav-btn.liquid-nav-webgl-surface:hover {
+    box-shadow:
+      inset 0 1px 1px rgba(255,255,255,0.40),
+      inset 0 -1px 1px rgba(0,0,0,0.22),
+      0 1px 3px rgba(0,0,0,0.30),
+      0 0 1.4em -0.1em var(--nav-glow) !important;
+  }
+
+  html.archis-nav-webgl-ready .top-nav .nav-btn.liquid-nav-webgl-surface.active {
+    border-color: rgba(217, 176, 255, .78) !important;
+    box-shadow:
+      inset 0 1px 1px rgba(255,255,255,0.45),
+      inset 0 -1px 1px rgba(0,0,0,0.20),
+      0 2px 5px rgba(0,0,0,0.32),
+      0 0 1.5em -0.1em rgba(191,123,255,0.75) !important;
+  }
+}
