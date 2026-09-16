@@ -28,5 +28,6 @@
 <script src="/js/cyberlab-layout.js?v=<?= @filemtime(__DIR__ . "/../js/cyberlab-layout.js") ?>"></script>
 <?php endif; ?>
 <script src="/js/liquid-glass-webgl.js?v=<?= @filemtime(__DIR__ . "/../js/liquid-glass-webgl.js") ?>"></script>
+<script src="/js/liquid-glass-debug.js?v=<?= @filemtime(__DIR__ . "/../js/liquid-glass-debug.js") ?>"></script>
 </body>
 </html>
