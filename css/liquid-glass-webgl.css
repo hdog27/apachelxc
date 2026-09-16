@@ -1,20 +1,24 @@
 /* Liquid glass v2 experiment.
-   Scoped to the Cyber Lab page. The page wallpaper and every WebGL card use
-   the same source image; the original stars are untouched on other branches. */
+   Site-wide on this test branch: desktop + mobile, Cyber Lab + subpages.
+   The page wallpaper and every outer WebGL card use the same source image.
+   Stable/main branches remain untouched. */
 
-body.cyberlab {
+body {
   background-color: #040608 !important;
-  background-image: url('/images/liquid-glass-test-bg.jpg?v=2') !important;
+  background-image: url('/images/liquid-glass-test-bg.jpg?v=3') !important;
   background-position: center center !important;
   background-size: cover !important;
   background-repeat: no-repeat !important;
   background-attachment: fixed !important;
 }
 
-body.cyberlab .stars-layer {
+/* The original star CSS is not edited; it is only hidden on this experiment
+   branch so the WebGL texture and visible backdrop are the exact same pixels. */
+body .stars-layer {
   display: none !important;
 }
 
+/* Fixed viewport reference used only for shader coordinate math. */
 #liquid-glass-test-backdrop {
   position: fixed;
   inset: 0;
@@ -25,9 +29,9 @@ body.cyberlab .stars-layer {
   opacity: 0;
 }
 
-/* Only outer .panel cards and the identity hero receive canvases. Nested boxes
-   stay normal UI and do not become competing WebGL lenses. */
-html.archis-webgl-ready body.cyberlab .liquid-webgl-surface {
+/* Outer cards only. Nested controls/boxes remain normal UI so they cannot form
+   competing lenses or reintroduce center seams. */
+html.archis-webgl-ready body .liquid-webgl-surface {
   position: relative;
   z-index: 1;
   overflow: hidden;
@@ -42,7 +46,7 @@ html.archis-webgl-ready body.cyberlab .liquid-webgl-surface {
     0 14px 42px rgba(0,0,0,.26) !important;
 }
 
-body.cyberlab .liquid-webgl-surface > .liquid-card-canvas {
+body .liquid-webgl-surface > .liquid-card-canvas {
   position: absolute;
   inset: 1px;
   z-index: 0;
@@ -53,7 +57,12 @@ body.cyberlab .liquid-webgl-surface > .liquid-card-canvas {
   pointer-events: none;
 }
 
-html.archis-webgl-ready body.cyberlab .liquid-webgl-surface > :not(.liquid-card-canvas) {
-  position: relative;
+/* Existing positioned children keep their page CSS; normal direct children are
+   simply lifted above the canvas without being removed from document flow. */
+html.archis-webgl-ready body .liquid-webgl-surface > :not(.liquid-card-canvas) {
   z-index: 1;
+}
+
+html.archis-webgl-ready body .liquid-webgl-surface > :not(.liquid-card-canvas):not([style*="position"]) {
+  position: relative;
 }
