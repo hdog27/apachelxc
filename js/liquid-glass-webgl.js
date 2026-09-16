@@ -160,7 +160,7 @@
       surfaces = Array.from(document.querySelectorAll(selector)).filter((surface) => {
         const rect = surface.getBoundingClientRect();
         return rect.width > 2 && rect.height > 2;
-      }).slice(0, MAX_GLASS);
+      });
       surfaces.forEach((surface) => surface.classList.add('liquid-webgl-surface'));
     }
 
