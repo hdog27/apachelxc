@@ -1,68 +1,58 @@
-/* Liquid glass v2 experiment.
-   Site-wide on this test branch: desktop + mobile, Cyber Lab + subpages.
-   The page wallpaper and every outer WebGL card use the same source image.
-   Stable/main branches remain untouched. */
+/* Reference-engine liquid glass experiment.
+   Uses one fixed wallpaper layer plus one fullscreen WebGL canvas. The canvas
+   runs the physics-style edge refraction from archisvaze/liquid-glass while all
+   existing page content stays in normal DOM flow above it. */
 
-body {
-  background-color: #040608 !important;
-  background-image: url('/images/liquid-glass-test-bg.jpg?v=3') !important;
-  background-position: center center !important;
-  background-size: cover !important;
-  background-repeat: no-repeat !important;
-  background-attachment: fixed !important;
+html {
+  background: #040608;
 }
 
-/* The original star CSS is not edited; it is only hidden on this experiment
-   branch so the WebGL texture and visible backdrop are the exact same pixels. */
+body {
+  position: relative;
+  isolation: isolate;
+  background: transparent !important;
+}
+
+/* Keep the original CSS stars untouched in the repo. They are hidden only on
+   this wallpaper/refraction test because the shader must sample the exact same
+   pixels that are visibly behind the cards. */
 body .stars-layer {
   display: none !important;
 }
 
-/* Fixed viewport reference used only for shader coordinate math. */
-#liquid-glass-test-backdrop {
+#liquid-glass-wallpaper {
   position: fixed;
   inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background-color: #040608;
+  background-image: url('/images/liquid-glass-test-bg.jpg?v=4');
+  background-position: center center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  transform: translateZ(0);
+}
+
+#liquid-glass-stage {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
   width: 100vw;
   height: 100vh;
-  z-index: -1;
+  display: block;
   pointer-events: none;
-  opacity: 0;
+  transform: translateZ(0);
 }
 
-/* Outer cards only. Nested controls/boxes remain normal UI so they cannot form
-   competing lenses or reintroduce center seams. */
-html.archis-webgl-ready body .liquid-webgl-surface {
-  position: relative;
-  z-index: 1;
-  overflow: hidden;
-  background: rgba(4, 10, 18, .04) !important;
+/* The WebGL canvas itself supplies the background pixels, refraction, blur,
+   specular highlight and inner shading. Existing borders/content remain DOM so
+   navigation, text selection, links and mobile scrolling behave normally. */
+html.archis-webgl-ready .liquid-webgl-surface {
+  background: rgba(7, 12, 20, .025) !important;
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
-  border-color: rgba(220, 238, 255, .30) !important;
+  border-color: rgba(220, 238, 255, .28) !important;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.20),
-    inset 1px 0 0 rgba(255,120,155,.05),
-    inset -1px 0 0 rgba(90,190,255,.08),
-    0 14px 42px rgba(0,0,0,.26) !important;
-}
-
-body .liquid-webgl-surface > .liquid-card-canvas {
-  position: absolute;
-  inset: 1px;
-  z-index: 0;
-  width: calc(100% - 2px);
-  height: calc(100% - 2px);
-  display: block;
-  border-radius: inherit;
-  pointer-events: none;
-}
-
-/* Existing positioned children keep their page CSS; normal direct children are
-   simply lifted above the canvas without being removed from document flow. */
-html.archis-webgl-ready body .liquid-webgl-surface > :not(.liquid-card-canvas) {
-  z-index: 1;
-}
-
-html.archis-webgl-ready body .liquid-webgl-surface > :not(.liquid-card-canvas):not([style*="position"]) {
-  position: relative;
+    inset 0 1px 0 rgba(255,255,255,.16),
+    0 12px 36px rgba(0,0,0,.18) !important;
 }
