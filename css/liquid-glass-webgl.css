@@ -90,6 +90,14 @@ html.archis-webgl-ready .liquid-webgl-surface {
     z-index: 1;
   }
 
+  /* archisvaze's reference shader limits its refractive bezel by the rounded
+     rectangle radius. The site's old ~7px desktop nav radius left only a tiny
+     strip of actual refraction, so use a modest 16px radius for these buttons.
+     This changes only geometry; the shader/refraction math remains untouched. */
+  .top-nav > .nav-btn {
+    border-radius: 16px;
+  }
+
   html.archis-nav-webgl-ready .top-nav .nav-btn.liquid-nav-webgl-surface {
     background: rgba(7, 12, 20, .025) !important;
     -webkit-backdrop-filter: none !important;
