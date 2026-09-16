@@ -3,32 +3,33 @@ import { LiquidGlass } from './vendor/liquidglass.js';
 const selector = [
   '.card', '.panel', '.identity-hero', '.project-featured', '.project-card',
   '.projects-hero', '.contact-card', '.credential-card', '.device-box',
-  '.repo-embed', '.protocol-cards > div'
+  '.repo-embed', '.protocol-cards > div', '.top-nav .nav-btn'
 ].join(',');
 
 const instances = [];
 
 function configFor(card) {
   const compact = card.matches('.credential-card, .device-box, .repo-embed, .protocol-cards > div');
+  const navigation = card.matches('.top-nav .nav-btn');
   return {
-    blurAmount: compact ? 0.14 : 0.22,
-    refraction: compact ? 0.62 : 0.82,
-    chromAberration: compact ? 0.035 : 0.065,
+    blurAmount: navigation ? 0.08 : (compact ? 0.14 : 0.22),
+    refraction: navigation ? 0.58 : (compact ? 0.62 : 0.82),
+    chromAberration: navigation ? 0.025 : (compact ? 0.035 : 0.065),
     edgeHighlight: 0.16,
     specular: 0.3,
     fresnel: 0.92,
     distortion: compact ? 0.025 : 0.052,
-    cornerRadius: parseFloat(getComputedStyle(card).borderRadius) || 22,
-    zRadius: compact ? 26 : 44,
-    opacity: 0.98,
+    cornerRadius: parseFloat(getComputedStyle(card).borderRadius) || (navigation ? 999 : 22),
+    zRadius: navigation ? 18 : (compact ? 26 : 44),
+    opacity: navigation ? 0.64 : 0.72,
     saturation: 0.2,
-    tintStrength: 0.11,
-    brightness: 0.025,
+    tintStrength: navigation ? 0.2 : 0.16,
+    brightness: -0.12,
     shadowOpacity: 0.38,
     shadowSpread: compact ? 12 : 20,
     shadowOffsetY: compact ? 7 : 12,
-    floating: true,
-    button: false,
+    floating: false,
+    button: navigation,
     bevelMode: 0
   };
 }
@@ -52,6 +53,12 @@ async function startLiquidGlass() {
 
   for (const [root, glassElements] of groups) {
     root.classList.add('liquid-glass-root');
+    if (!root.querySelector(':scope > .liquid-scene-source')) {
+      const source = document.createElement('div');
+      source.className = 'liquid-scene-source';
+      source.setAttribute('aria-hidden', 'true');
+      root.insertBefore(source, root.firstChild);
+    }
     try {
       instances.push(await LiquidGlass.init({ root, glassElements }));
     } catch (error) {

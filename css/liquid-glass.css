@@ -2,6 +2,24 @@
    rules preserve the site's optical rim and interactive HTML above it. */
 .liquid-glass-root { position: relative; }
 
+/* The renderer can only refract children of its local root. This dark scene
+   mirrors the site's fixed background, giving every surface pixels to bend
+   even when it is not overlapping another card. */
+.liquid-scene-source {
+  position: absolute;
+  z-index: -2;
+  inset: -80px;
+  pointer-events: none;
+  background-color: #081321;
+  background-image:
+    radial-gradient(circle at 22% 18%, rgba(52,122,214,.34), transparent 38%),
+    radial-gradient(circle at 82% 8%, rgba(30,95,190,.28), transparent 34%),
+    linear-gradient(rgba(81,151,225,.10) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(81,151,225,.10) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255,255,255,.9) 0 1px, transparent 1.5px);
+  background-size: auto, auto, 52px 52px, 52px 52px, 137px 113px;
+}
+
 .liquid-refract {
   isolation: isolate;
   position: relative;
@@ -16,7 +34,7 @@
     inset 0 -1px 0 rgba(255, 255, 255, .07) !important;
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
-  touch-action: none;
+  touch-action: auto;
 }
 
 .liquid-refract::after {
@@ -35,3 +53,9 @@
 
 .liquid-refract > :not(canvas) { position: relative; z-index: 1; }
 .liquid-refract > canvas { z-index: 0 !important; }
+
+.top-nav .nav-btn.liquid-refract {
+  overflow: hidden;
+  background: rgba(10,20,36,.18) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.24), 0 5px 16px rgba(0,0,0,.22) !important;
+}
