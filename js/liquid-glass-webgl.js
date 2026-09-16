@@ -5,7 +5,7 @@
   const selector = [
     '.card', '.panel', '.identity-hero', '.project-featured', '.project-card',
     '.projects-hero', '.contact-card', '.credential-card', '.device-box',
-    '.repo-embed', '.protocol-cards > div', '.top-nav .nav-btn'
+    '.repo-embed', '.protocol-cards > div'
   ].join(',');
 
   const vertexSource = `
@@ -40,10 +40,6 @@
       float rightGlow = max(0.0, 1.0 - length((uv - vec2(.88,.24)) * vec2(1.0,.8)) / .65);
       color += vec3(.025,.22,.58) * leftGlow * leftGlow;
       color += vec3(.20,.07,.34) * rightGlow * rightGlow;
-
-      vec2 grid = abs(fract((pixel + .5) / 52.0) - .5);
-      float line = smoothstep(.475, .5, max(grid.x, grid.y));
-      color += vec3(.08,.23,.38) * line * .34;
 
       vec2 moving = pixel + vec2(0.0, uTime * 7.0);
       vec2 cell = floor(moving / 38.0);
@@ -91,7 +87,7 @@
       float inside = smoothstep(2.0, -2.0, bestSd);
       float edgeDepth = 1.0 - smoothstep(0.0, min(70.0, min(bestHalf.x,bestHalf.y)), -bestSd);
       float lens = pow(edgeDepth, 1.6) * inside;
-      vec2 displacement = -normal * (8.0 + 34.0 * lens);
+      vec2 displacement = -normal * (5.0 + 23.0 * lens);
 
       vec3 base = backdrop(pixel + displacement);
       vec3 split;
@@ -169,7 +165,8 @@
     }
 
     function resize() {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const dprLimit = innerWidth < 768 ? 1.5 : 2;
+      const dpr = Math.min(window.devicePixelRatio || 1, dprLimit);
       const width = Math.round(innerWidth * dpr);
       const height = Math.round(innerHeight * dpr);
       if (canvas.width !== width || canvas.height !== height) {
@@ -183,7 +180,11 @@
       const dpr = resize();
       if (now - lastScan > 1000) { scan(); lastScan = now; }
       rectData.fill(0); radiusData.fill(0);
-      surfaces.forEach((surface, index) => {
+      const visibleSurfaces = surfaces.filter((surface) => {
+        const rect = surface.getBoundingClientRect();
+        return rect.bottom > -30 && rect.top < innerHeight + 30 && rect.right > -30 && rect.left < innerWidth + 30;
+      }).slice(0, MAX_GLASS);
+      visibleSurfaces.forEach((surface, index) => {
         const rect = surface.getBoundingClientRect();
         const style = getComputedStyle(surface);
         rectData.set([rect.left*dpr, (innerHeight-rect.bottom)*dpr, rect.width*dpr, rect.height*dpr], index*4);
@@ -191,7 +192,7 @@
       });
       gl.uniform2f(resolutionLocation, canvas.width, canvas.height);
       gl.uniform1f(timeLocation, now * .001);
-      gl.uniform1i(countLocation, surfaces.length);
+      gl.uniform1i(countLocation, visibleSurfaces.length);
       gl.uniform4fv(rectsLocation, rectData);
       gl.uniform1fv(radiiLocation, radiusData);
       gl.drawArrays(gl.TRIANGLES, 0, 6);

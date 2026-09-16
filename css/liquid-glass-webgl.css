@@ -20,8 +20,3 @@
     inset -1px 0 0 rgba(90,190,255,.11),
     0 14px 42px rgba(0,0,0,.24) !important;
 }
-
-.archis-webgl-ready .top-nav .nav-btn.liquid-webgl-surface {
-  background: rgba(6, 15, 28, .13) !important;
-}
-
