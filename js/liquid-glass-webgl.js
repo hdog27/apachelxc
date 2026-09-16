@@ -212,6 +212,17 @@
     });
   }
 
+  function viewportPageOffset() {
+    const vv = window.visualViewport;
+    if (vv && Number.isFinite(vv.pageLeft) && Number.isFinite(vv.pageTop)) {
+      return { x: vv.pageLeft, y: vv.pageTop };
+    }
+    return {
+      x: window.scrollX || window.pageXOffset || 0,
+      y: window.scrollY || window.pageYOffset || 0
+    };
+  }
+
   function start() {
     const cards = getOuterCards();
     if (!cards.length) return;
@@ -299,13 +310,24 @@
 
     const image = new Image();
     image.decoding = 'async';
-    const cardRadii = new Map();
+    const cardGeometry = new Map();
 
-    function cacheCardRadii() {
-      cardRadii.clear();
+    function measureCardGeometry() {
+      const page = viewportPageOffset();
+      cardGeometry.clear();
+
       cards.forEach((card) => {
+        if (!card.isConnected) return;
+        const rect = card.getBoundingClientRect();
         const style = getComputedStyle(card);
-        cardRadii.set(card, Math.max(1, parseFloat(style.borderTopLeftRadius) || 20));
+
+        cardGeometry.set(card, {
+          left: rect.left + page.x,
+          top: rect.top + page.y,
+          width: rect.width,
+          height: rect.height,
+          radius: Math.max(1, parseFloat(style.borderTopLeftRadius) || 20)
+        });
       });
     }
 
@@ -323,7 +345,7 @@
       gl.uniform1i(u.bgTex, 0);
       gl.uniform1f(u.bgAspect, image.naturalWidth / image.naturalHeight);
 
-      cacheCardRadii();
+      measureCardGeometry();
       cards.forEach((card) => card.classList.add('liquid-webgl-surface'));
       document.documentElement.classList.add('archis-webgl-ready');
       requestAnimationFrame(render);
@@ -338,7 +360,7 @@
     let lastWidth = 0;
     let lastHeight = 0;
     let running = true;
-    let radiusTimer = 0;
+    let geometryTimer = 0;
 
     function resize(stageRect) {
       const mobile = stageRect.width <= MOBILE_BREAKPOINT;
@@ -361,6 +383,9 @@
     function render() {
       if (!running || !canvas.isConnected) return;
 
+      // One viewport measurement remains, but card layout is no longer queried
+      // during scrolling. Their document-space boxes are cached and translated
+      // with the current page offset instead.
       const stageRect = canvas.getBoundingClientRect();
       if (stageRect.width <= 1 || stageRect.height <= 1) {
         requestAnimationFrame(render);
@@ -370,6 +395,7 @@
       const size = resize(stageRect);
       const dpr = size.dpr;
       const mobile = size.mobile;
+      const page = viewportPageOffset();
 
       gl.useProgram(program);
       gl.clearColor(0, 0, 0, 0);
@@ -390,29 +416,34 @@
 
       for (const card of cards) {
         if (!card.isConnected) continue;
-        const rect = card.getBoundingClientRect();
+        const geometry = cardGeometry.get(card);
+        if (!geometry) continue;
+
+        const left = geometry.left - page.x - stageRect.left;
+        const top = geometry.top - page.y - stageRect.top;
+        const width = geometry.width;
+        const height = geometry.height;
+        const right = left + width;
+        const bottom = top + height;
 
         if (
-          rect.bottom < stageRect.top - SHADOW_MARGIN ||
-          rect.top > stageRect.bottom + SHADOW_MARGIN ||
-          rect.right < stageRect.left - SHADOW_MARGIN ||
-          rect.left > stageRect.right + SHADOW_MARGIN
+          bottom < -SHADOW_MARGIN ||
+          top > stageRect.height + SHADOW_MARGIN ||
+          right < -SHADOW_MARGIN ||
+          left > stageRect.width + SHADOW_MARGIN
         ) continue;
 
-        const left = rect.left - stageRect.left;
-        const top = rect.top - stageRect.top;
-        const centerX = left + rect.width * 0.5;
-        const centerY = top + rect.height * 0.5;
-        const radius = cardRadii.get(card) || 20;
+        const centerX = left + width * 0.5;
+        const centerY = top + height * 0.5;
 
         const sx = Math.max(0, Math.floor((left - SHADOW_MARGIN) * dpr));
         const sy = Math.max(
           0,
-          Math.floor((stageRect.height - (top + rect.height + SHADOW_MARGIN)) * dpr)
+          Math.floor((stageRect.height - (top + height + SHADOW_MARGIN)) * dpr)
         );
         const sr = Math.min(
           canvas.width,
-          Math.ceil((left + rect.width + SHADOW_MARGIN) * dpr)
+          Math.ceil((left + width + SHADOW_MARGIN) * dpr)
         );
         const st = Math.min(
           canvas.height,
@@ -424,20 +455,35 @@
 
         gl.scissor(sx, sy, sw, sh);
         gl.uniform2f(u.center, centerX, centerY);
-        gl.uniform2f(u.size, rect.width, rect.height);
-        gl.uniform1f(u.radius, radius);
+        gl.uniform2f(u.size, width, height);
+        gl.uniform1f(u.radius, geometry.radius);
         gl.drawArrays(gl.TRIANGLES, 0, 6);
       }
 
       requestAnimationFrame(render);
     }
 
-    // Radius values do not change while scrolling, so do not force computed
-    // style reads on every animation frame. Refresh only after viewport changes.
-    window.addEventListener('resize', () => {
-      window.clearTimeout(radiusTimer);
-      radiusTimer = window.setTimeout(cacheCardRadii, 150);
-    }, { passive: true });
+    function scheduleGeometryMeasure(delay) {
+      window.clearTimeout(geometryTimer);
+      geometryTimer = window.setTimeout(measureCardGeometry, delay == null ? 60 : delay);
+    }
+
+    // Geometry is refreshed only when layout can actually change. Ordinary
+    // scrolling never asks every card for getBoundingClientRect().
+    window.addEventListener('resize', () => scheduleGeometryMeasure(100), { passive: true });
+    window.addEventListener('load', () => scheduleGeometryMeasure(0), { once: true });
+    document.addEventListener('toggle', () => scheduleGeometryMeasure(20), true);
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', () => scheduleGeometryMeasure(100), { passive: true });
+    }
+
+    let resizeObserver = null;
+    if ('ResizeObserver' in window) {
+      resizeObserver = new ResizeObserver(() => scheduleGeometryMeasure(40));
+      cards.forEach((card) => resizeObserver.observe(card));
+      resizeObserver.observe(document.documentElement);
+    }
 
     canvas.addEventListener('webglcontextlost', (event) => {
       event.preventDefault();
@@ -447,6 +493,8 @@
 
     window.addEventListener('pagehide', () => {
       running = false;
+      window.clearTimeout(geometryTimer);
+      if (resizeObserver) resizeObserver.disconnect();
       const loseContext = gl.getExtension('WEBGL_lose_context');
       if (loseContext) loseContext.loseContext();
     }, { once: true });
