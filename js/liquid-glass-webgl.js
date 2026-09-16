@@ -73,8 +73,8 @@
         }
       }
 
-      if (bestSd > 24.0) {
-        gl_FragColor = vec4(backdrop(pixel), 1.0);
+      if (bestSd > 0.0) {
+        gl_FragColor = vec4(0.0);
         return;
       }
 
@@ -100,12 +100,10 @@
       vec2 lightDirection = normalize(vec2(-.55,.83));
       float specular = pow(max(0.0, dot(normal, lightDirection)), 22.0) * lens;
       float rim = pow(lens, 2.2);
-      glass += vec3(.72,.9,1.0) * specular * .62;
+      glass += vec3(.72,.9,1.0) * specular * .10;
       glass += vec3(.36,.65,.94) * rim * .18;
 
-      float shadow = exp(-max(bestSd, 0.0) * max(bestSd, 0.0) / 130.0) * step(0.0, bestSd) * .32;
-      vec3 outside = backdrop(pixel) * (1.0 - shadow);
-      gl_FragColor = vec4(mix(outside, glass, inside * .92), 1.0);
+      gl_FragColor = vec4(glass, inside * .88);
     }
   `;
 
@@ -121,8 +119,10 @@
     const canvas = document.createElement('canvas');
     canvas.id = 'liquid-glass-stage';
     canvas.setAttribute('aria-hidden', 'true');
-    document.body.insertBefore(canvas, document.body.firstChild);
-    const gl = canvas.getContext('webgl', { alpha: false, antialias: false, powerPreference: 'high-performance' });
+    const stars = document.querySelector('.stars-layer');
+    if (stars) stars.insertAdjacentElement('afterend', canvas);
+    else document.body.insertBefore(canvas, document.body.firstChild);
+    const gl = canvas.getContext('webgl', { alpha: true, antialias: false, premultipliedAlpha: true, powerPreference: 'high-performance' });
     if (!gl) { canvas.remove(); return; }
 
     let program;
