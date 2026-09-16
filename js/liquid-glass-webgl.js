@@ -2,11 +2,10 @@
   'use strict';
 
   // Liquid Glass v2: same real wallpaper for the page and for every shader.
-  // No procedural stars, DOM rasterization, draggable cards, or scroll-time
-  // fallback. Each outer card owns its canvas so Safari's compositor moves the
-  // glass surface with the card during momentum scrolling.
+  // Site-wide on this test branch, on both desktop and mobile. No procedural
+  // stars, DOM rasterization, draggable cards, or scroll-time fallback.
   const BACKDROP_URL = '/images/liquid-glass-test-bg.jpg';
-  const CARD_SELECTOR = '.identity-hero, .panel';
+  const CARD_SELECTOR = '.card, .panel, .identity-hero';
 
   const vertexSource = `
     attribute vec2 aPosition;
@@ -121,8 +120,6 @@
   }
 
   function start() {
-    if (!document.body.classList.contains('cyberlab')) return;
-
     const cards = outerCards();
     if (!cards.length) return;
 
@@ -179,6 +176,17 @@
     canvas.className = 'liquid-card-canvas';
     canvas.setAttribute('aria-hidden', 'true');
     card.insertBefore(canvas, card.firstChild);
+
+    // Lift only normal in-flow children above the canvas. Children that already
+    // have explicit positioning keep their original position mode/layout.
+    Array.from(card.children).forEach((child) => {
+      if (child === canvas) return;
+      if (getComputedStyle(child).position === 'static') {
+        child.classList.add('liquid-card-content');
+      } else {
+        child.classList.add('liquid-card-positioned');
+      }
+    });
 
     const gl = canvas.getContext('webgl', {
       alpha: true,
@@ -257,9 +265,6 @@
           canvasRect.right > -200 &&
           canvasRect.left < backdropRect.width + 200;
 
-        // Offscreen cards keep their class/canvas but relinquish large backing
-        // buffers so mobile Safari is not holding every full-height card in GPU
-        // memory at once.
         if (!nearViewport) {
           if (canvas.width !== 2 || canvas.height !== 2) {
             canvas.width = 2;
@@ -274,14 +279,16 @@
           backdropRect.width <= 1 || backdropRect.height <= 1
         ) return;
 
-        const dprCap = canvasRect.width < 768 ? 1.6 : 1.6;
+        const dprCap = 1.6;
         let dpr = Math.min(window.devicePixelRatio || 1, dprCap);
 
-        // Keep huge mobile cards from allocating enormous framebuffers.
+        // Large single-card pages (Homelab / Get Started) can be thousands of
+        // CSS pixels tall. Allow sub-1x backing resolution for those surfaces
+        // instead of allocating a gigantic WebGL framebuffer on mobile/desktop.
         const cssPixels = canvasRect.width * canvasRect.height;
-        const maxBackingPixels = canvasRect.width < 768 ? 1800000 : 2600000;
+        const maxBackingPixels = canvasRect.width < 768 ? 1800000 : 3000000;
         if (cssPixels * dpr * dpr > maxBackingPixels) {
-          dpr = Math.max(1, Math.sqrt(maxBackingPixels / cssPixels));
+          dpr = Math.max(0.55, Math.sqrt(maxBackingPixels / cssPixels));
         }
 
         const width = Math.max(1, Math.round(canvasRect.width * dpr));
