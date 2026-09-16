@@ -1,16 +1,10 @@
 (function () {
   'use strict';
 
-  // Temporary shared-image test for the liquid-glass renderer.
-  // The CSS background and WebGL shader both use this exact same image so the
-  // shader refracts real backdrop pixels instead of drawing a fake backdrop.
+  // v2 experiment: prove one card first. The page background and this shader
+  // use the exact same image. No procedural stars, no DOM rasterization, no
+  // scroll-time fallback to a different glass effect.
   const BACKDROP_URL = '/images/liquid-glass-test-bg.jpg';
-  const MAX_GLASS = 16;
-  const selector = [
-    '.card', '.panel', '.identity-hero', '.project-featured', '.project-card',
-    '.projects-hero', '.contact-card', '.credential-card', '.device-box',
-    '.repo-embed', '.protocol-cards > div'
-  ].join(',');
 
   const vertexSource = `
     attribute vec2 aPosition;
@@ -21,13 +15,12 @@
 
   const fragmentSource = `
     precision highp float;
-    #define MAX_GLASS 16
 
-    uniform vec2 uResolution;
+    uniform vec2 uCardResolution;
+    uniform vec2 uCardOrigin;
+    uniform vec2 uBackdropResolution;
     uniform vec2 uImageResolution;
-    uniform int uGlassCount;
-    uniform vec4 uGlassRects[MAX_GLASS];
-    uniform float uGlassRadii[MAX_GLASS];
+    uniform float uRadius;
     uniform sampler2D uBackdrop;
 
     float roundedBox(vec2 p, vec2 halfSize, float radius) {
@@ -35,10 +28,10 @@
       return min(max(q.x, q.y), 0.0) + length(max(q, 0.0)) - radius;
     }
 
-    // Match CSS: background-position:center; background-size:cover.
+    // Match CSS background-position:center + background-size:cover exactly.
     vec2 coverUv(vec2 pixel) {
-      vec2 screenUv = pixel / uResolution;
-      float viewportAspect = uResolution.x / uResolution.y;
+      vec2 screenUv = pixel / uBackdropResolution;
+      float viewportAspect = uBackdropResolution.x / uBackdropResolution.y;
       float imageAspect = uImageResolution.x / uImageResolution.y;
       vec2 uv = screenUv;
 
@@ -51,76 +44,63 @@
       return clamp(uv, 0.0, 1.0);
     }
 
-    vec3 backdrop(vec2 pixel) {
+    vec3 sampleBackdrop(vec2 pixel) {
       return texture2D(uBackdrop, coverUv(pixel)).rgb;
     }
 
     void main() {
-      vec2 pixel = gl_FragCoord.xy;
-      float found = 0.0;
-      float sd = 100000.0;
-      vec2 center = vec2(0.0);
-      vec2 halfSize = vec2(1.0);
-      float radius = 1.0;
+      vec2 localPixel = gl_FragCoord.xy;
+      vec2 globalPixel = uCardOrigin + localPixel;
+      vec2 halfSize = uCardResolution * 0.5;
+      vec2 p = localPixel - halfSize;
+      float radius = min(uRadius, min(halfSize.x, halfSize.y) - 1.0);
+      float sd = roundedBox(p, halfSize - vec2(1.0), radius);
 
-      // Surfaces are filtered in JS so nested cards cannot become competing
-      // lenses. That avoids the center seams/triangles caused by choosing the
-      // "nearest" surface when two glass rectangles overlap.
-      for (int i = 0; i < MAX_GLASS; i++) {
-        if (i >= uGlassCount) break;
-        vec4 rect = uGlassRects[i];
-        vec2 thisCenter = rect.xy + rect.zw * 0.5;
-        vec2 thisHalf = rect.zw * 0.5;
-        float thisSd = roundedBox(pixel - thisCenter, thisHalf, uGlassRadii[i]);
+      // SDF gradient gives a continuous rounded-card surface normal. There is
+      // no "nearest card" selection, so there cannot be a center seam/triangle.
+      float eps = 1.25;
+      vec2 grad = vec2(
+        roundedBox(p + vec2(eps, 0.0), halfSize - vec2(1.0), radius) -
+          roundedBox(p - vec2(eps, 0.0), halfSize - vec2(1.0), radius),
+        roundedBox(p + vec2(0.0, eps), halfSize - vec2(1.0), radius) -
+          roundedBox(p - vec2(0.0, eps), halfSize - vec2(1.0), radius)
+      );
+      vec2 normal = normalize(grad + vec2(0.0001));
 
-        if (thisSd <= 0.0 && found < 0.5) {
-          found = 1.0;
-          sd = thisSd;
-          center = thisCenter;
-          halfSize = thisHalf;
-          radius = uGlassRadii[i];
-        }
-      }
+      // Most of the bend lives near the rim; the middle stays readable.
+      float edgeWidth = min(86.0, min(halfSize.x, halfSize.y) * 0.72);
+      float edge = 1.0 - smoothstep(0.0, edgeWidth, max(-sd, 0.0));
+      float bend = pow(edge, 1.7);
+      vec2 displacement = -normal * (2.0 + 21.0 * bend);
 
-      if (found < 0.5) {
-        gl_FragColor = vec4(0.0);
-        return;
-      }
+      vec3 base = sampleBackdrop(globalPixel + displacement);
+      vec3 soft = (
+        base +
+        sampleBackdrop(globalPixel + displacement + vec2(1.5, 0.0)) +
+        sampleBackdrop(globalPixel + displacement - vec2(1.5, 0.0)) +
+        sampleBackdrop(globalPixel + displacement + vec2(0.0, 1.5)) +
+        sampleBackdrop(globalPixel + displacement - vec2(0.0, 1.5))
+      ) / 5.0;
 
-      vec2 p = pixel - center;
-      float epsilon = 1.2;
-      vec2 normal = normalize(vec2(
-        roundedBox(p + vec2(epsilon, 0.0), halfSize, radius) -
-          roundedBox(p - vec2(epsilon, 0.0), halfSize, radius),
-        roundedBox(p + vec2(0.0, epsilon), halfSize, radius) -
-          roundedBox(p - vec2(0.0, epsilon), halfSize, radius)
-      ) + vec2(0.0001));
-
-      // Keep the center almost flat and bend the backdrop mostly near the rim.
-      // This produces the glass edge without inventing a lighter card-wide
-      // gradient or a second star field.
-      float edge = smoothstep(-82.0, -2.0, sd);
-      float bend = pow(edge, 1.85);
-      vec2 displacement = -normal * (2.5 + 22.0 * bend);
-
-      vec3 base = backdrop(pixel + displacement);
       vec3 split;
-      split.r = backdrop(pixel + displacement * 1.11).r;
+      split.r = sampleBackdrop(globalPixel + displacement * 1.10).r;
       split.g = base.g;
-      split.b = backdrop(pixel + displacement * 0.89).b;
+      split.b = sampleBackdrop(globalPixel + displacement * 0.90).b;
 
-      vec3 glass = mix(base, split, 0.42);
-      glass = mix(glass, vec3(0.025, 0.045, 0.075), 0.10);
+      vec3 glass = mix(base, soft, 0.22);
+      glass = mix(glass, split, 0.34 * bend);
+
+      // Keep the test card slightly darker than the raw wallpaper instead of
+      // applying the lighter blue/purple wash from the previous renderer.
+      glass *= 0.92;
+      glass += vec3(0.008, 0.016, 0.028);
 
       vec2 lightDirection = normalize(vec2(-0.55, 0.83));
       float specular = pow(max(0.0, dot(normal, lightDirection)), 24.0) * bend;
-      glass += vec3(0.75, 0.91, 1.0) * specular * 0.10;
-      glass += vec3(0.28, 0.53, 0.88) * pow(bend, 2.4) * 0.09;
+      glass += vec3(0.72, 0.88, 1.0) * specular * 0.10;
+      glass += vec3(0.18, 0.34, 0.58) * pow(bend, 2.3) * 0.08;
 
-      // Nearly opaque inside the lens so the undistorted CSS backdrop below it
-      // cannot bleed through and create a doubled image.
-      float alpha = 1.0 - smoothstep(-1.2, 0.0, sd) * 0.025;
-      gl_FragColor = vec4(glass, alpha);
+      gl_FragColor = vec4(glass, 1.0);
     }
   `;
 
@@ -129,21 +109,43 @@
     gl.shaderSource(shader, source);
     gl.compileShader(shader);
     if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-      throw new Error(gl.getShaderInfoLog(shader));
+      throw new Error(gl.getShaderInfoLog(shader) || 'Shader compilation failed');
     }
     return shader;
   }
 
   function start() {
-    const backdropElement = document.createElement('div');
-    backdropElement.id = 'liquid-glass-test-backdrop';
-    backdropElement.setAttribute('aria-hidden', 'true');
-    document.body.insertBefore(backdropElement, document.body.firstChild);
+    // Keep this experiment isolated to the Cyber Lab landing page.
+    if (!document.body.classList.contains('cyberlab')) return;
 
+    // Prove the architecture on exactly one card before expanding it.
+    const target = document.querySelector('.identity-hero');
+    if (!target) return;
+
+    const image = new Image();
+    image.decoding = 'async';
+    image.src = BACKDROP_URL;
+
+    image.addEventListener('error', () => {
+      console.error('Liquid glass test image is missing:', BACKDROP_URL);
+    }, { once: true });
+
+    image.addEventListener('load', () => init(target, image), { once: true });
+  }
+
+  function init(target, image) {
+    const backdrop = document.createElement('div');
+    backdrop.id = 'liquid-glass-test-backdrop';
+    backdrop.setAttribute('aria-hidden', 'true');
+    document.body.insertBefore(backdrop, document.body.firstChild);
+
+    // The WebGL canvas lives INSIDE the card now. The browser compositor moves
+    // the canvas with the card during momentum scrolling, so the lens cannot
+    // visually detach from the card even if JS is briefly throttled on iOS.
     const canvas = document.createElement('canvas');
-    canvas.id = 'liquid-glass-stage';
+    canvas.className = 'liquid-card-canvas';
     canvas.setAttribute('aria-hidden', 'true');
-    backdropElement.insertAdjacentElement('afterend', canvas);
+    target.insertBefore(canvas, target.firstChild);
 
     const gl = canvas.getContext('webgl', {
       alpha: true,
@@ -153,8 +155,8 @@
     });
 
     if (!gl) {
-      backdropElement.remove();
       canvas.remove();
+      backdrop.remove();
       return;
     }
 
@@ -165,12 +167,12 @@
       gl.attachShader(program, compile(gl, gl.FRAGMENT_SHADER, fragmentSource));
       gl.linkProgram(program);
       if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-        throw new Error(gl.getProgramInfoLog(program));
+        throw new Error(gl.getProgramInfoLog(program) || 'Program link failed');
       }
     } catch (error) {
-      console.error('Liquid Glass shader failed:', error);
-      backdropElement.remove();
+      console.error('Liquid glass shader failed:', error);
       canvas.remove();
+      backdrop.remove();
       return;
     }
 
@@ -187,41 +189,14 @@
     gl.enableVertexAttribArray(position);
     gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
 
-    const locations = {
-      resolution: gl.getUniformLocation(program, 'uResolution'),
+    const uniforms = {
+      cardResolution: gl.getUniformLocation(program, 'uCardResolution'),
+      cardOrigin: gl.getUniformLocation(program, 'uCardOrigin'),
+      backdropResolution: gl.getUniformLocation(program, 'uBackdropResolution'),
       imageResolution: gl.getUniformLocation(program, 'uImageResolution'),
-      count: gl.getUniformLocation(program, 'uGlassCount'),
-      rects: gl.getUniformLocation(program, 'uGlassRects[0]'),
-      radii: gl.getUniformLocation(program, 'uGlassRadii[0]'),
+      radius: gl.getUniformLocation(program, 'uRadius'),
       backdrop: gl.getUniformLocation(program, 'uBackdrop')
     };
-
-    const rectData = new Float32Array(MAX_GLASS * 4);
-    const radiusData = new Float32Array(MAX_GLASS);
-    let surfaces = [];
-
-    function hasGlassAncestor(surface) {
-      let parent = surface.parentElement;
-      while (parent && parent !== document.body) {
-        if (parent.matches && parent.matches(selector)) return true;
-        parent = parent.parentElement;
-      }
-      return false;
-    }
-
-    function scan() {
-      surfaces = Array.from(document.querySelectorAll(selector)).filter((surface) => {
-        const rect = surface.getBoundingClientRect();
-        return rect.width > 2 && rect.height > 2 && !hasGlassAncestor(surface);
-      });
-
-      surfaces.forEach((surface) => surface.classList.add('liquid-webgl-surface'));
-    }
-
-    scan();
-
-    const observer = new MutationObserver(scan);
-    observer.observe(document.body, { childList: true, subtree: true });
 
     const texture = gl.createTexture();
     gl.activeTexture(gl.TEXTURE0);
@@ -230,97 +205,82 @@
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+    gl.uniform1i(uniforms.backdrop, 0);
 
-    const image = new Image();
-    image.decoding = 'async';
+    target.classList.add('liquid-webgl-surface');
+    document.documentElement.classList.add('archis-webgl-ready');
 
-    image.addEventListener('error', () => {
-      console.error('Liquid Glass test backdrop failed to load:', BACKDROP_URL);
-      observer.disconnect();
-      backdropElement.remove();
-      canvas.remove();
-    }, { once: true });
+    let lastDpr = 0;
+    let running = true;
 
-    image.addEventListener('load', () => {
-      try {
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-        gl.texImage2D(
-          gl.TEXTURE_2D,
-          0,
-          gl.RGBA,
-          gl.RGBA,
-          gl.UNSIGNED_BYTE,
-          image
-        );
-        gl.uniform1i(locations.backdrop, 0);
-      } catch (error) {
-        console.error('Liquid Glass backdrop upload failed:', error);
-        observer.disconnect();
-        backdropElement.remove();
-        canvas.remove();
+    function render() {
+      if (!running || !canvas.isConnected) return;
+
+      const canvasRect = canvas.getBoundingClientRect();
+      const backdropRect = backdrop.getBoundingClientRect();
+
+      if (
+        canvasRect.width <= 1 || canvasRect.height <= 1 ||
+        backdropRect.width <= 1 || backdropRect.height <= 1
+      ) {
+        requestAnimationFrame(render);
         return;
       }
 
-      document.documentElement.classList.add('archis-texture-ready', 'archis-webgl-ready');
-      requestAnimationFrame(render);
-    }, { once: true });
-
-    image.src = BACKDROP_URL;
-
-    function render() {
-      // Measure the canvas itself instead of assuming innerHeight/100vh. That
-      // keeps WebGL coordinates and getBoundingClientRect() in the same space
-      // when iOS Safari expands/collapses its browser chrome.
-      const canvasRect = canvas.getBoundingClientRect();
-      const mobile = canvasRect.width < 768;
-      const dpr = Math.min(window.devicePixelRatio || 1, mobile ? 1.25 : 1.75);
+      const dprCap = canvasRect.width < 768 ? 2 : 1.75;
+      const dpr = Math.min(window.devicePixelRatio || 1, dprCap);
       const width = Math.max(1, Math.round(canvasRect.width * dpr));
       const height = Math.max(1, Math.round(canvasRect.height * dpr));
 
-      if (canvas.width !== width || canvas.height !== height) {
+      if (canvas.width !== width || canvas.height !== height || lastDpr !== dpr) {
         canvas.width = width;
         canvas.height = height;
         gl.viewport(0, 0, width, height);
+        lastDpr = dpr;
       }
 
-      rectData.fill(0);
-      radiusData.fill(0);
+      // Both rects are measured in the same CSS viewport coordinate system.
+      // The shader therefore samples the same point of the same wallpaper that
+      // is physically behind this card.
+      const originX = (canvasRect.left - backdropRect.left) * dpr;
+      const originY = (backdropRect.bottom - canvasRect.bottom) * dpr;
+      const style = getComputedStyle(target);
+      const radius = Math.max(1, (parseFloat(style.borderTopLeftRadius) || 20) * dpr);
 
-      const visibleSurfaces = surfaces.filter((surface) => {
-        const rect = surface.getBoundingClientRect();
-        return (
-          rect.bottom > canvasRect.top - 24 &&
-          rect.top < canvasRect.bottom + 24 &&
-          rect.right > canvasRect.left - 24 &&
-          rect.left < canvasRect.right + 24
-        );
-      }).slice(0, MAX_GLASS);
-
-      visibleSurfaces.forEach((surface, index) => {
-        const rect = surface.getBoundingClientRect();
-        const style = getComputedStyle(surface);
-        rectData.set([
-          (rect.left - canvasRect.left) * dpr,
-          (canvasRect.bottom - rect.bottom) * dpr,
-          rect.width * dpr,
-          rect.height * dpr
-        ], index * 4);
-        radiusData[index] = (parseFloat(style.borderRadius) || 20) * dpr;
-      });
-
-      gl.clearColor(0, 0, 0, 0);
-      gl.clear(gl.COLOR_BUFFER_BIT);
-      gl.uniform2f(locations.resolution, width, height);
-      gl.uniform2f(locations.imageResolution, image.naturalWidth, image.naturalHeight);
-      gl.uniform1i(locations.count, visibleSurfaces.length);
-      gl.uniform4fv(locations.rects, rectData);
-      gl.uniform1fv(locations.radii, radiusData);
+      gl.useProgram(program);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, texture);
+      gl.uniform2f(uniforms.cardResolution, width, height);
+      gl.uniform2f(uniforms.cardOrigin, originX, originY);
+      gl.uniform2f(
+        uniforms.backdropResolution,
+        backdropRect.width * dpr,
+        backdropRect.height * dpr
+      );
+      gl.uniform2f(uniforms.imageResolution, image.naturalWidth, image.naturalHeight);
+      gl.uniform1f(uniforms.radius, radius);
       gl.drawArrays(gl.TRIANGLES, 0, 6);
 
       requestAnimationFrame(render);
     }
+
+    // These direct renders supplement rAF during Safari viewport/scroll chrome
+    // changes. The canvas itself is already glued to the card by layout.
+    const renderImmediately = () => {
+      if (running) render();
+    };
+
+    window.addEventListener('scroll', renderImmediately, { passive: true });
+    window.addEventListener('resize', renderImmediately, { passive: true });
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('scroll', renderImmediately, { passive: true });
+      window.visualViewport.addEventListener('resize', renderImmediately, { passive: true });
+    }
+
+    window.addEventListener('pagehide', () => { running = false; }, { once: true });
+    requestAnimationFrame(render);
   }
 
   if (document.readyState === 'loading') {
