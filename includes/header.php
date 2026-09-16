@@ -40,7 +40,6 @@ if (!isset($body_class))       { $body_class = ''; }
   <link rel="canonical" href="https://hmax.space<?= htmlspecialchars(strtok($_SERVER["REQUEST_URI"], "?")) ?>">
   <link rel="stylesheet" href="/css/stars.css?v=<?= @filemtime(__DIR__ . "/../css/stars.css") ?>">
   <link rel="stylesheet" href="/css/style.css?v=<?= @filemtime(__DIR__ . '/../css/style.css') ?>">
-  <link rel="stylesheet" href="/css/liquid-glass.css?v=<?= @filemtime(__DIR__ . '/../css/liquid-glass.css') ?>">
 <?php if (!empty($page_css)): ?>
   <link rel="stylesheet" href="/css/<?= htmlspecialchars($page_css) ?>?v=<?= @filemtime(__DIR__ . '/../css/' . $page_css) ?>">
 <?php endif; ?>
