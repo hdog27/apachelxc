@@ -5,9 +5,12 @@
   width: 100vw;
   height: 100vh;
   pointer-events: none;
+  opacity: 1;
+  transition: opacity .08s linear;
+  transform: translateZ(0);
 }
 
-.archis-webgl-ready .liquid-webgl-surface {
+.archis-webgl-ready:not(.archis-webgl-scrolling) .liquid-webgl-surface {
   z-index: 1;
   background: rgba(5, 14, 26, .09) !important;
   border-color: rgba(210, 235, 255, .3) !important;
@@ -18,4 +21,8 @@
     inset 1px 0 0 rgba(255,120,155,.07),
     inset -1px 0 0 rgba(90,190,255,.11),
     0 14px 42px rgba(0,0,0,.24) !important;
+}
+
+.archis-webgl-scrolling #liquid-glass-stage {
+  opacity: 0;
 }
