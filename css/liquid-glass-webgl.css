@@ -1,10 +1,7 @@
 /* Liquid glass v2 experiment.
-   Intentionally scoped to the Cyber Lab page and exactly one outer card first.
-   The page wallpaper and WebGL shader both use the same source image. */
+   Scoped to the Cyber Lab page. The page wallpaper and every WebGL card use
+   the same source image; the original stars are untouched on other branches. */
 
-/* Make the test unmistakable even if WebGL fails: this branch always uses the
-   shared wallpaper on Cyber Lab. !important is required because cyberlab.css is
-   loaded after this stylesheet and normally owns the body background. */
 body.cyberlab {
   background-color: #040608 !important;
   background-image: url('/images/liquid-glass-test-bg.jpg?v=2') !important;
@@ -14,14 +11,10 @@ body.cyberlab {
   background-attachment: fixed !important;
 }
 
-/* Hide the original stars only for this isolated wallpaper test. Nothing in
-   stars.css is edited, so switching branches restores them unchanged. */
 body.cyberlab .stars-layer {
   display: none !important;
 }
 
-/* Invisible viewport reference used only for shader coordinate math. The real
-   visible backdrop is the body background above. */
 #liquid-glass-test-backdrop {
   position: fixed;
   inset: 0;
@@ -32,7 +25,9 @@ body.cyberlab .stars-layer {
   opacity: 0;
 }
 
-html.archis-webgl-ready body.cyberlab .identity-hero.liquid-webgl-surface {
+/* Only outer .panel cards and the identity hero receive canvases. Nested boxes
+   stay normal UI and do not become competing WebGL lenses. */
+html.archis-webgl-ready body.cyberlab .liquid-webgl-surface {
   position: relative;
   z-index: 1;
   overflow: hidden;
@@ -47,7 +42,7 @@ html.archis-webgl-ready body.cyberlab .identity-hero.liquid-webgl-surface {
     0 14px 42px rgba(0,0,0,.26) !important;
 }
 
-body.cyberlab .identity-hero > .liquid-card-canvas {
+body.cyberlab .liquid-webgl-surface > .liquid-card-canvas {
   position: absolute;
   inset: 1px;
   z-index: 0;
@@ -58,7 +53,7 @@ body.cyberlab .identity-hero > .liquid-card-canvas {
   pointer-events: none;
 }
 
-html.archis-webgl-ready body.cyberlab .identity-hero > :not(.liquid-card-canvas) {
+html.archis-webgl-ready body.cyberlab .liquid-webgl-surface > :not(.liquid-card-canvas) {
   position: relative;
   z-index: 1;
 }
