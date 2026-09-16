@@ -1,100 +1,169 @@
 (function () {
   'use strict';
 
-  // Liquid Glass v2: same real wallpaper for the page and for every shader.
-  // Site-wide on this test branch, on both desktop and mobile. No procedural
-  // stars, DOM rasterization, draggable cards, or scroll-time fallback.
+  // Reference-engine experiment based on archisvaze/liquid-glass webgl.html.
+  // One fullscreen WebGL context renders every visible outer card. This keeps
+  // the physics-based edge refraction while avoiding one WebGL context per card.
   const BACKDROP_URL = '/images/liquid-glass-test-bg.jpg';
   const CARD_SELECTOR = '.card, .panel, .identity-hero';
+  const SHADOW_MARGIN = 42;
+
+  const SETTINGS = {
+    thickness: 50,
+    bezel: 60,
+    ior: 3.0,
+    blur: 1.5,
+    specular: 0.55,
+    tint: 0.08,
+    shadow: 0.5
+  };
 
   const vertexSource = `
     attribute vec2 aPosition;
+    varying vec2 vUv;
+
     void main() {
+      vUv = aPosition * 0.5 + 0.5;
       gl_Position = vec4(aPosition, 0.0, 1.0);
     }
   `;
 
+  // The refraction math below follows the WebGL engine from
+  // archisvaze/liquid-glass: rounded-rect SDF -> curved surface height ->
+  // Snell-style refraction -> blurred background sample -> specular/rim light.
   const fragmentSource = `
     precision highp float;
+    varying vec2 vUv;
 
-    uniform vec2 uCardResolution;
-    uniform vec2 uCardOrigin;
-    uniform vec2 uBackdropResolution;
-    uniform vec2 uImageResolution;
+    uniform vec2 uResolution;
+    uniform vec2 uGlassCenter;
+    uniform vec2 uGlassSize;
     uniform float uRadius;
-    uniform sampler2D uBackdrop;
+    uniform float uBezel;
+    uniform float uThickness;
+    uniform float uIOR;
+    uniform float uBlur;
+    uniform float uSpecular;
+    uniform float uTint;
+    uniform float uShadow;
+    uniform sampler2D uBgTex;
+    uniform float uBgAspect;
 
-    float roundedBox(vec2 p, vec2 halfSize, float radius) {
-      vec2 q = abs(p) - halfSize + radius;
-      return min(max(q.x, q.y), 0.0) + length(max(q, 0.0)) - radius;
+    float sdRoundedRect(vec2 p, vec2 halfSize, float r) {
+      vec2 q = abs(p) - halfSize + r;
+      return min(max(q.x, q.y), 0.0) + length(max(q, 0.0)) - r;
     }
 
-    vec2 coverUv(vec2 pixel) {
-      vec2 screenUv = pixel / uBackdropResolution;
-      float viewportAspect = uBackdropResolution.x / uBackdropResolution.y;
-      float imageAspect = uImageResolution.x / uImageResolution.y;
-      vec2 uv = screenUv;
+    float surfaceHeight(float t) {
+      float s = 1.0 - t;
+      return pow(1.0 - s*s*s*s, 0.25);
+    }
 
-      if (imageAspect > viewportAspect) {
-        uv.x = 0.5 + (screenUv.x - 0.5) * (viewportAspect / imageAspect);
+    vec3 sampleBg(vec2 screenUV) {
+      float screenAspect = uResolution.x / uResolution.y;
+      vec2 uv = screenUV;
+
+      if (uBgAspect > screenAspect) {
+        float s = screenAspect / uBgAspect;
+        uv.x = uv.x * s + (1.0 - s) * 0.5;
       } else {
-        uv.y = 0.5 + (screenUv.y - 0.5) * (imageAspect / viewportAspect);
+        float s = uBgAspect / screenAspect;
+        uv.y = uv.y * s + (1.0 - s) * 0.5;
       }
 
-      return clamp(uv, 0.0, 1.0);
+      uv.y = 1.0 - uv.y;
+      return texture2D(uBgTex, clamp(uv, 0.0, 1.0)).rgb;
     }
 
-    vec3 sampleBackdrop(vec2 pixel) {
-      return texture2D(uBackdrop, coverUv(pixel)).rgb;
+    vec3 sampleBgBlurred(vec2 uv, float radius) {
+      if (radius < 0.5) return sampleBg(uv);
+
+      vec3 sum = vec3(0.0);
+      vec2 px = 1.0 / uResolution;
+      vec2 offsets[16];
+      offsets[0]  = vec2(-0.94201, -0.39906);
+      offsets[1]  = vec2( 0.94558, -0.76890);
+      offsets[2]  = vec2(-0.09418, -0.92938);
+      offsets[3]  = vec2( 0.34495,  0.29387);
+      offsets[4]  = vec2(-0.91588, -0.45771);
+      offsets[5]  = vec2(-0.81544,  0.48568);
+      offsets[6]  = vec2(-0.38277, -0.56071);
+      offsets[7]  = vec2(-0.12675,  0.84686);
+      offsets[8]  = vec2( 0.89642,  0.41254);
+      offsets[9]  = vec2( 0.18150, -0.30020);
+      offsets[10] = vec2(-0.01445, -0.16001);
+      offsets[11] = vec2( 0.59614,  0.71118);
+      offsets[12] = vec2( 0.49742, -0.47280);
+      offsets[13] = vec2( 0.80685,  0.04588);
+      offsets[14] = vec2(-0.32490, -0.03965);
+      offsets[15] = vec2(-0.60975,  0.06566);
+
+      for (int i = 0; i < 16; i++) {
+        sum += sampleBg(uv + offsets[i] * radius * px);
+      }
+      return sum / 16.0;
     }
 
     void main() {
-      vec2 localPixel = gl_FragCoord.xy;
-      vec2 globalPixel = uCardOrigin + localPixel;
-      vec2 halfSize = uCardResolution * 0.5;
-      vec2 p = localPixel - halfSize;
-      float radius = min(uRadius, min(halfSize.x, halfSize.y) - 1.0);
-      float sd = roundedBox(p, halfSize - vec2(1.0), radius);
+      // Top-left CSS-pixel coordinate system, matching getBoundingClientRect().
+      vec2 screenPx = vec2(vUv.x, 1.0 - vUv.y) * uResolution;
+      vec2 p = screenPx - uGlassCenter;
+      vec2 halfSize = uGlassSize * 0.5;
 
-      float eps = 1.25;
-      vec2 grad = vec2(
-        roundedBox(p + vec2(eps, 0.0), halfSize - vec2(1.0), radius) -
-          roundedBox(p - vec2(eps, 0.0), halfSize - vec2(1.0), radius),
-        roundedBox(p + vec2(0.0, eps), halfSize - vec2(1.0), radius) -
-          roundedBox(p - vec2(0.0, eps), halfSize - vec2(1.0), radius)
-      );
-      vec2 normal = normalize(grad + vec2(0.0001));
+      float sd = sdRoundedRect(p, halfSize, uRadius);
 
-      float edgeWidth = min(86.0, min(halfSize.x, halfSize.y) * 0.72);
-      float edge = 1.0 - smoothstep(0.0, edgeWidth, max(-sd, 0.0));
-      float bend = pow(edge, 1.7);
-      vec2 displacement = -normal * (2.0 + 21.0 * bend);
+      if (sd > 0.0) {
+        float shadowFalloff = exp(-sd * sd / 800.0);
+        float shadowAlpha = uShadow * shadowFalloff * 0.6;
+        gl_FragColor = vec4(0.0, 0.0, 0.0, shadowAlpha);
+        return;
+      }
 
-      vec3 base = sampleBackdrop(globalPixel + displacement);
-      vec3 soft = (
-        base +
-        sampleBackdrop(globalPixel + displacement + vec2(1.5, 0.0)) +
-        sampleBackdrop(globalPixel + displacement - vec2(1.5, 0.0)) +
-        sampleBackdrop(globalPixel + displacement + vec2(0.0, 1.5)) +
-        sampleBackdrop(globalPixel + displacement - vec2(0.0, 1.5))
-      ) / 5.0;
+      float distFromEdge = -sd;
+      float maxBezel = max(1.0, min(uRadius, min(halfSize.x, halfSize.y)) - 1.0);
+      float bezel = min(uBezel, maxBezel);
+      float t = clamp(distFromEdge / bezel, 0.0, 1.0);
 
-      vec3 split;
-      split.r = sampleBackdrop(globalPixel + displacement * 1.10).r;
-      split.g = base.g;
-      split.b = sampleBackdrop(globalPixel + displacement * 0.90).b;
+      float h = surfaceHeight(t);
+      float dt = 0.001;
+      float h2 = surfaceHeight(min(t + dt, 1.0));
+      float dh = (h2 - h) / dt;
 
-      vec3 glass = mix(base, soft, 0.22);
-      glass = mix(glass, split, 0.34 * bend);
-      glass *= 0.92;
-      glass += vec3(0.008, 0.016, 0.028);
+      float slopeAngle = atan(dh * (uThickness / bezel));
+      float sinR = sin(slopeAngle) / uIOR;
+      sinR = clamp(sinR, -1.0, 1.0);
+      float thetaR = asin(sinR);
+      float displacement = h * uThickness * (tan(slopeAngle) - tan(thetaR));
 
-      vec2 lightDirection = normalize(vec2(-0.55, 0.83));
-      float specular = pow(max(0.0, dot(normal, lightDirection)), 24.0) * bend;
-      glass += vec3(0.72, 0.88, 1.0) * specular * 0.10;
-      glass += vec3(0.18, 0.34, 0.58) * pow(bend, 2.3) * 0.08;
+      vec2 grad;
+      float eps = 0.5;
+      grad.x = sdRoundedRect(p + vec2(eps, 0.0), halfSize, uRadius) - sd;
+      grad.y = sdRoundedRect(p + vec2(0.0, eps), halfSize, uRadius) - sd;
+      grad = normalize(grad + vec2(0.00001));
 
-      gl_FragColor = vec4(glass, 1.0);
+      vec2 offset = -grad * displacement / uResolution;
+      vec2 screenUV = screenPx / uResolution;
+      vec2 refractedUV = screenUV + offset;
+
+      vec3 color = sampleBgBlurred(refractedUV, uBlur);
+
+      vec2 lightDir = normalize(vec2(0.5, -0.7));
+      float rimDot = abs(dot(grad, lightDir));
+      float rimFalloff = 1.0 - smoothstep(0.0, bezel * 0.4, distFromEdge);
+      float specHighlight = pow(rimDot * rimFalloff, 1.5);
+      color += vec3(specHighlight * uSpecular);
+
+      float innerShadow = 1.0 - smoothstep(0.0, bezel * 0.6, distFromEdge);
+      color *= mix(1.0, 0.7, innerShadow * 0.3);
+
+      float innerRim = smoothstep(0.0, 2.0, distFromEdge) *
+                       (1.0 - smoothstep(2.0, 5.0, distFromEdge));
+      color += vec3(innerRim * 0.15 * uSpecular);
+
+      color = mix(color, vec3(1.0), uTint);
+
+      float alpha = smoothstep(0.0, 1.5, distFromEdge);
+      gl_FragColor = vec4(color, alpha);
     }
   `;
 
@@ -108,7 +177,7 @@
     return shader;
   }
 
-  function outerCards() {
+  function getOuterCards() {
     return Array.from(document.querySelectorAll(CARD_SELECTOR)).filter((card) => {
       let parent = card.parentElement;
       while (parent && parent !== document.body) {
@@ -120,73 +189,19 @@
   }
 
   function start() {
-    const cards = outerCards();
+    const cards = getOuterCards();
     if (!cards.length) return;
 
-    const image = new Image();
-    image.decoding = 'async';
-    image.src = BACKDROP_URL;
+    const wallpaper = document.createElement('div');
+    wallpaper.id = 'liquid-glass-wallpaper';
+    wallpaper.setAttribute('aria-hidden', 'true');
 
-    image.addEventListener('error', () => {
-      console.error('Liquid glass test image is missing:', BACKDROP_URL);
-    }, { once: true });
-
-    image.addEventListener('load', () => init(cards, image), { once: true });
-  }
-
-  function init(cards, image) {
-    const backdrop = document.createElement('div');
-    backdrop.id = 'liquid-glass-test-backdrop';
-    backdrop.setAttribute('aria-hidden', 'true');
-    document.body.insertBefore(backdrop, document.body.firstChild);
-
-    const renderers = [];
-
-    cards.forEach((card) => {
-      const renderer = createRenderer(card, image, backdrop);
-      if (renderer) renderers.push(renderer);
-    });
-
-    if (!renderers.length) {
-      backdrop.remove();
-      return;
-    }
-
-    document.documentElement.classList.add('archis-webgl-ready');
-
-    let running = true;
-
-    function frame() {
-      if (!running) return;
-      const backdropRect = backdrop.getBoundingClientRect();
-      renderers.forEach((renderer) => renderer.render(backdropRect));
-      requestAnimationFrame(frame);
-    }
-
-    window.addEventListener('pagehide', () => {
-      running = false;
-      renderers.forEach((renderer) => renderer.destroy());
-    }, { once: true });
-
-    requestAnimationFrame(frame);
-  }
-
-  function createRenderer(card, image, backdrop) {
     const canvas = document.createElement('canvas');
-    canvas.className = 'liquid-card-canvas';
+    canvas.id = 'liquid-glass-stage';
     canvas.setAttribute('aria-hidden', 'true');
-    card.insertBefore(canvas, card.firstChild);
 
-    // Lift only normal in-flow children above the canvas. Children that already
-    // have explicit positioning keep their original position mode/layout.
-    Array.from(card.children).forEach((child) => {
-      if (child === canvas) return;
-      if (getComputedStyle(child).position === 'static') {
-        child.classList.add('liquid-card-content');
-      } else {
-        child.classList.add('liquid-card-positioned');
-      }
-    });
+    document.body.insertBefore(canvas, document.body.firstChild);
+    document.body.insertBefore(wallpaper, canvas);
 
     const gl = canvas.getContext('webgl', {
       alpha: true,
@@ -197,7 +212,8 @@
 
     if (!gl) {
       canvas.remove();
-      return null;
+      wallpaper.remove();
+      return;
     }
 
     let program;
@@ -210,9 +226,10 @@
         throw new Error(gl.getProgramInfoLog(program) || 'Program link failed');
       }
     } catch (error) {
-      console.error('Liquid glass shader failed:', error);
+      console.error('Liquid Glass reference shader failed:', error);
       canvas.remove();
-      return null;
+      wallpaper.remove();
+      return;
     }
 
     const buffer = gl.createBuffer();
@@ -228,13 +245,20 @@
     gl.enableVertexAttribArray(position);
     gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
 
-    const uniforms = {
-      cardResolution: gl.getUniformLocation(program, 'uCardResolution'),
-      cardOrigin: gl.getUniformLocation(program, 'uCardOrigin'),
-      backdropResolution: gl.getUniformLocation(program, 'uBackdropResolution'),
-      imageResolution: gl.getUniformLocation(program, 'uImageResolution'),
+    const u = {
+      resolution: gl.getUniformLocation(program, 'uResolution'),
+      center: gl.getUniformLocation(program, 'uGlassCenter'),
+      size: gl.getUniformLocation(program, 'uGlassSize'),
       radius: gl.getUniformLocation(program, 'uRadius'),
-      backdrop: gl.getUniformLocation(program, 'uBackdrop')
+      bezel: gl.getUniformLocation(program, 'uBezel'),
+      thickness: gl.getUniformLocation(program, 'uThickness'),
+      ior: gl.getUniformLocation(program, 'uIOR'),
+      blur: gl.getUniformLocation(program, 'uBlur'),
+      specular: gl.getUniformLocation(program, 'uSpecular'),
+      tint: gl.getUniformLocation(program, 'uTint'),
+      shadow: gl.getUniformLocation(program, 'uShadow'),
+      bgTex: gl.getUniformLocation(program, 'uBgTex'),
+      bgAspect: gl.getUniformLocation(program, 'uBgAspect')
     };
 
     const texture = gl.createTexture();
@@ -244,90 +268,132 @@
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-    gl.uniform1i(uniforms.backdrop, 0);
 
-    card.classList.add('liquid-webgl-surface');
+    const image = new Image();
+    image.decoding = 'async';
 
-    let lastDpr = 0;
-    let destroyed = false;
+    image.addEventListener('error', () => {
+      console.error('Liquid Glass wallpaper failed to load:', BACKDROP_URL);
+      canvas.remove();
+      wallpaper.remove();
+    }, { once: true });
 
-    return {
-      render(backdropRect) {
-        if (destroyed || !canvas.isConnected) return;
+    image.addEventListener('load', () => {
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, texture);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+      gl.uniform1i(u.bgTex, 0);
+      gl.uniform1f(u.bgAspect, image.naturalWidth / image.naturalHeight);
 
-        const canvasRect = canvas.getBoundingClientRect();
-        const viewportHeight = backdropRect.height;
-        const nearViewport =
-          canvasRect.bottom > -viewportHeight &&
-          canvasRect.top < viewportHeight * 2 &&
-          canvasRect.right > -200 &&
-          canvasRect.left < backdropRect.width + 200;
+      cards.forEach((card) => card.classList.add('liquid-webgl-surface'));
+      document.documentElement.classList.add('archis-webgl-ready');
+      requestAnimationFrame(render);
+    }, { once: true });
 
-        if (!nearViewport) {
-          if (canvas.width !== 2 || canvas.height !== 2) {
-            canvas.width = 2;
-            canvas.height = 2;
-            gl.viewport(0, 0, 2, 2);
-          }
-          return;
-        }
+    image.src = BACKDROP_URL;
+
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    gl.enable(gl.SCISSOR_TEST);
+
+    let lastWidth = 0;
+    let lastHeight = 0;
+    let running = true;
+
+    function resize(stageRect) {
+      const mobile = stageRect.width < 768;
+      const dpr = Math.min(window.devicePixelRatio || 1, mobile ? 1.25 : 1.5);
+      const width = Math.max(1, Math.round(stageRect.width * dpr));
+      const height = Math.max(1, Math.round(stageRect.height * dpr));
+
+      if (width !== lastWidth || height !== lastHeight) {
+        canvas.width = width;
+        canvas.height = height;
+        gl.viewport(0, 0, width, height);
+        lastWidth = width;
+        lastHeight = height;
+      }
+      return dpr;
+    }
+
+    function render() {
+      if (!running || !canvas.isConnected) return;
+
+      const stageRect = canvas.getBoundingClientRect();
+      if (stageRect.width <= 1 || stageRect.height <= 1) {
+        requestAnimationFrame(render);
+        return;
+      }
+
+      const dpr = resize(stageRect);
+      gl.useProgram(program);
+      gl.clearColor(0, 0, 0, 0);
+      gl.scissor(0, 0, canvas.width, canvas.height);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+
+      gl.uniform2f(u.resolution, stageRect.width, stageRect.height);
+      gl.uniform1f(u.thickness, SETTINGS.thickness);
+      gl.uniform1f(u.bezel, SETTINGS.bezel);
+      gl.uniform1f(u.ior, SETTINGS.ior);
+      gl.uniform1f(u.blur, SETTINGS.blur);
+      gl.uniform1f(u.specular, SETTINGS.specular);
+      gl.uniform1f(u.tint, SETTINGS.tint);
+      gl.uniform1f(u.shadow, SETTINGS.shadow);
+      gl.uniform1f(u.bgAspect, image.naturalWidth / image.naturalHeight);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, texture);
+
+      for (const card of cards) {
+        if (!card.isConnected) continue;
+        const rect = card.getBoundingClientRect();
 
         if (
-          canvasRect.width <= 1 || canvasRect.height <= 1 ||
-          backdropRect.width <= 1 || backdropRect.height <= 1
-        ) return;
+          rect.bottom < stageRect.top - SHADOW_MARGIN ||
+          rect.top > stageRect.bottom + SHADOW_MARGIN ||
+          rect.right < stageRect.left - SHADOW_MARGIN ||
+          rect.left > stageRect.right + SHADOW_MARGIN
+        ) continue;
 
-        const dprCap = 1.6;
-        let dpr = Math.min(window.devicePixelRatio || 1, dprCap);
-
-        // Large single-card pages (Homelab / Get Started) can be thousands of
-        // CSS pixels tall. Allow sub-1x backing resolution for those surfaces
-        // instead of allocating a gigantic WebGL framebuffer on mobile/desktop.
-        const cssPixels = canvasRect.width * canvasRect.height;
-        const maxBackingPixels = canvasRect.width < 768 ? 1800000 : 3000000;
-        if (cssPixels * dpr * dpr > maxBackingPixels) {
-          dpr = Math.max(0.55, Math.sqrt(maxBackingPixels / cssPixels));
-        }
-
-        const width = Math.max(1, Math.round(canvasRect.width * dpr));
-        const height = Math.max(1, Math.round(canvasRect.height * dpr));
-
-        if (canvas.width !== width || canvas.height !== height || lastDpr !== dpr) {
-          canvas.width = width;
-          canvas.height = height;
-          gl.viewport(0, 0, width, height);
-          lastDpr = dpr;
-        }
-
-        const originX = (canvasRect.left - backdropRect.left) * dpr;
-        const originY = (backdropRect.bottom - canvasRect.bottom) * dpr;
+        const left = rect.left - stageRect.left;
+        const top = rect.top - stageRect.top;
+        const centerX = left + rect.width * 0.5;
+        const centerY = top + rect.height * 0.5;
         const style = getComputedStyle(card);
-        const radius = Math.max(1, (parseFloat(style.borderTopLeftRadius) || 20) * dpr);
+        const radius = Math.max(1, parseFloat(style.borderTopLeftRadius) || 20);
 
-        gl.useProgram(program);
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-        gl.uniform2f(uniforms.cardResolution, width, height);
-        gl.uniform2f(uniforms.cardOrigin, originX, originY);
-        gl.uniform2f(
-          uniforms.backdropResolution,
-          backdropRect.width * dpr,
-          backdropRect.height * dpr
+        const sx = Math.max(0, Math.floor((left - SHADOW_MARGIN) * dpr));
+        const sy = Math.max(
+          0,
+          Math.floor((stageRect.height - (top + rect.height + SHADOW_MARGIN)) * dpr)
         );
-        gl.uniform2f(uniforms.imageResolution, image.naturalWidth, image.naturalHeight);
-        gl.uniform1f(uniforms.radius, radius);
-        gl.drawArrays(gl.TRIANGLES, 0, 6);
-      },
+        const sr = Math.min(
+          canvas.width,
+          Math.ceil((left + rect.width + SHADOW_MARGIN) * dpr)
+        );
+        const st = Math.min(
+          canvas.height,
+          Math.ceil((stageRect.height - (top - SHADOW_MARGIN)) * dpr)
+        );
+        const sw = Math.max(0, sr - sx);
+        const sh = Math.max(0, st - sy);
+        if (!sw || !sh) continue;
 
-      destroy() {
-        if (destroyed) return;
-        destroyed = true;
-        const loseContext = gl.getExtension('WEBGL_lose_context');
-        if (loseContext) loseContext.loseContext();
+        gl.scissor(sx, sy, sw, sh);
+        gl.uniform2f(u.center, centerX, centerY);
+        gl.uniform2f(u.size, rect.width, rect.height);
+        gl.uniform1f(u.radius, radius);
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
       }
-    };
+
+      requestAnimationFrame(render);
+    }
+
+    window.addEventListener('pagehide', () => {
+      running = false;
+      const loseContext = gl.getExtension('WEBGL_lose_context');
+      if (loseContext) loseContext.loseContext();
+    }, { once: true });
   }
 
   if (document.readyState === 'loading') {
