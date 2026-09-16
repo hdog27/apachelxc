@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Liquid Glass Preview</title>
+  <link rel="stylesheet" href="css/liquid-glass-webgl.css">
+  <style>
+    *{box-sizing:border-box} body{margin:0;min-height:180vh;background:#06111f;color:#fff;font:16px system-ui;padding:110px 5vw 80px}
+    .top-nav{position:fixed;z-index:5;top:20px;left:8vw;right:8vw;display:flex;gap:12px;justify-content:center}
+    .nav-btn,.card,.panel{position:relative;z-index:1;border:1px solid #ffffff33;border-radius:24px;background:#ffffff12;color:#fff}
+    .nav-btn{padding:12px 22px;border-radius:99px;text-decoration:none}.grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;max-width:1100px;margin:auto}
+    .card,.panel{min-height:330px;padding:32px}.panel{grid-column:1/-1;min-height:210px}h1{font-size:32px}p{line-height:1.7;color:#d9e7f7}
+    @media(max-width:700px){body{padding-top:92px}.grid{grid-template-columns:1fr}.panel{grid-column:auto}.top-nav{overflow-x:auto;justify-content:flex-start}.card{min-height:280px}}
+  </style>
+</head>
+<body>
+  <div class="top-nav"><a class="nav-btn">Homelab</a><a class="nav-btn">Cyber Lab</a><a class="nav-btn">Projects</a><a class="nav-btn">Contact</a></div>
+  <main class="grid">
+    <section class="card"><h1>Metadata Security Lab</h1><p>Stars and grid lines behind this card should visibly bend around all four edges while the center remains readable.</p></section>
+    <section class="card"><h1>Your Connection</h1><p>One fixed WebGL canvas renders every surface. These are ordinary HTML cards and cannot move.</p></section>
+    <section class="panel"><h1>Connection Path</h1><p>Scroll the page to confirm that the glass remains attached to this element without layout jumps or rasterization stalls.</p></section>
+    <section class="panel"><h1>Mobile Scroll Test</h1><p>This lower panel exists to test viewport movement and continuous animated stars.</p></section>
+  </main>
+  <script src="js/liquid-glass-webgl.js"></script>
+</body>
+</html>

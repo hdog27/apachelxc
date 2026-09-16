@@ -27,5 +27,6 @@
 <script src="/js/vpn-kitty.js?v=<?= @filemtime(__DIR__ . "/../js/vpn-kitty.js") ?>"></script>
 <script src="/js/cyberlab-layout.js?v=<?= @filemtime(__DIR__ . "/../js/cyberlab-layout.js") ?>"></script>
 <?php endif; ?>
+<script src="/js/liquid-glass-webgl.js?v=<?= @filemtime(__DIR__ . "/../js/liquid-glass-webgl.js") ?>"></script>
 </body>
 </html>
