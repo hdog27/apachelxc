@@ -2,8 +2,9 @@
   'use strict';
 
   // Reference-engine experiment based on archisvaze/liquid-glass webgl.html.
-  // One fullscreen WebGL context renders every visible outer card. This keeps
-  // the physics-based edge refraction while avoiding one WebGL context per card.
+  // One fullscreen WebGL context renders every visible outer card. The shader
+  // math is the reference repo's rounded-rect / thickness / bezel / IOR model;
+  // this file only adapts that renderer to the site's existing cards/layout.
   const BACKDROP_URL = '/images/liquid-glass-test-bg.jpg';
   const CARD_SELECTOR = '.card, .panel, .identity-hero';
   const SHADOW_MARGIN = 42;
@@ -28,9 +29,6 @@
     }
   `;
 
-  // The refraction math below follows the WebGL engine from
-  // archisvaze/liquid-glass: rounded-rect SDF -> curved surface height ->
-  // Snell-style refraction -> blurred background sample -> specular/rim light.
   const fragmentSource = `
     precision highp float;
     varying vec2 vUv;
@@ -105,7 +103,6 @@
     }
 
     void main() {
-      // Top-left CSS-pixel coordinate system, matching getBoundingClientRect().
       vec2 screenPx = vec2(vUv.x, 1.0 - vUv.y) * uResolution;
       vec2 p = screenPx - uGlassCenter;
       vec2 halfSize = uGlassSize * 0.5;
@@ -188,6 +185,15 @@
     });
   }
 
+  function liftNormalPageContent(wallpaper, canvas) {
+    Array.from(document.body.children).forEach((child) => {
+      if (child === wallpaper || child === canvas) return;
+      if (getComputedStyle(child).position === 'static') {
+        child.classList.add('liquid-page-content');
+      }
+    });
+  }
+
   function start() {
     const cards = getOuterCards();
     if (!cards.length) return;
@@ -202,6 +208,7 @@
 
     document.body.insertBefore(canvas, document.body.firstChild);
     document.body.insertBefore(wallpaper, canvas);
+    liftNormalPageContent(wallpaper, canvas);
 
     const gl = canvas.getContext('webgl', {
       alpha: true,
@@ -210,9 +217,12 @@
       powerPreference: 'high-performance'
     });
 
+    // Some in-app browsers disable WebGL. Keep the wallpaper and the site's
+    // original CSS cards instead of turning the entire page black.
     if (!gl) {
+      console.warn('Liquid Glass WebGL unavailable; using normal card fallback.');
       canvas.remove();
-      wallpaper.remove();
+      document.documentElement.classList.add('liquid-webgl-unavailable');
       return;
     }
 
@@ -228,7 +238,7 @@
     } catch (error) {
       console.error('Liquid Glass reference shader failed:', error);
       canvas.remove();
-      wallpaper.remove();
+      document.documentElement.classList.add('liquid-webgl-unavailable');
       return;
     }
 
@@ -275,7 +285,7 @@
     image.addEventListener('error', () => {
       console.error('Liquid Glass wallpaper failed to load:', BACKDROP_URL);
       canvas.remove();
-      wallpaper.remove();
+      document.documentElement.classList.add('liquid-webgl-unavailable');
     }, { once: true });
 
     image.addEventListener('load', () => {
@@ -388,6 +398,12 @@
 
       requestAnimationFrame(render);
     }
+
+    canvas.addEventListener('webglcontextlost', (event) => {
+      event.preventDefault();
+      document.documentElement.classList.remove('archis-webgl-ready');
+      document.documentElement.classList.add('liquid-webgl-unavailable');
+    });
 
     window.addEventListener('pagehide', () => {
       running = false;
