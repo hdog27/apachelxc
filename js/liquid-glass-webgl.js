@@ -78,32 +78,34 @@
         return;
       }
 
-      float eps = 1.25;
       vec2 p = pixel - bestCenter;
-      vec2 normal = normalize(vec2(
-        roundedBox(p + vec2(eps,0.0), bestHalf, bestRadius) - roundedBox(p - vec2(eps,0.0), bestHalf, bestRadius),
-        roundedBox(p + vec2(0.0,eps), bestHalf, bestRadius) - roundedBox(p - vec2(0.0,eps), bestHalf, bestRadius)
-      ));
-      float inside = smoothstep(2.0, -2.0, bestSd);
-      float edgeDepth = 1.0 - smoothstep(0.0, min(70.0, min(bestHalf.x,bestHalf.y)), -bestSd);
-      float lens = pow(edgeDepth, 1.6) * inside;
-      vec2 displacement = -normal * (5.0 + 23.0 * lens);
+      vec2 safeHalf = max(bestHalf - vec2(min(bestRadius * .18, 18.0)), vec2(1.0));
+      vec2 n = p / safeHalf;
+      vec2 an = abs(n);
+      float superellipse = pow(pow(an.x, 4.0) + pow(an.y, 4.0), .25);
+      float lens = smoothstep(.28, .98, clamp(superellipse, 0.0, 1.0));
+      float pLen = max(length(p), 1.0);
+      vec2 direction = p / pLen;
+      float edgeLens = pow(lens, 1.7);
+      vec2 displacement = -direction * (2.0 + 20.0 * edgeLens);
 
       vec3 base = backdrop(pixel + displacement);
       vec3 split;
-      split.r = backdrop(pixel + displacement * 1.11).r;
+      split.r = backdrop(pixel + displacement * 1.10).r;
       split.g = base.g;
-      split.b = backdrop(pixel + displacement * .89).b;
-      vec3 glass = mix(base, split, .62);
+      split.b = backdrop(pixel + displacement * .90).b;
+      vec3 glass = mix(base, split, .58);
       glass = mix(glass, vec3(.06,.12,.19), .13);
 
       vec2 lightDirection = normalize(vec2(-.55,.83));
-      float specular = pow(max(0.0, dot(normal, lightDirection)), 22.0) * lens;
-      float rim = pow(lens, 2.2);
-      glass += vec3(.72,.9,1.0) * specular * .10;
-      glass += vec3(.36,.65,.94) * rim * .18;
+      float specular = pow(max(0.0, dot(direction, lightDirection)), 18.0) * edgeLens;
+      float rim = pow(edgeLens, 2.0);
+      glass += vec3(.72,.9,1.0) * specular * .11;
+      glass += vec3(.36,.65,.94) * rim * .16;
 
-      gl_FragColor = vec4(glass, inside * .88);
+      float edgeFade = 1.0 - smoothstep(-2.0, 0.0, bestSd);
+      float alpha = mix(.985, 1.0, edgeFade);
+      gl_FragColor = vec4(glass, alpha);
     }
   `;
 
@@ -122,7 +124,13 @@
     const stars = document.querySelector('.stars-layer');
     if (stars) stars.insertAdjacentElement('afterend', canvas);
     else document.body.insertBefore(canvas, document.body.firstChild);
-    const gl = canvas.getContext('webgl', { alpha: true, antialias: false, premultipliedAlpha: true, powerPreference: 'high-performance' });
+
+    const gl = canvas.getContext('webgl', {
+      alpha: true,
+      antialias: false,
+      premultipliedAlpha: true,
+      powerPreference: 'high-performance'
+    });
     if (!gl) { canvas.remove(); return; }
 
     let program;
@@ -153,54 +161,101 @@
     const radiiLocation = gl.getUniformLocation(program, 'uGlassRadii[0]');
     const rectData = new Float32Array(MAX_GLASS * 4);
     const radiusData = new Float32Array(MAX_GLASS);
+    const root = document.documentElement;
     let surfaces = [];
     let lastScan = 0;
+    let scrollTimer = 0;
+    let scrolling = false;
+
+    function hasGlassAncestor(surface) {
+      let parent = surface.parentElement;
+      while (parent && parent !== document.body) {
+        if (parent.matches && parent.matches(selector)) return true;
+        parent = parent.parentElement;
+      }
+      return false;
+    }
 
     function scan() {
       surfaces = Array.from(document.querySelectorAll(selector)).filter((surface) => {
         const rect = surface.getBoundingClientRect();
-        return rect.width > 2 && rect.height > 2;
+        return rect.width > 2 && rect.height > 2 && !hasGlassAncestor(surface);
       });
       surfaces.forEach((surface) => surface.classList.add('liquid-webgl-surface'));
     }
 
     function resize() {
-      const dprLimit = innerWidth < 768 ? 1.5 : 2;
+      const dprLimit = innerWidth < 768 ? 1.35 : 2;
       const dpr = Math.min(window.devicePixelRatio || 1, dprLimit);
       const width = Math.round(innerWidth * dpr);
       const height = Math.round(innerHeight * dpr);
       if (canvas.width !== width || canvas.height !== height) {
-        canvas.width = width; canvas.height = height;
+        canvas.width = width;
+        canvas.height = height;
         gl.viewport(0, 0, width, height);
       }
       return dpr;
     }
 
+    function usesScrollFallback() {
+      return innerWidth < 820 || (window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+    }
+
+    function beginScrollFallback() {
+      if (!usesScrollFallback()) return;
+      if (!scrolling) {
+        scrolling = true;
+        root.classList.add('archis-webgl-scrolling');
+      }
+      window.clearTimeout(scrollTimer);
+      scrollTimer = window.setTimeout(() => {
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          scan();
+          scrolling = false;
+          root.classList.remove('archis-webgl-scrolling');
+        }));
+      }, 180);
+    }
+
+    window.addEventListener('scroll', beginScrollFallback, { passive: true });
+    window.addEventListener('resize', () => { scan(); beginScrollFallback(); }, { passive: true });
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('scroll', beginScrollFallback, { passive: true });
+      window.visualViewport.addEventListener('resize', beginScrollFallback, { passive: true });
+    }
+
     function render(now) {
       const dpr = resize();
-      if (now - lastScan > 1000) { scan(); lastScan = now; }
-      rectData.fill(0); radiusData.fill(0);
-      const visibleSurfaces = surfaces.filter((surface) => {
-        const rect = surface.getBoundingClientRect();
-        return rect.bottom > -30 && rect.top < innerHeight + 30 && rect.right > -30 && rect.left < innerWidth + 30;
-      }).slice(0, MAX_GLASS);
-      visibleSurfaces.forEach((surface, index) => {
-        const rect = surface.getBoundingClientRect();
-        const style = getComputedStyle(surface);
-        rectData.set([rect.left*dpr, (innerHeight-rect.bottom)*dpr, rect.width*dpr, rect.height*dpr], index*4);
-        radiusData[index] = (parseFloat(style.borderRadius) || 20) * dpr;
-      });
-      gl.uniform2f(resolutionLocation, canvas.width, canvas.height);
-      gl.uniform1f(timeLocation, now * .001);
-      gl.uniform1i(countLocation, visibleSurfaces.length);
-      gl.uniform4fv(rectsLocation, rectData);
-      gl.uniform1fv(radiiLocation, radiusData);
-      gl.drawArrays(gl.TRIANGLES, 0, 6);
+      if (now - lastScan > 750) { scan(); lastScan = now; }
+
+      if (!scrolling) {
+        rectData.fill(0);
+        radiusData.fill(0);
+        const visibleSurfaces = surfaces.filter((surface) => {
+          const rect = surface.getBoundingClientRect();
+          return rect.bottom > -24 && rect.top < innerHeight + 24 && rect.right > -24 && rect.left < innerWidth + 24;
+        }).slice(0, MAX_GLASS);
+
+        visibleSurfaces.forEach((surface, index) => {
+          const rect = surface.getBoundingClientRect();
+          const style = getComputedStyle(surface);
+          rectData.set([rect.left*dpr, (innerHeight-rect.bottom)*dpr, rect.width*dpr, rect.height*dpr], index*4);
+          radiusData[index] = (parseFloat(style.borderRadius) || 20) * dpr;
+        });
+
+        gl.uniform2f(resolutionLocation, canvas.width, canvas.height);
+        gl.uniform1f(timeLocation, now * .001);
+        gl.uniform1i(countLocation, visibleSurfaces.length);
+        gl.uniform4fv(rectsLocation, rectData);
+        gl.uniform1fv(radiiLocation, radiusData);
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+      }
+
       requestAnimationFrame(render);
     }
 
     scan();
-    document.documentElement.classList.add('archis-webgl-ready');
+    root.classList.add('archis-webgl-ready');
     requestAnimationFrame(render);
   }
 
