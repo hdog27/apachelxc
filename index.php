@@ -1,5 +1,8 @@
 <?php
 require_once __DIR__ . '/includes/metadata.php';
+require_once __DIR__ . '/includes/noise.php';
+
+$noise24h = hmax_noise_stats();
 
 $page_title       = 'Cyber Lab | hmax.space';
 $page_description = 'A live web-server metadata security lab: see the IP, geolocation, ISP, VPN/proxy status and device fingerprint your browser reveals on every request.';
@@ -86,7 +89,7 @@ require __DIR__ . '/includes/header.php';
 
   <section class="lab-grid">
     <article class="panel lab-intro-panel">
-      <p class="panel-label">LIVE DEMO</p>
+      <p class="panel-label">LIVE · LAST 24 HOURS</p>
       <h1>Metadata Security Lab</h1>
 
       <div class="banner-row">
