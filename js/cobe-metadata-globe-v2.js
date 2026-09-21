@@ -48,6 +48,8 @@ import createGlobe from '/js/vendor/cobe/index.esm.js';
   var raf = 0;
   var phi = 0;
   var destroyed = false;
+  var mobileSpin = !!(window.matchMedia && window.matchMedia('(max-width: 820px)').matches);
+  var spinStep = mobileSpin ? 0.0068 : 0.0038;
 
   function start() {
     if (globe || destroyed) return;
@@ -85,7 +87,7 @@ import createGlobe from '/js/vendor/cobe/index.esm.js';
     function animate() {
       if (destroyed) return;
       if (!document.hidden && globe && globe.update) {
-        phi += 0.0038;
+        phi += spinStep;
         globe.update({ phi: phi });
       }
       raf = requestAnimationFrame(animate);
