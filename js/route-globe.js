@@ -166,6 +166,11 @@
     'uniform sampler2D u_regionTex;',
     'uniform vec4 u_regionBounds;',
     'uniform float u_regionReady;',
+    'uniform float u_regionMix;',
+    'uniform sampler2D u_homeRegionTex;',
+    'uniform vec4 u_homeRegionBounds;',
+    'uniform float u_homeRegionReady;',
+    'uniform float u_homeRegionMix;',
     'uniform vec2 u_centerPx;',
     'uniform float u_radius;',
     'uniform float u_centerLat;',
@@ -189,7 +194,13 @@
     'vec2 ruv=vec2((lon-u_regionBounds.x)/(u_regionBounds.z-u_regionBounds.x),(lat-u_regionBounds.y)/(u_regionBounds.w-u_regionBounds.y));',
     'float edge=min(min(ruv.x,1.0-ruv.x),min(ruv.y,1.0-ruv.y));',
     'float blend=smoothstep(.02,.08,edge);',
-    'base=mix(base,texture2D(u_regionTex,ruv).rgb,blend);',
+    'base=mix(base,texture2D(u_regionTex,ruv).rgb,blend*u_regionMix);',
+    '}',
+    'if(u_homeRegionReady>.5&&lon>=u_homeRegionBounds.x&&lon<=u_homeRegionBounds.z&&lat>=u_homeRegionBounds.y&&lat<=u_homeRegionBounds.w){',
+    'vec2 huv=vec2((lon-u_homeRegionBounds.x)/(u_homeRegionBounds.z-u_homeRegionBounds.x),(lat-u_homeRegionBounds.y)/(u_homeRegionBounds.w-u_homeRegionBounds.y));',
+    'float hedge=min(min(huv.x,1.0-huv.x),min(huv.y,1.0-huv.y));',
+    'float hblend=smoothstep(.02,.08,hedge);',
+    'base=mix(base,texture2D(u_homeRegionTex,huv).rgb,hblend*u_homeRegionMix);',
     '}',
     'vec3 lightDir=normalize(vec3(-.35,.42,.84));',
     'float lit=.58+.42*max(0.0,dot(normalize(vec3(p.x,p.y,z)),lightDir));',
@@ -227,6 +238,11 @@
   var uRegionTex=gl.getUniformLocation(program,'u_regionTex');
   var uRegionBounds=gl.getUniformLocation(program,'u_regionBounds');
   var uRegionReady=gl.getUniformLocation(program,'u_regionReady');
+  var uRegionMix=gl.getUniformLocation(program,'u_regionMix');
+  var uHomeRegionTex=gl.getUniformLocation(program,'u_homeRegionTex');
+  var uHomeRegionBounds=gl.getUniformLocation(program,'u_homeRegionBounds');
+  var uHomeRegionReady=gl.getUniformLocation(program,'u_homeRegionReady');
+  var uHomeRegionMix=gl.getUniformLocation(program,'u_homeRegionMix');
 
   var texture=gl.createTexture();
   gl.activeTexture(gl.TEXTURE0);
@@ -248,9 +264,24 @@
   gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([4,22,43,255]));
   gl.uniform1i(uRegionTex,1);
   gl.uniform1f(uRegionReady,0);
+  gl.uniform1f(uRegionMix,0);
+
+  var homeRegionTexture=gl.createTexture();
+  gl.activeTexture(gl.TEXTURE2);
+  gl.bindTexture(gl.TEXTURE_2D,homeRegionTexture);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+  gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([4,22,43,255]));
+  gl.uniform1i(uHomeRegionTex,2);
+  gl.uniform1f(uHomeRegionReady,0);
+  gl.uniform1f(uHomeRegionMix,0);
 
   var regionTextureReady=false;
   var regionBounds=null;
+  var homeRegionTextureReady=false;
+  var homeRegionBounds=null;
 
   var textureReady=false;
   var maxTexture=gl.getParameter(gl.MAX_TEXTURE_SIZE)||2048;
@@ -307,36 +338,60 @@
   };
   img.src=textureUrl;
 
-  if(isMobileLike&&hasVisitor&&Math.abs(visitor.lon)<178&&Math.abs(visitor.lat)<88){
-    var regionCenterLat=Math.round(visitor.lat*4)/4;
-    var regionCenterLon=Math.round(visitor.lon*4)/4;
-    var regionSpan=2.4,regionHalf=regionSpan/2;
-    regionBounds={
-      minLon:Math.max(-179.9,regionCenterLon-regionHalf),
-      minLat:Math.max(-89.9,regionCenterLat-regionHalf),
-      maxLon:Math.min(179.9,regionCenterLon+regionHalf),
-      maxLat:Math.min(89.9,regionCenterLat+regionHalf)
+  function makeRegionBounds(lat,lon,span){
+    var centerLat=Math.round(lat*4)/4;
+    var centerLon=Math.round(lon*4)/4;
+    var half=span/2;
+    return {
+      centerLat:centerLat,
+      centerLon:centerLon,
+      minLon:Math.max(-179.9,centerLon-half),
+      minLat:Math.max(-89.9,centerLat-half),
+      maxLon:Math.min(179.9,centerLon+half),
+      maxLat:Math.min(89.9,centerLat+half)
     };
+  }
 
+  function loadRegionTexture(targetTexture,unit,bounds,span,onReady){
     var regionImg=new Image();
     regionImg.decoding='async';
     regionImg.onload=function(){
       try{
-        gl.activeTexture(gl.TEXTURE1);
-        gl.bindTexture(gl.TEXTURE_2D,regionTexture);
+        gl.activeTexture(unit);
+        gl.bindTexture(gl.TEXTURE_2D,targetTexture);
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
         gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,regionImg);
-        regionTextureReady=true;
+        onReady();
       }catch(e){}
     };
-    regionImg.src='/partials/earth-region?lat='+encodeURIComponent(regionCenterLat)+'&lon='+encodeURIComponent(regionCenterLon);
+    regionImg.src='/partials/earth-region?lat='+encodeURIComponent(bounds.centerLat)+
+      '&lon='+encodeURIComponent(bounds.centerLon)+
+      '&span='+encodeURIComponent(span);
+  }
+
+  if(isMobileLike){
+    // Tight high-detail crop for the ~50 mi visitor close-up.
+    if(hasVisitor&&Math.abs(visitor.lon)<178&&Math.abs(visitor.lat)<88){
+      var visitorRegionSpan=1.8;
+      regionBounds=makeRegionBounds(visitor.lat,visitor.lon,visitorRegionSpan);
+      loadRegionTexture(regionTexture,gl.TEXTURE1,regionBounds,visitorRegionSpan,function(){
+        regionTextureReady=true;
+      });
+    }
+
+    // Broader crop for the generalized ~200 mi origin close-up.
+    var homeRegionSpan=10.0;
+    homeRegionBounds=makeRegionBounds(home.lat,home.lon,homeRegionSpan);
+    loadRegionTexture(homeRegionTexture,gl.TEXTURE2,homeRegionBounds,homeRegionSpan,function(){
+      homeRegionTextureReady=true;
+    });
   }
 
   function resize(){
     var r=overlay.getBoundingClientRect();
     W=Math.max(1,Math.round(r.width));
     H=Math.max(1,Math.round(r.height));
-    dpr=Math.min(window.devicePixelRatio||1,isMobileLike?1.5:2);
+    dpr=Math.min(window.devicePixelRatio||1,isMobileLike?1.75:2);
     globeCanvas.width=Math.round(W*dpr);
     globeCanvas.height=Math.round(H*dpr);
     routeCanvas.width=Math.round(W*dpr);
@@ -373,7 +428,7 @@
     };
   }
 
-  function renderEarth(center,radius){
+  function renderEarth(center,radius,visitorMix,homeMix){
     gl.useProgram(program);
     gl.clearColor(0,0,0,0);
     gl.clear(gl.COLOR_BUFFER_BIT);
@@ -390,19 +445,27 @@
     gl.activeTexture(gl.TEXTURE1);
     gl.bindTexture(gl.TEXTURE_2D,regionTexture);
     gl.uniform1i(uRegionTex,1);
-
     if(regionTextureReady&&regionBounds){
-      gl.uniform4f(
-        uRegionBounds,
-        rad(regionBounds.minLon),
-        rad(regionBounds.minLat),
-        rad(regionBounds.maxLon),
-        rad(regionBounds.maxLat)
-      );
+      gl.uniform4f(uRegionBounds,rad(regionBounds.minLon),rad(regionBounds.minLat),rad(regionBounds.maxLon),rad(regionBounds.maxLat));
       gl.uniform1f(uRegionReady,1);
+      gl.uniform1f(uRegionMix,clamp(visitorMix,0,1));
     }else{
       gl.uniform4f(uRegionBounds,0,0,0,0);
       gl.uniform1f(uRegionReady,0);
+      gl.uniform1f(uRegionMix,0);
+    }
+
+    gl.activeTexture(gl.TEXTURE2);
+    gl.bindTexture(gl.TEXTURE_2D,homeRegionTexture);
+    gl.uniform1i(uHomeRegionTex,2);
+    if(homeRegionTextureReady&&homeRegionBounds){
+      gl.uniform4f(uHomeRegionBounds,rad(homeRegionBounds.minLon),rad(homeRegionBounds.minLat),rad(homeRegionBounds.maxLon),rad(homeRegionBounds.maxLat));
+      gl.uniform1f(uHomeRegionReady,1);
+      gl.uniform1f(uHomeRegionMix,clamp(homeMix,0,1));
+    }else{
+      gl.uniform4f(uHomeRegionBounds,0,0,0,0);
+      gl.uniform1f(uHomeRegionReady,0);
+      gl.uniform1f(uHomeRegionMix,0);
     }
 
     gl.drawArrays(gl.TRIANGLES,0,6);
@@ -505,7 +568,9 @@
     if(zoomHome>0) scale=Math.exp(Math.log(homeFocusScale)*zoomHome);
     var radius=baseR*scale;
 
-    renderEarth(center,radius);
+    var visitorDetailMix=hasVisitor ? (1-seg(t,.10,.44)) : 0;
+    var homeDetailMix=seg(t,.72,.94);
+    renderEarth(center,radius,visitorDetailMix,homeDetailMix);
     ctx.clearRect(0,0,W,H);
     var pulse=(Math.sin(now/160)+1)/2;
 
