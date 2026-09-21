@@ -112,7 +112,7 @@ require __DIR__ . '/includes/header.php';
         </g>
       </svg>
 
-      <button class="topology-node topology-node--plain" style="--x:50%;--y:7%" type="button"
+      <button class="topology-node topology-node--plain" style="--node-x:50%;--node-y:7%" type="button"
         data-network-node="internet" data-path-node="public client" aria-pressed="false">
         <span class="topology-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3c3 3 4 6 4 9s-1 6-4 9M12 3c-3 3-4 6-4 9s1 6 4 9"></path></svg>
@@ -120,7 +120,7 @@ require __DIR__ . '/includes/header.php';
         <span><strong>Internet</strong><small>WAN</small></span>
       </button>
 
-      <button class="topology-node topology-node--glass" style="--x:76%;--y:16%" type="button"
+      <button class="topology-node topology-node--glass" style="--node-x:76%;--node-y:16%" type="button"
         data-network-node="cloudflare" data-path-node="public" aria-pressed="false">
         <span class="topology-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="M7 18h11a4 4 0 0 0 .4-8A6 6 0 0 0 7 8.3 4.5 4.5 0 0 0 7 18Z"></path></svg>
@@ -128,7 +128,7 @@ require __DIR__ . '/includes/header.php';
         <span><strong>Cloudflare</strong><small>DNS · proxy · TLS</small></span>
       </button>
 
-      <button class="topology-node topology-node--glass topology-node--small" style="--x:24%;--y:16%" type="button"
+      <button class="topology-node topology-node--glass topology-node--small" style="--node-x:24%;--node-y:16%" type="button"
         data-network-node="mullvad" data-path-node="client" aria-pressed="false">
         <span class="topology-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.6 2.7 8 7 10 4.3-2 7-5.4 7-10V6l-7-3Z"></path><path d="M9 12l2 2 4-5"></path></svg>
@@ -136,7 +136,7 @@ require __DIR__ . '/includes/header.php';
         <span><strong>Mullvad</strong><small>4× WireGuard</small></span>
       </button>
 
-      <button class="topology-node topology-node--glass topology-node--primary active" style="--x:50%;--y:31%" type="button"
+      <button class="topology-node topology-node--glass topology-node--primary active" style="--node-x:50%;--node-y:31%" type="button"
         data-network-node="opnsense" data-path-node="public client lab" aria-pressed="true">
         <span class="topology-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.6 2.7 8 7 10 4.3-2 7-5.4 7-10V6l-7-3Z"></path><path d="M8 12h8M12 8v8"></path></svg>
@@ -144,7 +144,7 @@ require __DIR__ . '/includes/header.php';
         <span><strong>OPNsense</strong><small>Protectli V1410 · policy edge</small></span>
       </button>
 
-      <button class="topology-node topology-node--hardware" style="--x:50%;--y:48%" type="button"
+      <button class="topology-node topology-node--hardware" style="--node-x:50%;--node-y:48%" type="button"
         data-network-node="switch" data-path-node="public client lab" aria-pressed="false">
         <span class="topology-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="10" rx="2"></rect><path d="M6 11h2M10 11h2M14 11h2M18 11h1M6 14h12"></path></svg>
@@ -152,7 +152,7 @@ require __DIR__ . '/includes/header.php';
         <span><strong>TP-Link SG108PE</strong><small>Managed PoE+ switch</small></span>
       </button>
 
-      <button class="topology-node topology-node--hardware topology-node--small" style="--x:20%;--y:48%" type="button"
+      <button class="topology-node topology-node--hardware topology-node--small" style="--node-x:20%;--node-y:48%" type="button"
         data-network-node="wireless" data-path-node="client" aria-pressed="false">
         <span class="topology-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="M5 10a10 10 0 0 1 14 0M8 13a6 6 0 0 1 8 0M11 16a2 2 0 0 1 2 0"></path><circle cx="12" cy="19" r="1"></circle></svg>
@@ -164,32 +164,32 @@ require __DIR__ . '/includes/header.php';
         <span>TRUST BOUNDARY · INTER-VLAN POLICY</span>
       </div>
 
-      <button class="topology-zone" style="--x:10%;--y:70%" type="button"
+      <button class="topology-zone" style="--node-x:10%;--node-y:70%" type="button"
         data-network-node="admin" data-path-node="admin" aria-pressed="false">
         <i></i><strong>ADMIN</strong><small>Management plane</small>
       </button>
-      <button class="topology-zone" style="--x:26%;--y:70%" type="button"
+      <button class="topology-zone" style="--node-x:26%;--node-y:70%" type="button"
         data-network-node="dmz" data-path-node="public" aria-pressed="false">
         <i></i><strong>DMZ</strong><small>Public-facing</small>
       </button>
-      <button class="topology-zone" style="--x:42%;--y:70%" type="button"
+      <button class="topology-zone" style="--node-x:42%;--node-y:70%" type="button"
         data-network-node="services" data-path-node="lab" aria-pressed="false">
         <i></i><strong>SERVICES</strong><small>Internal apps</small>
       </button>
-      <button class="topology-zone" style="--x:58%;--y:70%" type="button"
+      <button class="topology-zone" style="--node-x:58%;--node-y:70%" type="button"
         data-network-node="users" data-path-node="client" aria-pressed="false">
         <i></i><strong>USERS</strong><small>Trusted clients</small>
       </button>
-      <button class="topology-zone" style="--x:74%;--y:70%" type="button"
+      <button class="topology-zone" style="--node-x:74%;--node-y:70%" type="button"
         data-network-node="guests" data-path-node="client" aria-pressed="false">
         <i></i><strong>GUESTS / IoT</strong><small>Restricted</small>
       </button>
-      <button class="topology-zone" style="--x:90%;--y:70%" type="button"
+      <button class="topology-zone" style="--node-x:90%;--node-y:70%" type="button"
         data-network-node="cyberlab" data-path-node="lab" aria-pressed="false">
         <i></i><strong>CYBERLAB</strong><small>Isolated range</small>
       </button>
 
-      <button class="topology-node topology-node--workload topology-node--small" style="--x:26%;--y:90%" type="button"
+      <button class="topology-node topology-node--workload topology-node--small" style="--node-x:26%;--node-y:90%" type="button"
         data-network-node="apache" data-path-node="public" aria-pressed="false">
         <span class="topology-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="6" rx="1"></rect><rect x="4" y="14" width="16" height="6" rx="1"></rect><path d="M7 7h.01M7 17h.01M10 7h7M10 17h7"></path></svg>
@@ -197,7 +197,7 @@ require __DIR__ . '/includes/header.php';
         <span><strong>Apache</strong><small>hmax.space</small></span>
       </button>
 
-      <button class="topology-node topology-node--workload" style="--x:42%;--y:90%" type="button"
+      <button class="topology-node topology-node--workload" style="--node-x:42%;--node-y:90%" type="button"
         data-network-node="proxmox" data-path-node="public lab" aria-pressed="false">
         <span class="topology-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M7 8h10M7 12h4M7 16h7"></path></svg>
@@ -205,7 +205,7 @@ require __DIR__ . '/includes/header.php';
         <span><strong>Proxmox VE</strong><small>VMs + LXCs</small></span>
       </button>
 
-      <button class="topology-node topology-node--workload" style="--x:65%;--y:90%" type="button"
+      <button class="topology-node topology-node--workload" style="--node-x:65%;--node-y:90%" type="button"
         data-network-node="telemetry" data-path-node="public lab" aria-pressed="false">
         <span class="topology-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="M4 18V9M9 18V5M14 18v-7M19 18V3"></path><path d="M3 20h18"></path></svg>
