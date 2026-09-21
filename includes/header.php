@@ -23,7 +23,7 @@ if (!isset($body_class))       { $body_class = ''; }
   <title><?= htmlspecialchars($page_title) ?></title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#0d1117">
-<?php if (($body_class ?? '') === 'projects-page'): ?>
+<?php if (in_array(($body_class ?? ''), ['projects-page', 'cyberlab'], true)): ?>
   <meta name="htmx-config" content='{"includeIndicatorStyles":false,"allowEval":false,"allowScriptTags":false}'>
 <?php endif; ?>
 
