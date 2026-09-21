@@ -435,7 +435,7 @@
           'rgba(126,231,135,1)',
           1-seg(t,.20,.32),
           'YOUR NETWORK',
-          '≈50 mi IP-geolocation region'
+          '≈50 mi IP region'
         );
       }else if(t<.67){
         drawNode(visitor,center,radius,'YOUR NETWORK',data.city||'approximate IP location','#7ee787',pulse);
@@ -460,16 +460,16 @@
         'rgba(88,166,255,1)',
         seg(t,.70,.90),
         'HMAX.SPACE',
-        '≈200 mi generalized New Hampshire region'
+        '≈200 mi origin region'
       );
     }
 
-    if(!hasVisitor)stage.textContent=t<.60?'IP location unavailable — request still passed through Cloudflare...':'Forwarding request to a generalized hmax.space region...';
-    else if(t<.18)stage.textContent='Focusing on ≈50 mi around '+(data.city||'your network')+'...';
-    else if(t<.44)stage.textContent='Pulling back from your network...';
-    else if(t<.66)stage.textContent='Entering Cloudflare'+(cfCode?' ('+cfCode+')':'')+'...';
-    else if(t<.86)stage.textContent='Crossing the network toward hmax.space...';
-    else stage.textContent=(data.ipVersion||'IP')+' request delivered to a generalized ≈200 mi New Hampshire region';
+    if(!hasVisitor)stage.textContent=t<.66?'Routing through Cloudflare':'Delivering to hmax.space';
+    else if(t<.18)stage.textContent='Your location';
+    else if(t<.44)stage.textContent='Routing to Cloudflare';
+    else if(t<.66)stage.textContent=cfCode?'Cloudflare edge · '+cfCode:'Cloudflare edge';
+    else if(t<.86)stage.textContent='Origin transit · hmax.space';
+    else stage.textContent='Delivered to hmax.space';
 
     if(t<1){
       requestAnimationFrame(tick);
