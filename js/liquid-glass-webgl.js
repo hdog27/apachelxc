@@ -38,6 +38,8 @@
     varying vec2 vUv;
 
     uniform vec2 uResolution;
+    uniform vec2 uSampleResolution;
+    uniform vec2 uCanvasViewportOrigin;
     uniform vec2 uGlassCenter;
     uniform vec2 uGlassSize;
     uniform float uRadius;
@@ -62,7 +64,7 @@
     }
 
     vec3 sampleBg(vec2 screenUV) {
-      float screenAspect = uResolution.x / uResolution.y;
+      float screenAspect = uSampleResolution.x / uSampleResolution.y;
       vec2 uv = screenUV;
 
       if (uBgAspect > screenAspect) {
@@ -144,9 +146,9 @@
       grad.y = sdRoundedRect(p + vec2(0.0, eps), halfSize, uRadius) - sd;
       grad = normalize(grad + vec2(0.00001));
 
-      vec2 offset = -grad * displacement / uResolution;
-      vec2 screenUV = screenPx / uResolution;
-      vec2 refractedUV = screenUV + offset;
+      vec2 viewportPx = screenPx + uCanvasViewportOrigin;
+      vec2 refractedPx = viewportPx - grad * displacement;
+      vec2 refractedUV = refractedPx / uSampleResolution;
 
       vec3 color = sampleBgBlurred(refractedUV, uBlur);
 
@@ -237,8 +239,18 @@
     canvas.id = 'liquid-glass-stage';
     canvas.setAttribute('aria-hidden', 'true');
 
-    document.body.insertBefore(canvas, document.body.firstChild);
-    document.body.insertBefore(wallpaper, canvas);
+    const mobileDocumentMode = isCyberLabMobile();
+    const mobileShell = mobileDocumentMode ? document.querySelector('.cyber-shell') : null;
+
+    document.body.insertBefore(wallpaper, document.body.firstChild);
+
+    if (mobileDocumentMode && mobileShell) {
+      canvas.classList.add('liquid-mobile-document-stage');
+      mobileShell.insertBefore(canvas, mobileShell.firstChild);
+    } else {
+      document.body.insertBefore(canvas, wallpaper.nextSibling);
+    }
+
     liftNormalPageContent(wallpaper, canvas);
 
     const gl = canvas.getContext('webgl', {
@@ -288,6 +300,8 @@
 
     const u = {
       resolution: gl.getUniformLocation(program, 'uResolution'),
+      sampleResolution: gl.getUniformLocation(program, 'uSampleResolution'),
+      canvasViewportOrigin: gl.getUniformLocation(program, 'uCanvasViewportOrigin'),
       center: gl.getUniformLocation(program, 'uGlassCenter'),
       size: gl.getUniformLocation(program, 'uGlassSize'),
       radius: gl.getUniformLocation(program, 'uRadius'),
@@ -366,10 +380,21 @@
     let rafId = 0;
 
     function resize(stageRect) {
-      const mobile = stageRect.width <= MOBILE_BREAKPOINT;
-      // 1.25x was visibly stair-stepping on Retina phones. 1.75x is a useful
-      // quality bump without going all the way to native 3x resolution.
-      const dpr = Math.min(window.devicePixelRatio || 1, mobile ? 1.75 : 1.5);
+      const mobile = mobileDocumentMode || stageRect.width <= MOBILE_BREAKPOINT;
+      const viewportLimit = gl.getParameter(gl.MAX_VIEWPORT_DIMS) || [8192, 8192];
+      const maxWidth = Number(viewportLimit[0]) || 8192;
+      const maxHeight = Number(viewportLimit[1]) || 8192;
+
+      let dpr = Math.min(window.devicePixelRatio || 1, mobile ? 1.35 : 1.5);
+      if (mobileDocumentMode) {
+        dpr = Math.min(
+          dpr,
+          maxWidth / Math.max(1, stageRect.width),
+          maxHeight / Math.max(1, stageRect.height)
+        );
+        dpr = Math.max(0.75, dpr);
+      }
+
       const width = Math.max(1, Math.round(stageRect.width * dpr));
       const height = Math.max(1, Math.round(stageRect.height * dpr));
 
@@ -412,6 +437,8 @@
       gl.clear(gl.COLOR_BUFFER_BIT);
 
       gl.uniform2f(u.resolution, stageRect.width, stageRect.height);
+      gl.uniform2f(u.sampleResolution, window.innerWidth || stageRect.width, window.innerHeight || stageRect.height);
+      gl.uniform2f(u.canvasViewportOrigin, stageRect.left, stageRect.top);
       gl.uniform1f(u.thickness, SETTINGS.thickness);
       gl.uniform1f(u.bezel, SETTINGS.bezel);
       gl.uniform1f(u.ior, SETTINGS.ior);
@@ -426,16 +453,16 @@
       for (const card of cards) {
         if (!card.isConnected) continue;
 
-        // Mobile WebKit compositor scrolling can move DOM layers ahead of
-        // window/visualViewport offsets. Read each card's viewport rect directly
-        // on mobile so the WebGL surface follows the same coordinate space as the
-        // painted DOM border. Desktop keeps the cheaper cached document geometry.
+        // On Cyber Lab mobile the canvas itself scrolls with .cyber-shell.
+        // Geometry is therefore document-relative and no JS scroll offset is
+        // needed to keep the refractive surface attached to the DOM card.
         let left, top, width, height, radius;
-        if (mobile) {
+        if (mobileDocumentMode && mobileShell) {
           const rect = card.getBoundingClientRect();
+          const shellRect = mobileShell.getBoundingClientRect();
           const style = getComputedStyle(card);
-          left = rect.left - stageRect.left;
-          top = rect.top - stageRect.top;
+          left = rect.left - shellRect.left;
+          top = rect.top - shellRect.top;
           width = rect.width;
           height = rect.height;
           radius = Math.max(1, parseFloat(style.borderTopLeftRadius) || 20);
