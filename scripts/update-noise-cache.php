@@ -21,6 +21,7 @@ $empty = [
     'top_probes' => [],
     'taxonomy' => [],
     'activity' => [],
+    'geo_points' => [],
     'latest' => null,
     'updated' => time(),
 ];
@@ -69,6 +70,13 @@ $taxonomy = array_fill_keys(array_keys($patterns), 0);
 $scannerIps = [];
 $networkKeys = [];
 $latest = null;
+$geoCells = [];
+$geoByIp = [];
+
+$geoReader = null;
+try {
+    $geoReader = new \GeoIp2\Database\Reader('/var/lib/GeoIP/GeoLite2-City.mmdb');
+} catch (\Throwable $e) {}
 
 // Exactly 24 local-hour buckets. These count suspicious requests only.
 $currentHour = intdiv($now, 3600) * 3600;
@@ -127,6 +135,36 @@ foreach ($readableLogs as $logFile) {
         if (in_array($requestPath, ['/partials/repo-readme', '/partials/repo-readme.php', '/partials/noise-panel', '/partials/noise-panel.php'], true)) continue;
 
         $requestCount++;
+
+        // Build a privacy-preserving 24h globe dataset. Each unique IP is
+        // geolocated locally once per parser run, then rounded to a 1-degree
+        // grid before aggregation. The public cache never exposes raw IPs.
+        if ($geoReader) {
+            if (!array_key_exists($ipAddr, $geoByIp)) {
+                $geoByIp[$ipAddr] = null;
+                try {
+                    $record = $geoReader->city($ipAddr);
+                    $lat = $record->location->latitude;
+                    $lon = $record->location->longitude;
+                    if (is_numeric($lat) && is_numeric($lon)) {
+                        $geoByIp[$ipAddr] = [
+                            'lat' => round((float)$lat),
+                            'lon' => round((float)$lon),
+                        ];
+                    }
+                } catch (\Throwable $e) {}
+            }
+
+            if (is_array($geoByIp[$ipAddr])) {
+                $g = $geoByIp[$ipAddr];
+                $key = $g['lat'] . ',' . $g['lon'];
+                if (!isset($geoCells[$key])) {
+                    $geoCells[$key] = ['lat' => $g['lat'], 'lon' => $g['lon'], 'count' => 0];
+                }
+                $geoCells[$key]['count']++;
+            }
+        }
+
         $label = null;
         foreach ($patterns as $name => $regex) {
             if (preg_match($regex, $path)) { $label = $name; break; }
@@ -179,6 +217,12 @@ foreach ($activityCounts as $bucketTs => $count) {
     ];
 }
 
+$geoPoints = array_values($geoCells);
+usort($geoPoints, function ($a, $b) {
+    return ($b['count'] ?? 0) <=> ($a['count'] ?? 0);
+});
+$geoPoints = array_slice($geoPoints, 0, 80);
+
 $latestPublic = null;
 if ($latest) {
     $latestCountry = 'Unknown';
@@ -207,6 +251,7 @@ $out = [
     'top_probes' => $top,
     'taxonomy' => $taxonomy,
     'activity' => $activity,
+    'geo_points' => $geoPoints,
     'latest' => $latestPublic,
     'updated' => time(),
 ];
@@ -225,5 +270,6 @@ debug_line('requests inside 24h: ' . $recentMatches);
 debug_line('suspicious unique IPs: ' . count($scannerIps));
 debug_line('suspicious source networks: ' . count($networkKeys));
 debug_line('activity buckets: ' . count($activity));
+debug_line('public globe geo cells: ' . count($geoPoints));
 if ($firstRejectedTimestamp !== null) debug_line('first rejected timestamp: ' . $firstRejectedTimestamp);
 debug_line('cache: ' . $cacheFile);
