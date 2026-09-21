@@ -361,6 +361,8 @@
     let lastHeight = 0;
     let running = true;
     let geometryTimer = 0;
+    let scrollTimer = 0;
+    let scrolling = false;
     let rafId = 0;
 
     function resize(stageRect) {
@@ -395,6 +397,11 @@
       // with the current page offset instead.
       const stageRect = canvas.getBoundingClientRect();
       if (stageRect.width <= 1 || stageRect.height <= 1) {
+        requestNextFrame();
+        return;
+      }
+
+      if (scrolling) {
         requestNextFrame();
         return;
       }
@@ -475,6 +482,31 @@
       geometryTimer = window.setTimeout(measureCardGeometry, delay == null ? 60 : delay);
     }
 
+    function usesScrollFallback() {
+      return window.innerWidth < MOBILE_BREAKPOINT ||
+        (window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+    }
+
+    function beginScrollFallback() {
+      if (!usesScrollFallback() || !running) return;
+
+      if (!scrolling) {
+        scrolling = true;
+        document.documentElement.classList.add('archis-webgl-scrolling');
+      }
+
+      window.clearTimeout(scrollTimer);
+      scrollTimer = window.setTimeout(() => {
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          if (!running) return;
+          measureCardGeometry();
+          scrolling = false;
+          document.documentElement.classList.remove('archis-webgl-scrolling');
+          requestNextFrame();
+        }));
+      }, 180);
+    }
+
     function onVisibilityChange() {
       if (document.hidden) {
         if (rafId) {
@@ -490,14 +522,25 @@
 
     document.addEventListener('visibilitychange', onVisibilityChange);
 
+    window.addEventListener('scroll', beginScrollFallback, { passive: true });
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('scroll', beginScrollFallback, { passive: true });
+    }
+
     // Geometry is refreshed only when layout can actually change. Ordinary
     // scrolling never asks every card for getBoundingClientRect().
-    window.addEventListener('resize', () => scheduleGeometryMeasure(100), { passive: true });
+    window.addEventListener('resize', () => {
+      scheduleGeometryMeasure(100);
+      beginScrollFallback();
+    }, { passive: true });
     window.addEventListener('load', () => scheduleGeometryMeasure(0), { once: true });
     document.addEventListener('toggle', () => scheduleGeometryMeasure(20), true);
 
     if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', () => scheduleGeometryMeasure(100), { passive: true });
+      window.visualViewport.addEventListener('resize', () => {
+        scheduleGeometryMeasure(100);
+        beginScrollFallback();
+      }, { passive: true });
     }
 
     let resizeObserver = null;
@@ -516,8 +559,14 @@
     window.addEventListener('pagehide', () => {
       running = false;
       window.clearTimeout(geometryTimer);
+      window.clearTimeout(scrollTimer);
       if (rafId) cancelAnimationFrame(rafId);
+      window.removeEventListener('scroll', beginScrollFallback);
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('scroll', beginScrollFallback);
+      }
       document.removeEventListener('visibilitychange', onVisibilityChange);
+      document.documentElement.classList.remove('archis-webgl-scrolling');
       if (resizeObserver) resizeObserver.disconnect();
       const loseContext = gl.getExtension('WEBGL_lose_context');
       if (loseContext) loseContext.loseContext();
