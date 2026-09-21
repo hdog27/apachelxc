@@ -12,9 +12,7 @@
 <script src="/js/kitty.js?v=<?= @filemtime(__DIR__ . "/../js/kitty.js") ?>"></script>
 <script src="/js/main.js?v=<?= @filemtime(__DIR__ . "/../js/main.js") ?>"></script>
 <?php if (($body_class ?? '') === 'projects-page'): ?>
-<script src="/js/vendor/marked.umd.js"></script>
-<script src="/js/vendor/purify.min.js"></script>
-<script src="/js/readme.js?v=<?= @filemtime(__DIR__ . "/../js/readme.js") ?>"></script>
+<script src="/js/vendor/htmx.min.js?v=<?= @filemtime(__DIR__ . "/../js/vendor/htmx.min.js") ?>"></script>
 <?php endif; ?>
 <?php if (($body_class ?? '') === 'cyberlab'): ?>
 <script src="/js/globe-hq-pre.js?v=<?= @filemtime(__DIR__ . "/../js/globe-hq-pre.js") ?>"></script>
