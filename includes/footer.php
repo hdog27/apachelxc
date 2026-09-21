@@ -37,6 +37,7 @@ window.__hmaxDeferredScripts = <?= json_encode([
 ], JSON_UNESCAPED_SLASHES) ?>;
 </script>
 <script src="/js/cyberlab-deferred.js?v=<?= @filemtime(__DIR__ . "/../js/cyberlab-deferred.js") ?>"></script>
+<script type="module" src="/js/cobe-metadata-globe-v2.js?v=<?= @filemtime(__DIR__ . "/../js/cobe-metadata-globe-v2.js") ?>"></script>
 <?php else: ?>
 <script src="/js/liquid-glass-webgl.js?v=<?= @filemtime(__DIR__ . "/../js/liquid-glass-webgl.js") ?>"></script>
 <script src="/js/liquid-glass-nav-webgl.js?v=<?= @filemtime(__DIR__ . "/../js/liquid-glass-nav-webgl.js") ?>"></script>
