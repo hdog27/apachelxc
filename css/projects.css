@@ -87,6 +87,11 @@
 .repo-embed-body th,.repo-embed-body td { padding:8px; border:1px solid rgba(255,255,255,.18); text-align:left; }
 .repo-embed-body :focus-visible { outline:2px solid #7ee787; outline-offset:2px; }
 .repo-embed-body:focus-visible { outline:2px solid #7ee787; }
+.repo-embed-body.htmx-request { opacity:.62; transition:opacity .18s ease; }
+.repo-embed-loading,.repo-embed-error { color:#9fb3c8; font-size:13px!important; }
+.repo-embed-error { padding:10px 0; }
+.repo-readme-markdown > :first-child { margin-top:0; }
+.repo-readme-markdown > :last-child { margin-bottom:0; }
 .project-history { color:#b7c9dc; }
 @media (min-width:1050px) {
   .project-grid .project-card { min-height:610px; }
