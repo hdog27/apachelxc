@@ -5,6 +5,12 @@
   var dataEl = document.getElementById('route-data');
   if (!overlay || !routeCanvas || !stage || !dataEl) return;
 
+  function signalIntroComplete() {
+    if (window.__hmaxIntroDone) return;
+    window.__hmaxIntroDone = true;
+    try { window.dispatchEvent(new CustomEvent('hmax:intro-complete')); } catch (e) {}
+  }
+
   // Keep the full-screen overlay visible from first paint so the underlying
   // page never flashes through while WebGL and the Earth texture initialize.
   overlay.style.visibility = 'visible';
@@ -13,6 +19,7 @@
 
   if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     overlay.remove();
+    signalIntroComplete();
     return;
   }
 
@@ -20,7 +27,7 @@
   try { data = JSON.parse(dataEl.textContent || '{}'); } catch (e) {}
 
   var ctx = routeCanvas.getContext('2d');
-  if (!ctx) { overlay.remove(); return; }
+  if (!ctx) { overlay.remove(); signalIntroComplete(); return; }
 
   var isMobileLike = !!(window.matchMedia && window.matchMedia('(max-width: 700px), (hover: none), (pointer: coarse)').matches);
 
@@ -51,7 +58,7 @@
     premultipliedAlpha: false,
     preserveDrawingBuffer: false
   });
-  if (!gl) { overlay.remove(); return; }
+  if (!gl) { overlay.remove(); signalIntroComplete(); return; }
 
   var W = 0, H = 0, cx = 0, cy = 0, baseR = 0;
   var dpr = Math.min(window.devicePixelRatio || 1, isMobileLike ? 1.5 : 2);
@@ -193,7 +200,7 @@
     gl.linkProgram(program);
     if(!gl.getProgramParameter(program,gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(program)||'program link failed');
     gl.useProgram(program);
-  } catch (e) { overlay.remove(); return; }
+  } catch (e) { overlay.remove(); signalIntroComplete(); return; }
 
   var quad=gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER,quad);
@@ -475,6 +482,7 @@
       requestAnimationFrame(tick);
     }else{
       overlay.classList.add('done');
+      signalIntroComplete();
       setTimeout(function(){cleanup();overlay.remove();},420);
     }
   }
