@@ -45,8 +45,12 @@
 
   var W = 0, H = 0, cx = 0, cy = 0, baseR = 0;
   var dpr = Math.min(window.devicePixelRatio || 1, 2);
-  var started = performance.now();
+  var started = 0;
   var duration = 4700;
+  var warmupDelay = 50;
+  var introStarted = false;
+  var visitorRegionMiles = 50;
+  var homeRegionMiles = 200;
 
   var hasVisitor = data.lat !== null && data.lat !== '' && data.lon !== null && data.lon !== '';
   var visitor = {
@@ -56,7 +60,8 @@
   if (!isFinite(visitor.lat)) visitor.lat = 0;
   if (!isFinite(visitor.lon)) visitor.lon = -35;
 
-  // Deliberately generalized New England destination, not an origin address.
+  // Deliberately generalized New England destination. The visualization ends
+  // on a broad ~200 mile region, never on a rack/address-level point.
   var home = { lat: 42.0, lon: -71.5 };
 
   var COLOS = {
@@ -245,6 +250,21 @@
   var ro=null;
   if(window.ResizeObserver){ ro=new ResizeObserver(resize); ro.observe(overlay); }
 
+  function beginIntro(){
+    if(introStarted)return;
+    introStarted=true;
+    setTimeout(function(){
+      started=performance.now();
+      overlay.style.visibility='visible';
+      overlay.style.opacity='1';
+      tick(started);
+    },warmupDelay);
+  }
+
+  // Give WebGL/canvas setup a tiny head start before the intro becomes visible.
+  // The Earth texture can continue loading asynchronously without blocking the page.
+  beginIntro();
+
   function project(p,center,radius){
     var la=rad(p.lat),lo=rad(p.lon),cla=rad(center.lat),clo=rad(center.lon),dl=lo-clo;
     var cosc=Math.sin(cla)*Math.sin(la)+Math.cos(cla)*Math.cos(la)*Math.cos(dl);
@@ -278,6 +298,43 @@
     ctx.restore();
   }
 
+  function drawRegion(p,center,radius,miles,color,alpha,label,sub){
+    var q=project(p,center,radius); if(!q.visible)return;
+    var earthRadiusMiles=3958.8;
+    var ringRadius=Math.max(10,radius*Math.sin(miles/earthRadiusMiles));
+    ctx.save();
+    ctx.globalAlpha=clamp(alpha,0,1);
+    ctx.fillStyle=color.replace('1)', '.10)');
+    ctx.strokeStyle=color;
+    ctx.lineWidth=1.7;
+    ctx.setLineDash([6,5]);
+    ctx.shadowBlur=18;
+    ctx.shadowColor=color;
+    ctx.beginPath();
+    ctx.arc(q.x,q.y,ringRadius,0,Math.PI*2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.shadowBlur=0;
+    ctx.textAlign='center';
+    ctx.fillStyle='#fff';
+    ctx.font='700 11px -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif';
+    ctx.fillText(label,q.x,q.y-ringRadius-12);
+    if(sub){
+      ctx.fillStyle='rgba(225,237,250,.78)';
+      ctx.font='500 9px -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif';
+      ctx.fillText(sub,q.x,q.y+ringRadius+17);
+    }
+    ctx.restore();
+  }
+
+  function scaleForRegionMiles(miles,targetPixels){
+    var earthRadiusMiles=3958.8;
+    var angular=Math.max(.0001,miles/earthRadiusMiles);
+    var pxPerBase=Math.max(1,baseR*Math.sin(angular));
+    return clamp(targetPixels/pxPerBase,1,34);
+  }
+
   function drawGreatCircle(a,b,progress,center,radius,color){
     if(progress<=0)return;
     var steps=72,upto=Math.max(1,Math.floor(steps*clamp(progress,0,1))),drawing=false;
@@ -306,9 +363,6 @@
     return slerpPoint(visitor,home,seg(t,.34,.84));
   }
 
-  var tripDegrees=hasVisitor?angularDistance(visitor,home):180;
-  var startScale=hasVisitor ? clamp(2.75-(tripDegrees/180)*1.25,1.50,2.75) : 1.55;
-
   function cleanup(){
     window.removeEventListener('resize',resize);
     if(window.visualViewport) window.visualViewport.removeEventListener('resize',resize);
@@ -318,9 +372,11 @@
   function tick(now){
     var t=clamp((now-started)/duration,0,1);
     var center=routeCenter(t);
-    var pullBack=seg(t,.04,.30),zoomHome=seg(t,.84,.97);
-    var scale=(1-pullBack)*startScale+pullBack*1.0;
-    if(zoomHome>0) scale=1.0+.66*zoomHome;
+    var pullBack=seg(t,.10,.30),zoomHome=seg(t,.82,.98);
+    var visitorFocusScale=hasVisitor?scaleForRegionMiles(visitorRegionMiles,W<640?58:82):1.6;
+    var homeFocusScale=scaleForRegionMiles(homeRegionMiles,W<640?88:112);
+    var scale=(1-pullBack)*visitorFocusScale+pullBack*1.0;
+    if(zoomHome>0) scale=1.0+(homeFocusScale-1.0)*zoomHome;
     var radius=baseR*scale;
 
     renderEarth(center,radius);
@@ -328,7 +384,17 @@
     var pulse=(Math.sin(now/160)+1)/2;
 
     if(hasVisitor){
-      if(t<.67)drawNode(visitor,center,radius,'YOUR NETWORK',data.city||'approximate IP location','#7ee787',pulse);
+      if(t<.32){
+        drawRegion(
+          visitor,center,radius,visitorRegionMiles,
+          'rgba(126,231,135,1)',
+          1-seg(t,.20,.32),
+          'YOUR NETWORK',
+          '≈50 mi IP-geolocation region'
+        );
+      }else if(t<.67){
+        drawNode(visitor,center,radius,'YOUR NETWORK',data.city||'approximate IP location','#7ee787',pulse);
+      }
       if(cloud){
         var p1=seg(t,.24,.57),p2=seg(t,.56,.83);
         drawGreatCircle(visitor,cloud,p1,center,radius,'rgba(126,231,135,.98)');
@@ -343,14 +409,22 @@
       }
     }
 
-    if(t>.69)drawNode(home,center,radius,'HMAX.SPACE','New England · origin hidden','#58a6ff',pulse);
+    if(t>.70){
+      drawRegion(
+        home,center,radius,homeRegionMiles,
+        'rgba(88,166,255,1)',
+        seg(t,.70,.90),
+        'HMAX.SPACE',
+        '≈200 mi generalized origin region'
+      );
+    }
 
-    if(!hasVisitor)stage.textContent=t<.60?'IP location unavailable — request still passed through Cloudflare...':'Forwarding request to hmax.space...';
-    else if(t<.18)stage.textContent='Starting from '+(data.city||'your network')+'...';
-    else if(t<.34)stage.textContent='Pulling back from your network...';
+    if(!hasVisitor)stage.textContent=t<.60?'IP location unavailable — request still passed through Cloudflare...':'Forwarding request to a generalized hmax.space region...';
+    else if(t<.16)stage.textContent='Focusing on ≈50 mi around '+(data.city||'your network')+'...';
+    else if(t<.34)stage.textContent='Zooming out toward Cloudflare...';
     else if(t<.60)stage.textContent='Entering Cloudflare'+(cfCode?' ('+cfCode+')':'')+'...';
-    else if(t<.86)stage.textContent='Crossing the network toward hmax.space...';
-    else stage.textContent=(data.ipVersion||'IP')+' request delivered to the homelab';
+    else if(t<.84)stage.textContent='Crossing the network toward hmax.space...';
+    else stage.textContent=(data.ipVersion||'IP')+' request delivered to a generalized ≈200 mi homelab region';
 
     if(t<1){
       requestAnimationFrame(tick);
@@ -360,5 +434,4 @@
     }
   }
 
-  requestAnimationFrame(tick);
 })();
