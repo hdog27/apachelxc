@@ -49,8 +49,7 @@
     alpha: true,
     antialias: !isMobileLike,
     premultipliedAlpha: false,
-    preserveDrawingBuffer: false,
-    powerPreference: isMobileLike ? 'low-power' : 'high-performance'
+    preserveDrawingBuffer: false
   });
   if (!gl) { overlay.remove(); return; }
 
