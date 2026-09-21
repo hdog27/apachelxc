@@ -21,6 +21,8 @@
   var ctx = routeCanvas.getContext('2d');
   if (!ctx) { overlay.remove(); return; }
 
+  var isMobileLike = !!(window.matchMedia && window.matchMedia('(max-width: 700px), (hover: none), (pointer: coarse)').matches);
+
   // Earth and its blue atmospheric rim live on ONE WebGL canvas. Previously
   // the rim was drawn on the separate label canvas; iOS visual-viewport
   // resizing could make the two composited layers drift apart.
@@ -42,18 +44,24 @@
 
   var gl = globeCanvas.getContext('webgl', {
     alpha: true,
-    antialias: true,
+    antialias: !isMobileLike,
     premultipliedAlpha: false,
-    preserveDrawingBuffer: false
+    preserveDrawingBuffer: false,
+    powerPreference: isMobileLike ? 'low-power' : 'high-performance'
   });
   if (!gl) { overlay.remove(); return; }
 
   var W = 0, H = 0, cx = 0, cy = 0, baseR = 0;
-  var dpr = Math.min(window.devicePixelRatio || 1, 2);
+  var dpr = Math.min(window.devicePixelRatio || 1, isMobileLike ? 1.5 : 2);
   var started = 0;
   var duration = 4700;
-  var warmupDelay = 50;
+  var warmupDelay = isMobileLike ? 140 : 50;
+  var textureWaitMax = isMobileLike ? 900 : 350;
   var introStarted = false;
+  var warmupReady = false;
+  var textureSettled = false;
+  var warmupTimer = null;
+  var textureFallbackTimer = null;
   var visitorRegionMiles = 50;
   var homeRegionMiles = 200;
 
@@ -65,9 +73,10 @@
   if (!isFinite(visitor.lat)) visitor.lat = 0;
   if (!isFinite(visitor.lon)) visitor.lon = -35;
 
-  // Deliberately generalized New England destination. The visualization ends
-  // on a broad ~200 mile region, never on a rack/address-level point.
-  var home = { lat: 42.0, lon: -71.5 };
+  // Deliberately generalized northern New Hampshire destination. The center
+  // is intentionally displaced from the real origin; the visualization ends
+  // on a broad ~200 mile region rather than a rack/address-level point.
+  var home = { lat: 44.47, lon: -71.57 };
 
   var COLOS = {
     EWR:[40.6895,-74.1745], BOS:[42.3656,-71.0096], IAD:[38.9531,-77.4565], JFK:[40.6413,-73.7781],
@@ -210,14 +219,33 @@
 
   var textureReady=false;
   var maxTexture=gl.getParameter(gl.MAX_TEXTURE_SIZE)||2048;
-  var textureUrl=maxTexture>=8192 && window.innerWidth>900
-    ? 'https://upload.wikimedia.org/wikipedia/commons/d/d6/Nasa_land_ocean_ice_8192.jpg'
-    : (maxTexture>=4096
-      ? 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/Nasa_land_ocean_ice_8192.jpg/4096px-Nasa_land_ocean_ice_8192.jpg'
-      : 'https://upload.wikimedia.org/wikipedia/commons/archive/9/91/20170416020821%21Land_shallow_topo_2048.jpg');
+  var mobileTexture='https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/Nasa_land_ocean_ice_8192.jpg/2048px-Nasa_land_ocean_ice_8192.jpg';
+  var fallbackTexture='https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/Nasa_land_ocean_ice_8192.jpg/1024px-Nasa_land_ocean_ice_8192.jpg';
+  var textureUrl=isMobileLike
+    ? mobileTexture
+    : (maxTexture>=8192 && window.innerWidth>900
+      ? 'https://upload.wikimedia.org/wikipedia/commons/d/d6/Nasa_land_ocean_ice_8192.jpg'
+      : (maxTexture>=4096
+        ? 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/Nasa_land_ocean_ice_8192.jpg/4096px-Nasa_land_ocean_ice_8192.jpg'
+        : mobileTexture));
+
+  function maybeBeginIntro(){
+    if(introStarted || !warmupReady || !textureSettled)return;
+    introStarted=true;
+    started=performance.now();
+    overlay.style.visibility='visible';
+    overlay.style.opacity='1';
+    requestAnimationFrame(tick);
+  }
+
+  function settleTexture(){
+    textureSettled=true;
+    maybeBeginIntro();
+  }
 
   var img=new Image();
   img.crossOrigin='anonymous';
+  img.decoding='async';
   img.onload=function(){
     try{
       gl.bindTexture(gl.TEXTURE_2D,texture);
@@ -225,12 +253,15 @@
       gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,img);
       textureReady=true;
     }catch(e){}
+    settleTexture();
   };
   img.onerror=function(){
-    if(textureUrl.indexOf('2048')===-1){
-      textureUrl='https://upload.wikimedia.org/wikipedia/commons/archive/9/91/20170416020821%21Land_shallow_topo_2048.jpg';
+    if(textureUrl!==fallbackTexture){
+      textureUrl=fallbackTexture;
       img.src=textureUrl;
+      return;
     }
+    settleTexture();
   };
   img.src=textureUrl;
 
@@ -238,7 +269,7 @@
     var r=overlay.getBoundingClientRect();
     W=Math.max(1,Math.round(r.width));
     H=Math.max(1,Math.round(r.height));
-    dpr=Math.min(window.devicePixelRatio||1,2);
+    dpr=Math.min(window.devicePixelRatio||1,isMobileLike?1.5:2);
     globeCanvas.width=Math.round(W*dpr);
     globeCanvas.height=Math.round(H*dpr);
     routeCanvas.width=Math.round(W*dpr);
@@ -255,20 +286,15 @@
   var ro=null;
   if(window.ResizeObserver){ ro=new ResizeObserver(resize); ro.observe(overlay); }
 
-  function beginIntro(){
-    if(introStarted)return;
-    introStarted=true;
-    setTimeout(function(){
-      started=performance.now();
-      overlay.style.visibility='visible';
-      overlay.style.opacity='1';
-      tick(started);
-    },warmupDelay);
-  }
-
-  // Give WebGL/canvas setup a tiny head start before the intro becomes visible.
-  // The Earth texture can continue loading asynchronously without blocking the page.
-  beginIntro();
+  // Give WebGL/canvas setup a small head start. On mobile, wait briefly for
+  // the texture upload too so the first visit is not dependent on browser cache.
+  warmupTimer=setTimeout(function(){
+    warmupReady=true;
+    maybeBeginIntro();
+  },warmupDelay);
+  textureFallbackTimer=setTimeout(function(){
+    settleTexture();
+  },textureWaitMax);
 
   function project(p,center,radius){
     var la=rad(p.lat),lo=rad(p.lon),cla=rad(center.lat),clo=rad(center.lon),dl=lo-clo;
@@ -362,26 +388,31 @@
   function routeCenter(t){
     if(!hasVisitor)return home;
     if(cloud){
-      if(t<.58)return slerpPoint(visitor,cloud,seg(t,.30,.58));
-      return slerpPoint(cloud,home,seg(t,.58,.84));
+      if(t<.66)return slerpPoint(visitor,cloud,seg(t,.36,.66));
+      return slerpPoint(cloud,home,seg(t,.64,.86));
     }
-    return slerpPoint(visitor,home,seg(t,.34,.84));
+    return slerpPoint(visitor,home,seg(t,.38,.86));
   }
 
   function cleanup(){
     window.removeEventListener('resize',resize);
     if(window.visualViewport) window.visualViewport.removeEventListener('resize',resize);
     if(ro) ro.disconnect();
+    if(warmupTimer)clearTimeout(warmupTimer);
+    if(textureFallbackTimer)clearTimeout(textureFallbackTimer);
   }
 
   function tick(now){
     var t=clamp((now-started)/duration,0,1);
     var center=routeCenter(t);
-    var pullBack=seg(t,.10,.30),zoomHome=seg(t,.82,.98);
+    var pullBack=seg(t,.06,.44),zoomHome=seg(t,.82,.98);
     var visitorFocusScale=hasVisitor?scaleForRegionMiles(visitorRegionMiles,W<640?58:82):1.6;
     var homeFocusScale=scaleForRegionMiles(homeRegionMiles,W<640?88:112);
-    var scale=(1-pullBack)*visitorFocusScale+pullBack*1.0;
-    if(zoomHome>0) scale=1.0+(homeFocusScale-1.0)*zoomHome;
+
+    // Interpolate multiplicatively instead of linearly. This keeps a 20x-30x
+    // close-up from collapsing into the world view in one visually abrupt jump.
+    var scale=Math.exp(Math.log(visitorFocusScale)*(1-pullBack));
+    if(zoomHome>0) scale=Math.exp(Math.log(homeFocusScale)*zoomHome);
     var radius=baseR*scale;
 
     renderEarth(center,radius);
@@ -401,7 +432,7 @@
         drawNode(visitor,center,radius,'YOUR NETWORK',data.city||'approximate IP location','#7ee787',pulse);
       }
       if(cloud){
-        var p1=seg(t,.24,.57),p2=seg(t,.56,.83);
+        var p1=seg(t,.28,.66),p2=seg(t,.64,.86);
         drawGreatCircle(visitor,cloud,p1,center,radius,'rgba(126,231,135,.98)');
         drawPacket(visitor,cloud,p1,center,radius,'#7ee787');
         if(t>.39&&t<.76)drawNode(cloud,center,radius,'CLOUDFLARE',cfCode?'edge '+cfCode:'edge network','#a371f7',pulse);
@@ -420,16 +451,16 @@
         'rgba(88,166,255,1)',
         seg(t,.70,.90),
         'HMAX.SPACE',
-        '≈200 mi generalized origin region'
+        '≈200 mi generalized New Hampshire region'
       );
     }
 
     if(!hasVisitor)stage.textContent=t<.60?'IP location unavailable — request still passed through Cloudflare...':'Forwarding request to a generalized hmax.space region...';
-    else if(t<.16)stage.textContent='Focusing on ≈50 mi around '+(data.city||'your network')+'...';
-    else if(t<.34)stage.textContent='Zooming out toward Cloudflare...';
-    else if(t<.60)stage.textContent='Entering Cloudflare'+(cfCode?' ('+cfCode+')':'')+'...';
-    else if(t<.84)stage.textContent='Crossing the network toward hmax.space...';
-    else stage.textContent=(data.ipVersion||'IP')+' request delivered to a generalized ≈200 mi homelab region';
+    else if(t<.18)stage.textContent='Focusing on ≈50 mi around '+(data.city||'your network')+'...';
+    else if(t<.44)stage.textContent='Pulling back from your network...';
+    else if(t<.66)stage.textContent='Entering Cloudflare'+(cfCode?' ('+cfCode+')':'')+'...';
+    else if(t<.86)stage.textContent='Crossing the network toward hmax.space...';
+    else stage.textContent=(data.ipVersion||'IP')+' request delivered to a generalized ≈200 mi New Hampshire region';
 
     if(t<1){
       requestAnimationFrame(tick);
