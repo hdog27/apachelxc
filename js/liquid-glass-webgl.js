@@ -11,14 +11,14 @@
   const SHADOW_MARGIN = 42;
 
   const SETTINGS = {
-    thickness: 50,
+    thickness: 68,
     bezel: 60,
-    ior: 3.0,
+    ior: 3.2,
     blur: 1.5,
     // archisvaze's shader already has a single-sample fast path below 0.5.
     // Use it on phones to cut texture work without changing refraction math.
     mobileBlur: 0.3,
-    specular: 0.55,
+    specular: 0.68,
     tint: 0.08,
     shadow: 0.5
   };
@@ -348,7 +348,7 @@
       measureCardGeometry();
       cards.forEach((card) => card.classList.add('liquid-webgl-surface'));
       document.documentElement.classList.add('archis-webgl-ready');
-      requestNextFrame();
+      requestAnimationFrame(render);
     }, { once: true });
 
     image.src = BACKDROP_URL;
@@ -361,7 +361,6 @@
     let lastHeight = 0;
     let running = true;
     let geometryTimer = 0;
-    let rafId = 0;
 
     function resize(stageRect) {
       const mobile = stageRect.width <= MOBILE_BREAKPOINT;
@@ -381,21 +380,15 @@
       return { dpr, mobile };
     }
 
-    function requestNextFrame() {
-      if (!running || !canvas.isConnected || document.hidden || rafId) return;
-      rafId = requestAnimationFrame(render);
-    }
-
     function render() {
-      rafId = 0;
-      if (!running || !canvas.isConnected || document.hidden) return;
+      if (!running || !canvas.isConnected) return;
 
       // One viewport measurement remains, but card layout is no longer queried
       // during scrolling. Their document-space boxes are cached and translated
       // with the current page offset instead.
       const stageRect = canvas.getBoundingClientRect();
       if (stageRect.width <= 1 || stageRect.height <= 1) {
-        requestNextFrame();
+        requestAnimationFrame(render);
         return;
       }
 
@@ -467,28 +460,13 @@
         gl.drawArrays(gl.TRIANGLES, 0, 6);
       }
 
-      requestNextFrame();
+      requestAnimationFrame(render);
     }
 
     function scheduleGeometryMeasure(delay) {
       window.clearTimeout(geometryTimer);
       geometryTimer = window.setTimeout(measureCardGeometry, delay == null ? 60 : delay);
     }
-
-    function onVisibilityChange() {
-      if (document.hidden) {
-        if (rafId) {
-          cancelAnimationFrame(rafId);
-          rafId = 0;
-        }
-        return;
-      }
-
-      measureCardGeometry();
-      requestNextFrame();
-    }
-
-    document.addEventListener('visibilitychange', onVisibilityChange);
 
     // Geometry is refreshed only when layout can actually change. Ordinary
     // scrolling never asks every card for getBoundingClientRect().
@@ -516,8 +494,6 @@
     window.addEventListener('pagehide', () => {
       running = false;
       window.clearTimeout(geometryTimer);
-      if (rafId) cancelAnimationFrame(rafId);
-      document.removeEventListener('visibilitychange', onVisibilityChange);
       if (resizeObserver) resizeObserver.disconnect();
       const loseContext = gl.getExtension('WEBGL_lose_context');
       if (loseContext) loseContext.loseContext();
