@@ -64,3 +64,29 @@
     document.addEventListener('pointerdown',tryAll,{once:true,passive:true});
   }catch(e){}
 })();
+
+// Mobile inline-video guard: keep project demos out of native fullscreen.
+(function(){
+  var isTouch = window.matchMedia && window.matchMedia('(hover: none), (pointer: coarse)').matches;
+  if (!isTouch) return;
+  document.querySelectorAll('video[data-autoplay-video]').forEach(function(video){
+    video.muted = true;
+    video.defaultMuted = true;
+    video.playsInline = true;
+    video.setAttribute('playsinline', '');
+    video.setAttribute('webkit-playsinline', '');
+    video.setAttribute('controlslist', 'nofullscreen noremoteplayback');
+    video.setAttribute('disablepictureinpicture', '');
+    video.controls = false;
+    video.addEventListener('click', function(event){
+      event.preventDefault();
+      event.stopPropagation();
+      if (video.paused) {
+        var promise = video.play();
+        if (promise && promise.catch) promise.catch(function(){});
+      } else {
+        video.pause();
+      }
+    });
+  });
+})();
