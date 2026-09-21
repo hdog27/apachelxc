@@ -47,7 +47,6 @@ body .stars-layer {
   display: block;
   pointer-events: none;
   transform: translateZ(0);
-  opacity: 1;
 }
 
 /* JS adds this class only to direct body children whose original computed
