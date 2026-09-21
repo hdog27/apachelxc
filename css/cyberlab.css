@@ -36,8 +36,11 @@ body.cyberlab {
 .lab-explain { max-width:58ch; margin:12px auto 0; color:rgba(255,255,255,.67); }
 .banner-row { display:grid; grid-template-columns:minmax(0,1fr) minmax(140px,230px) minmax(0,1fr); align-items:center; gap:14px; margin:8px 0 18px; }
 .banner-photo { width:100%; max-width:230px; height:auto; border-radius:14px; margin:0 auto; }
-.banner-globe-slot { position:relative; width:100%; max-width:230px; aspect-ratio:1; margin:0 auto; display:grid; place-items:center; }
-.metadata-cobe { position:absolute; inset:0; width:100%; height:100%; display:block; opacity:0; transition:opacity .28s ease; }
+.banner-globe-slot { position:relative; width:100%; max-width:230px; aspect-ratio:1; margin:0 auto; display:grid; place-items:center; overflow:hidden; border-radius:50%; isolation:isolate; }
+.banner-globe-slot > .banner-photo,
+.banner-globe-slot > .metadata-cobe { grid-area:1 / 1; width:100%; height:100%; display:block; }
+.banner-globe-slot > .banner-photo { object-fit:cover; border-radius:50%; }
+.metadata-cobe { position:relative; opacity:0; transition:opacity .28s ease; }
 .banner-globe-slot.cobe-ready .metadata-cobe { opacity:1; }
 .banner-globe-slot.cobe-ready .banner-globe-fallback { opacity:0; visibility:hidden; }
 .banner-globe-fallback { transition:opacity .2s ease; }
