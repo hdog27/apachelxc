@@ -11,7 +11,7 @@ $rackthing_video_name = 'rackthing-demo.mp4';
 $rackthing_video_path = __DIR__ . '/media/' . $rackthing_video_name;
 $rackthing_video_version = @filemtime($rackthing_video_path) ?: 1;
 $rackthing_video = '/media/' . rawurlencode($rackthing_video_name) . '?v=' . $rackthing_video_version;
-$cloudfox_video = 'https://raw.githubusercontent.com/hdog27/AWS-Cloud-Security-Engineering/main/media/videos/01-cloudfoxable-enumeration.mp4';
+$cloudfox_video = "/media/cloudfoxable-enumeration.mp4?v=" . (@filemtime(__DIR__ . "/media/cloudfoxable-enumeration.mp4") ?: 1);
 $media_dir = __DIR__ . '/media';
 if (is_dir($media_dir)) {
     $matches = [];
