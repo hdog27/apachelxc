@@ -5,6 +5,11 @@
   var dataEl = document.getElementById('route-data');
   if (!overlay || !routeCanvas || !stage || !dataEl) return;
 
+  // Keep the overlay hidden during the tiny WebGL warm-up so visitors do not
+  // see the canvas initialize or flash before the route animation begins.
+  overlay.style.visibility = 'hidden';
+  overlay.style.opacity = '0';
+
   if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     overlay.remove();
     return;
