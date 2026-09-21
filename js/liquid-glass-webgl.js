@@ -231,6 +231,17 @@
     wallpaper.id = 'liquid-glass-wallpaper';
     wallpaper.setAttribute('aria-hidden', 'true');
 
+    // Mobile Safari/WebViews can scroll DOM content independently of a fixed
+    // WebGL layer. On the Cyber Lab mobile layout, keep the same wallpaper but
+    // use the cards' native CSS backdrop-filter permanently so the glass stays
+    // attached to the cards during momentum scrolling.
+    if (isCyberLabMobile()) {
+      document.body.insertBefore(wallpaper, document.body.firstChild);
+      liftNormalPageContent(wallpaper, null);
+      document.documentElement.classList.add('liquid-mobile-native-only');
+      return;
+    }
+
     const canvas = document.createElement('canvas');
     canvas.id = 'liquid-glass-stage';
     canvas.setAttribute('aria-hidden', 'true');
