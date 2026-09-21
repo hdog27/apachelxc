@@ -233,12 +233,12 @@ body .vpn-badge.vpn-no { background:rgba(180,45,55,.28)!important; border:1px so
 }
 @media (prefers-reduced-motion:reduce) { .route-line:after,.vpn-cat-happy,.vpn-cat-scared { animation:none; } }
 
-/* Magic UI Video Text structure adapted to this PHP/vanilla stack. */
+/* Moving terminal texture masked into the Metadata Security Lab title. */
 .metadata-video-title {
   position: relative;
   display: block;
   width: 100%;
-  height: clamp(68px, 7.2vw, 92px);
+  height: clamp(72px, 7.6vw, 98px);
   margin: 0 0 14px;
   overflow: hidden;
 }
@@ -248,20 +248,21 @@ body .vpn-badge.vpn-no { background:rgba(180,45,55,.28)!important; border:1px so
   inset: 0;
   display: grid;
   place-items: center;
-  color: #f0f6fc;
-  font-size: clamp(30px, 3.4vw, 42px);
-  font-weight: 700;
+  color: #7ee787;
+  font-size: clamp(30px, 3.7vw, 44px);
+  font-weight: 800;
   line-height: 1;
+  letter-spacing: -0.025em;
   text-align: center;
+  text-shadow: 0 0 16px rgba(126,231,135,.16);
 }
 
 .metadata-video-title-mask {
   position: absolute;
   inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  overflow: hidden;
   opacity: 0;
+  background: #061d0c;
   -webkit-mask-size: contain;
           mask-size: contain;
   -webkit-mask-repeat: no-repeat;
@@ -274,22 +275,60 @@ body .vpn-badge.vpn-no { background:rgba(180,45,55,.28)!important; border:1px so
   opacity: 1;
 }
 
-.metadata-video-title-mask video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.metadata-terminal-track {
+  position: absolute;
+  left: -2%;
+  right: -2%;
+  top: -20%;
+  display: block;
+  color: #48ff80;
+  font: 800 clamp(28px, 3.6vw, 46px)/1.18 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  letter-spacing: -.035em;
+  text-align: left;
+  white-space: nowrap;
+  text-shadow:
+    0 0 4px rgba(72,255,128,.75),
+    0 0 12px rgba(72,255,128,.28);
+  animation: metadataTerminalScroll 7.2s linear infinite;
+  will-change: transform;
+}
+
+.metadata-terminal-group {
+  display: grid;
+  gap: 5px;
+  padding-bottom: 5px;
+}
+
+.metadata-terminal-group span:nth-child(2n) {
+  color: #91ffad;
+}
+
+@keyframes metadataTerminalScroll {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-50%); }
 }
 
 .metadata-video-title.has-video .metadata-video-title-fallback {
-  visibility: hidden;
+  color: rgba(126,231,135,.2);
 }
 
 @media (max-width: 640px) {
   .metadata-video-title {
-    height: 64px;
+    height: 68px;
     margin-bottom: 12px;
   }
   .metadata-video-title-fallback {
     font-size: 28px;
+    letter-spacing: -.03em;
   }
+  .metadata-terminal-track {
+    top: -12%;
+    font-size: 34px;
+    line-height: 1.12;
+    animation-duration: 8.5s;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .metadata-terminal-track { animation: none; }
 }
