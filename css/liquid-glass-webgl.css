@@ -48,6 +48,7 @@ body .stars-layer {
   pointer-events: none;
   transform: translateZ(0);
   opacity: 1;
+  transition: opacity .08s linear;
 }
 
 /* JS adds this class only to direct body children whose original computed
@@ -61,7 +62,7 @@ body > .liquid-page-content {
 /* The reference WebGL canvas supplies the sampled background, physics-based
    refraction, blur, specular highlight and inner shading. Existing borders and
    content remain normal DOM so navigation, links and scrolling stay intact. */
-html.archis-webgl-ready .liquid-webgl-surface {
+html.archis-webgl-ready:not(.archis-webgl-scrolling) .liquid-webgl-surface {
   background: rgba(7, 12, 20, .025) !important;
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
@@ -69,6 +70,14 @@ html.archis-webgl-ready .liquid-webgl-surface {
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.16),
     0 12px 36px rgba(0,0,0,.18) !important;
+}
+
+/* Restore the original mobile scroll fallback that behaved best on iOS:
+   while momentum scrolling is active, hide the fixed WebGL layer and let each
+   card's own CSS glass travel with the DOM. After scrolling settles, geometry
+   is refreshed and full WebGL refraction returns. */
+html.archis-webgl-scrolling #liquid-glass-stage {
+  opacity: 0;
 }
 
 /* Desktop nav gets its own lightweight WebGL stage inside .top-nav. Keeping it
