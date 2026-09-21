@@ -8,6 +8,7 @@ declare(strict_types=1);
 $lat = filter_input(INPUT_GET, 'lat', FILTER_VALIDATE_FLOAT);
 $lon = filter_input(INPUT_GET, 'lon', FILTER_VALIDATE_FLOAT);
 $spanInput = filter_input(INPUT_GET, 'span', FILTER_VALIDATE_FLOAT);
+$sizeInput = filter_input(INPUT_GET, 'size', FILTER_VALIDATE_INT);
 
 if ($lat === false || $lat === null || $lon === false || $lon === null) {
     http_response_code(400);
@@ -23,6 +24,12 @@ $centerLat = round($lat * 4.0) / 4.0;
 $centerLon = round($lon * 4.0) / 4.0;
 $span = ($spanInput === false || $spanInput === null) ? 2.4 : (float)$spanInput;
 $span = max(1.5, min(14.0, round($span * 10.0) / 10.0));
+$requestedSize = ($sizeInput === false || $sizeInput === null) ? 1024 : (int)$sizeInput;
+$allowedSizes = [1024, 1536, 2048];
+$size = 1024;
+foreach ($allowedSizes as $candidate) {
+    if (abs($candidate - $requestedSize) < abs($size - $requestedSize)) $size = $candidate;
+}
 $half = $span / 2.0;
 
 $minLat = max(-89.9, $centerLat - $half);
@@ -33,7 +40,7 @@ $maxLon = min(179.9, $centerLon + $half);
 $cacheDir = sys_get_temp_dir() . '/hmax-earth-regions';
 if (!is_dir($cacheDir)) @mkdir($cacheDir, 0755, true);
 
-$key = hash('sha256', implode(',', [$centerLat, $centerLon, $span, '1024']));
+$key = hash('sha256', implode(',', [$centerLat, $centerLon, $span, $size]));
 $cacheFile = $cacheDir . '/' . $key . '.jpg';
 
 if (is_file($cacheFile) && (time() - filemtime($cacheFile)) < 2592000) {
@@ -52,8 +59,8 @@ $params = [
     'FORMAT' => 'image/jpeg',
     'SRS' => 'EPSG:4326',
     'BBOX' => implode(',', [$minLon, $minLat, $maxLon, $maxLat]),
-    'WIDTH' => '1024',
-    'HEIGHT' => '1024',
+    'WIDTH' => (string)$size,
+    'HEIGHT' => (string)$size,
 ];
 
 $url = 'https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?' .
