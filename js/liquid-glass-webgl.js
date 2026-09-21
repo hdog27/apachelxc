@@ -502,7 +502,7 @@
           document.documentElement.classList.remove('liquid-mobile-scrolling');
           requestNextFrame();
         });
-      }, 110);
+      }, 60);
     }
 
     function onVisibilityChange() {
