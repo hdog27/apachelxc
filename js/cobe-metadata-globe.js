@@ -1,7 +1,15 @@
-import createGlobe from '/js/vendor/cobe/index.esm.js';
-
 (function () {
   'use strict';
+
+  function boot() {
+    import('/js/vendor/cobe/index.esm.js')
+      .then(function (mod) { init(mod.default); })
+      .catch(function (error) {
+        console.warn('COBE module unavailable; keeping GIF fallback.', error);
+      });
+  }
+
+  function init(createGlobe) {
 
   var canvas = document.getElementById('metadata-cobe');
   var slot = document.getElementById('banner-globe-slot');
@@ -118,4 +126,14 @@ import createGlobe from '/js/vendor/cobe/index.esm.js';
     window.clearTimeout(resizeTimer);
     if (globe && globe.destroy) globe.destroy();
   }, { once: true });
+  }
+
+  if (window.__hmaxIntroDone) {
+    boot();
+  } else {
+    window.addEventListener('hmax:intro-complete', boot, { once: true });
+    window.setTimeout(function () {
+      if (!window.__hmaxIntroDone) boot();
+    }, 9000);
+  }
 })();
