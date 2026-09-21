@@ -6,25 +6,20 @@ $page_description = 'Hands-on security, networking and infrastructure projects f
 $page_css         = 'projects.css';
 $body_class       = 'projects-page';
 
-$featured_video = null;
+$featured_video_name = 'samba-root.mp4';
+$featured_video_path = __DIR__ . '/media/' . $featured_video_name;
+$featured_video_version = @filemtime($featured_video_path) ?: 1;
+$featured_video = '/media/' . rawurlencode($featured_video_name) . '?v=' . $featured_video_version;
+
 $rackthing_video_name = 'rackthing-demo.mp4';
 $rackthing_video_path = __DIR__ . '/media/' . $rackthing_video_name;
 $rackthing_video_version = @filemtime($rackthing_video_path) ?: 1;
 $rackthing_video = '/media/' . rawurlencode($rackthing_video_name) . '?v=' . $rackthing_video_version;
-$cloudfox_video = "/media/cloudfoxable-enumeration.mp4?v=" . (@filemtime(__DIR__ . "/media/cloudfoxable-enumeration.mp4") ?: 1);
-$media_dir = __DIR__ . '/media';
-if (is_dir($media_dir)) {
-    $matches = [];
-    foreach (['mp4','webm','mov'] as $ext) {
-        foreach (glob($media_dir . '/*.' . $ext) ?: [] as $file) {
-            if (basename($file) !== $rackthing_video_name) $matches[] = $file;
-        }
-    }
-    if ($matches) {
-        usort($matches, function ($a, $b) { return @filemtime($b) <=> @filemtime($a); });
-        $featured_video = '/media/' . rawurlencode(basename($matches[0]));
-    }
-}
+
+$cloudfox_video_name = 'cloudfoxable-enumeration.mp4';
+$cloudfox_video_path = __DIR__ . '/media/' . $cloudfox_video_name;
+$cloudfox_video_version = @filemtime($cloudfox_video_path) ?: 1;
+$cloudfox_video = '/media/' . rawurlencode($cloudfox_video_name) . '?v=' . $cloudfox_video_version;
 
 require __DIR__ . '/includes/header.php';
 ?>
