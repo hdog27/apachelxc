@@ -124,7 +124,7 @@ foreach ($readableLogs as $logFile) {
 
         // Internal HTMX fragment requests are application plumbing, not Internet noise.
         // Excluding them keeps the public request counter comparable to the pre-HTMX site.
-        if ($requestPath === '/partials/repo-readme' || $requestPath === '/partials/repo-readme.php') continue;
+        if (in_array($requestPath, ['/partials/repo-readme', '/partials/repo-readme.php', '/partials/noise-panel', '/partials/noise-panel.php'], true)) continue;
 
         $requestCount++;
         $label = null;
