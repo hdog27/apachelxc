@@ -128,10 +128,10 @@ require __DIR__ . '/includes/header.php';
     <div class="section-copy">
       <p class="panel-label">CONNECTION PATH</p>
       <h2>From my rack, through Cloudflare, to your network.</h2>
-      <p>The opening animation visualizes the architecture serving this request. It starts near my generalized New England origin, pulls back to Earth, then zooms toward your approximate IP location.</p>
+      <p>The opening animation starts at your approximate IP region, routes through the Cloudflare edge handling the request, then terminates in a deliberately generalized hmax.space origin region.</p>
     </div>
     <div class="route-summary" aria-label="Connection path summary">
-      <div class="route-node"><span class="node-dot home"></span><strong>HOMELAB</strong><small>New England · location hidden</small></div>
+      <div class="route-node"><span class="node-dot home"></span><strong>HOMELAB</strong><small>Generalized origin · location hidden</small></div>
       <span class="route-line"></span>
       <div class="route-node"><span class="node-dot cloud"></span><strong>CLOUDFLARE</strong><small><?= $cfColo ? 'Edge code ' . htmlspecialchars($cfColo) : 'Tunnel + edge network' ?></small></div>
       <span class="route-line"></span>
