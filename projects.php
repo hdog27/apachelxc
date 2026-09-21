@@ -33,22 +33,6 @@ require __DIR__ . '/includes/header.php';
 
   <article class="project-card project-featured card">
     <div class="project-copy">
-      <p class="project-kicker">FEATURED BUILD</p>
-      <h2>Metasploitable + Suricata + Pushover Alerts</h2>
-      <p>An isolated attack-and-detection demo: generate traffic against Metasploitable, let Suricata detect it, then push the alert to my phone through Pushover. It shows the whole path from attack traffic to a defender-visible notification.</p>
-      <div class="project-actions">
-        <a class="project-btn primary" href="/homelab">See the lab setup →</a>
-        <a class="project-btn" href="https://github.com/hdog27/homelab-IDS-alerts" target="_blank" rel="noopener">GitHub →</a>
-      </div>
-    </div>
-    <div class="project-media">
-      <video id="featured-build-video" data-autoplay-video src="<?= htmlspecialchars($featured_video) ?>" autoplay muted loop playsinline webkit-playsinline controls preload="auto" aria-label="Metasploitable and Suricata project demonstration"></video>
-    </div>
-  </article>
-<?php endif; ?>
-
-  <article class="project-card project-featured card">
-    <div class="project-copy">
       <p class="project-kicker">CLOUD SECURITY / AWS</p>
       <h2>AWS Cloud Security Engineering | CloudFoxable</h2>
       <p>A hands-on AWS security assessment built around CloudFoxable. Starting from a constrained IAM identity, I enumerate the cloud environment with CloudFox, identify exposed services and permission paths, validate findings in the authorized lab, and document remediation and retesting.</p>
@@ -63,6 +47,22 @@ require __DIR__ . '/includes/header.php';
   </article>
 
 <?php if ($featured_video): ?>
+  <article class="project-card project-featured card">
+    <div class="project-copy">
+      <p class="project-kicker">FEATURED BUILD</p>
+      <h2>Metasploitable + Suricata + Pushover Alerts</h2>
+      <p>An isolated attack-and-detection demo: generate traffic against Metasploitable, let Suricata detect it, then push the alert to my phone through Pushover. It shows the whole path from attack traffic to a defender-visible notification.</p>
+      <div class="project-actions">
+        <a class="project-btn primary" href="/homelab">See the lab setup →</a>
+        <a class="project-btn" href="https://github.com/hdog27/homelab-IDS-alerts" target="_blank" rel="noopener">GitHub →</a>
+      </div>
+    </div>
+    <div class="project-media">
+      <video id="featured-build-video" data-autoplay-video src="<?= htmlspecialchars($featured_video) ?>" autoplay muted loop playsinline webkit-playsinline controls preload="auto" aria-label="Metasploitable and Suricata project demonstration"></video>
+    </div>
+  </article>
+<?php endif; ?>
+
   <section class="project-grid" aria-label="Project list">
     <article class="project-card card">
       <div class="project-copy">
