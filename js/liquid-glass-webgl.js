@@ -231,6 +231,18 @@
     wallpaper.id = 'liquid-glass-wallpaper';
     wallpaper.setAttribute('aria-hidden', 'true');
 
+    // iOS/WebView can compositor-scroll filters and fixed WebGL on separate
+    // layers. On Cyber Lab mobile, use a static translucent treatment with no
+    // WebGL and no backdrop-filter so the card fill and border remain one DOM
+    // layer during momentum scrolling.
+    if (isCyberLabMobile()) {
+      document.body.insertBefore(wallpaper, document.body.firstChild);
+      liftNormalPageContent(wallpaper, null);
+      cards.forEach((card) => card.classList.add('liquid-mobile-static-surface'));
+      document.documentElement.classList.add('liquid-mobile-static');
+      return;
+    }
+
     const canvas = document.createElement('canvas');
     canvas.id = 'liquid-glass-stage';
     canvas.setAttribute('aria-hidden', 'true');
