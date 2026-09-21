@@ -23,6 +23,19 @@
 <script src="/js/site-polish.js?v=<?= @filemtime(__DIR__ . "/../js/site-polish.js") ?>"></script>
 <?php if (($body_class ?? '') === 'cyberlab'): ?>
 <script src="/js/cyberlab-layout.js?v=<?= @filemtime(__DIR__ . "/../js/cyberlab-layout.js") ?>"></script>
+<script>
+window.__hmaxDeferredScripts = <?= json_encode([
+  '/js/liquid-glass-webgl.js?v=' . (@filemtime(__DIR__ . '/../js/liquid-glass-webgl.js') ?: 1),
+  '/js/liquid-glass-nav-webgl.js?v=' . (@filemtime(__DIR__ . '/../js/liquid-glass-nav-webgl.js') ?: 1),
+  '/js/liquid-glass-debug.js?v=' . (@filemtime(__DIR__ . '/../js/liquid-glass-debug.js') ?: 1),
+  '/js/rtc.js?v=' . (@filemtime(__DIR__ . '/../js/rtc.js') ?: 1),
+  '/js/flank.js?v=' . (@filemtime(__DIR__ . '/../js/flank.js') ?: 1),
+  '/js/confetti.js?v=' . (@filemtime(__DIR__ . '/../js/confetti.js') ?: 1),
+  '/js/rain.js?v=' . (@filemtime(__DIR__ . '/../js/rain.js') ?: 1),
+  '/js/ghosts.js?v=' . (@filemtime(__DIR__ . '/../js/ghosts.js') ?: 1),
+  '/js/vpn-kitty.js?v=' . (@filemtime(__DIR__ . '/../js/vpn-kitty.js') ?: 1),
+], JSON_UNESCAPED_SLASHES) ?>;
+</script>
 <script src="/js/cyberlab-deferred.js?v=<?= @filemtime(__DIR__ . "/../js/cyberlab-deferred.js") ?>"></script>
 <?php else: ?>
 <script src="/js/liquid-glass-webgl.js?v=<?= @filemtime(__DIR__ . "/../js/liquid-glass-webgl.js") ?>"></script>
