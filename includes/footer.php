@@ -11,7 +11,7 @@
 <p class="site-credit">Built by <strong>Harrison</strong>, <a href="https://github.com/1Fragz1" target="_blank" rel="noopener">Zachary Lavornia</a> and <a href="https://www.linkedin.com/in/morgan-stone-90b514419/" target="_blank" rel="noopener">Morgan Stone</a></p>
 <script src="/js/kitty.js?v=<?= @filemtime(__DIR__ . "/../js/kitty.js") ?>"></script>
 <script src="/js/main.js?v=<?= @filemtime(__DIR__ . "/../js/main.js") ?>"></script>
-<?php if (($body_class ?? '') === 'projects-page'): ?>
+<?php if (in_array(($body_class ?? ''), ['projects-page', 'cyberlab'], true)): ?>
 <script src="/js/vendor/htmx.min.js?v=<?= @filemtime(__DIR__ . "/../js/vendor/htmx.min.js") ?>"></script>
 <?php endif; ?>
 <?php if (($body_class ?? '') === 'cyberlab'): ?>
