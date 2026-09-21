@@ -11,6 +11,7 @@ $rackthing_video_name = 'rackthing-demo.mp4';
 $rackthing_video_path = __DIR__ . '/media/' . $rackthing_video_name;
 $rackthing_video_version = @filemtime($rackthing_video_path) ?: 1;
 $rackthing_video = '/media/' . rawurlencode($rackthing_video_name) . '?v=' . $rackthing_video_version;
+$cloudfox_video = 'https://raw.githubusercontent.com/hdog27/AWS-Cloud-Security-Engineering/main/media/videos/01-cloudfoxable-enumeration.mp4';
 $media_dir = __DIR__ . '/media';
 if (is_dir($media_dir)) {
     $matches = [];
@@ -51,6 +52,21 @@ require __DIR__ . '/includes/header.php';
     </div>
   </article>
 <?php endif; ?>
+
+  <article class="project-card project-featured card">
+    <div class="project-copy">
+      <p class="project-kicker">CLOUD SECURITY / AWS</p>
+      <h2>AWS Cloud Security Engineering | CloudFoxable</h2>
+      <p>A hands-on AWS security assessment built around CloudFoxable. Starting from a constrained IAM identity, I enumerate the cloud environment with CloudFox, identify exposed services and permission paths, validate findings in the authorized lab, and document remediation and retesting.</p>
+      <div class="project-actions">
+        <a class="project-btn primary" href="https://github.com/hdog27/AWS-Cloud-Security-Engineering" target="_blank" rel="noopener">View assessment on GitHub →</a>
+        <a class="project-btn" href="https://github.com/hdog27/AWS-Cloud-Security-Engineering/blob/main/docs/enumeration.md" target="_blank" rel="noopener">Enumeration notes →</a>
+      </div>
+    </div>
+    <div class="project-media">
+      <video data-autoplay-video src="<?= htmlspecialchars($cloudfox_video) ?>" autoplay muted loop playsinline webkit-playsinline controls preload="metadata" aria-label="AWS CloudFoxable environment enumeration demonstration"></video>
+    </div>
+  </article>
 
   <section class="project-grid" aria-label="Project list">
     <article class="project-card card">
