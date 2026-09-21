@@ -76,7 +76,7 @@ require __DIR__ . '/includes/header.php';
       </div>
       <div class="repo-embed" data-user="hdog27" data-repo="cloud-firewall-guard-showcase">
         <div class="repo-embed-header"><span class="repo-embed-name">hdog27/cloud-firewall-guard-showcase</span><a href="https://github.com/hdog27/cloud-firewall-guard-showcase" target="_blank" rel="noopener" class="repo-embed-link">Open walkthrough →</a></div>
-        <div class="repo-embed-body"><p class="repo-embed-loading">Loading README…</p></div>
+        <div class="repo-embed-body" hx-get="/partials/repo-readme?repo=cloud-firewall-guard-showcase" hx-trigger="revealed once" hx-swap="innerHTML"><p class="repo-embed-loading">Loading README…</p></div>
       </div>
     </article>
 
@@ -103,7 +103,7 @@ require __DIR__ . '/includes/header.php';
       </div>
       <div class="repo-embed" data-user="hdog27" data-repo="airgeddon-evil-twin-captive-portal">
         <div class="repo-embed-header"><span class="repo-embed-name">hdog27/airgeddon-evil-twin-captive-portal</span><a href="https://github.com/hdog27/airgeddon-evil-twin-captive-portal" target="_blank" rel="noopener" class="repo-embed-link">Open repo →</a></div>
-        <div class="repo-embed-body"><p class="repo-embed-loading">Loading README…</p></div>
+        <div class="repo-embed-body" hx-get="/partials/repo-readme?repo=airgeddon-evil-twin-captive-portal" hx-trigger="revealed once" hx-swap="innerHTML"><p class="repo-embed-loading">Loading README…</p></div>
       </div>
     </article>
 
@@ -117,7 +117,7 @@ require __DIR__ . '/includes/header.php';
       </div>
       <div class="repo-embed" data-user="hdog27" data-repo="Protectli-v1410-HomeLab-Net-Security">
         <div class="repo-embed-header"><span class="repo-embed-name">hdog27/Protectli-v1410-HomeLab-Net-Security</span><a href="https://github.com/hdog27/Protectli-v1410-HomeLab-Net-Security" target="_blank" rel="noopener" class="repo-embed-link">Open repo →</a></div>
-        <div class="repo-embed-body"><p class="repo-embed-loading">Loading README…</p></div>
+        <div class="repo-embed-body" hx-get="/partials/repo-readme?repo=Protectli-v1410-HomeLab-Net-Security" hx-trigger="revealed once" hx-swap="innerHTML"><p class="repo-embed-loading">Loading README…</p></div>
       </div>
     </article>
 
@@ -130,7 +130,7 @@ require __DIR__ . '/includes/header.php';
       </div>
       <div class="repo-embed" data-user="hdog27" data-repo="Apache-IP-Logging-HomeLab-On-Proxmox">
         <div class="repo-embed-header"><span class="repo-embed-name">hdog27/Apache-IP-Logging-HomeLab-On-Proxmox</span><a href="https://github.com/hdog27/Apache-IP-Logging-HomeLab-On-Proxmox" target="_blank" rel="noopener" class="repo-embed-link">Open repo →</a></div>
-        <div class="repo-embed-body"><p class="repo-embed-loading">Loading README…</p></div>
+        <div class="repo-embed-body" hx-get="/partials/repo-readme?repo=Apache-IP-Logging-HomeLab-On-Proxmox" hx-trigger="revealed once" hx-swap="innerHTML"><p class="repo-embed-loading">Loading README…</p></div>
       </div>
     </article>
 
@@ -143,7 +143,7 @@ require __DIR__ . '/includes/header.php';
       </div>
       <div class="repo-embed" data-user="hdog27" data-repo="ESP32-HyperHDR-LED-Controller">
         <div class="repo-embed-header"><span class="repo-embed-name">hdog27/ESP32-HyperHDR-LED-Controller</span><a href="https://github.com/hdog27/ESP32-HyperHDR-LED-Controller" target="_blank" rel="noopener" class="repo-embed-link">Open repo →</a></div>
-        <div class="repo-embed-body"><p class="repo-embed-loading">Loading README…</p></div>
+        <div class="repo-embed-body" hx-get="/partials/repo-readme?repo=ESP32-HyperHDR-LED-Controller" hx-trigger="revealed once" hx-swap="innerHTML"><p class="repo-embed-loading">Loading README…</p></div>
       </div>
     </article>
   </section>
