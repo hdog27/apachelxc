@@ -7,20 +7,24 @@
   var started = false;
   var fallbackTimer = 0;
 
-  var deferredScripts = [
-    '/js/liquid-glass-webgl.js',
-    '/js/liquid-glass-nav-webgl.js',
-    '/js/rtc.js',
-    '/js/flank.js',
-    '/js/confetti.js',
-    '/js/rain.js',
-    '/js/ghosts.js',
-    '/js/vpn-kitty.js'
-  ];
+  var deferredScripts = Array.isArray(window.__hmaxDeferredScripts)
+    ? window.__hmaxDeferredScripts.slice()
+    : [
+        '/js/liquid-glass-webgl.js',
+        '/js/liquid-glass-nav-webgl.js',
+        '/js/liquid-glass-debug.js',
+        '/js/rtc.js',
+        '/js/flank.js',
+        '/js/confetti.js',
+        '/js/rain.js',
+        '/js/ghosts.js',
+        '/js/vpn-kitty.js'
+      ];
 
   function loadScript(src) {
     return new Promise(function (resolve) {
-      if (document.querySelector('script[data-cyberlab-deferred-src="' + src + '"]')) {
+      var key = src.split('?')[0];
+      if (document.querySelector('script[data-cyberlab-deferred-src="' + key + '"]')) {
         resolve();
         return;
       }
@@ -28,7 +32,7 @@
       var script = document.createElement('script');
       script.src = src;
       script.async = false;
-      script.setAttribute('data-cyberlab-deferred-src', src);
+      script.setAttribute('data-cyberlab-deferred-src', key);
       script.onload = resolve;
       script.onerror = resolve;
       document.body.appendChild(script);
