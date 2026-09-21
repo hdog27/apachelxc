@@ -32,9 +32,28 @@ import createGlobe from '/js/vendor/cobe/index.esm.js';
   var home = [44.47, -71.57];
 
   var markers = [];
-  if (visitor) markers.push({ location: visitor, size: 0.045, color: [0.49, 0.91, 0.53] });
-  if (cloud) markers.push({ location: cloud, size: 0.04, color: [0.64, 0.44, 0.97] });
-  markers.push({ location: home, size: 0.045, color: [0.35, 0.65, 1.0] });
+  var traffic24h = Array.isArray(data.traffic24h) ? data.traffic24h : [];
+  var maxTraffic = traffic24h.reduce(function (max, point) {
+    return Math.max(max, Number(point && point.count) || 0);
+  }, 1);
+
+  traffic24h.slice(0, 80).forEach(function (point) {
+    var plat = Number(point && point.lat);
+    var plon = Number(point && point.lon);
+    var count = Number(point && point.count) || 1;
+    if (!Number.isFinite(plat) || !Number.isFinite(plon)) return;
+    var weight = Math.sqrt(count / maxTraffic);
+    markers.push({
+      location: [plat, plon],
+      size: 0.012 + (0.024 * weight),
+      color: [0.44, 0.64, 0.96]
+    });
+  });
+
+  // Current request stays visually distinct from the 24h history.
+  if (visitor) markers.push({ location: visitor, size: 0.055, color: [0.49, 0.91, 0.53] });
+  if (cloud) markers.push({ location: cloud, size: 0.042, color: [0.64, 0.44, 0.97] });
+  markers.push({ location: home, size: 0.047, color: [0.35, 0.65, 1.0] });
 
   var arcs = [];
   if (visitor && cloud) {
