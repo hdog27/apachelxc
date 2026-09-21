@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 $lat = filter_input(INPUT_GET, 'lat', FILTER_VALIDATE_FLOAT);
 $lon = filter_input(INPUT_GET, 'lon', FILTER_VALIDATE_FLOAT);
+$spanInput = filter_input(INPUT_GET, 'span', FILTER_VALIDATE_FLOAT);
 
 if ($lat === false || $lat === null || $lon === false || $lon === null) {
     http_response_code(400);
@@ -16,11 +17,12 @@ if ($lat === false || $lat === null || $lon === false || $lon === null) {
 $lat = max(-88.0, min(88.0, (float)$lat));
 $lon = max(-178.0, min(178.0, (float)$lon));
 
-// Quarter-degree snapping improves cache reuse while remaining much more
-// detailed than the global 2K mobile texture.
+// Quarter-degree snapping improves cache reuse. Span is quantized too so the
+// close visitor crop and broader origin crop can both be cached efficiently.
 $centerLat = round($lat * 4.0) / 4.0;
 $centerLon = round($lon * 4.0) / 4.0;
-$span = 2.4;
+$span = ($spanInput === false || $spanInput === null) ? 2.4 : (float)$spanInput;
+$span = max(1.5, min(14.0, round($span * 10.0) / 10.0));
 $half = $span / 2.0;
 
 $minLat = max(-89.9, $centerLat - $half);
