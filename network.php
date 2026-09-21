@@ -40,6 +40,10 @@ require __DIR__ . '/includes/header.php';
 
     <div class="topology-stage" data-topology-stage>
       <div class="topology-grid" aria-hidden="true"></div>
+      <span class="topology-layer-label layer-edge" aria-hidden="true">EDGE</span>
+      <span class="topology-layer-label layer-access" aria-hidden="true">ACCESS / SWITCHING</span>
+      <span class="topology-layer-label layer-zones" aria-hidden="true">TRUST ZONES</span>
+      <span class="topology-layer-label layer-workloads" aria-hidden="true">WORKLOADS / VISIBILITY</span>
 
       <svg class="topology-links" viewBox="0 0 1000 620" preserveAspectRatio="none" aria-hidden="true">
         <defs>
@@ -82,10 +86,10 @@ require __DIR__ . '/includes/header.php';
           <path d="M500 306 C575 335 650 370 740 420"></path>
         </g>
 
-        <g class="topology-line branch" data-path-line="all">
+        <g class="topology-line branch" data-path-line="admin">
           <path d="M500 306 C390 342 245 378 100 420"></path>
         </g>
-        <g class="topology-line branch" data-path-line="all">
+        <g class="topology-line branch" data-path-line="lab">
           <path d="M500 306 C468 340 446 375 420 420"></path>
         </g>
         <g class="topology-line branch" data-path-line="lab">
@@ -96,7 +100,7 @@ require __DIR__ . '/includes/header.php';
           <path d="M260 446 L260 542"></path>
           <text x="274" y="505">APACHE</text>
         </g>
-        <g class="topology-line workload" data-path-line="all lab">
+        <g class="topology-line workload" data-path-line="public lab">
           <path d="M420 446 L420 542"></path>
           <text x="434" y="505">VMs / LXCs</text>
         </g>
@@ -133,7 +137,7 @@ require __DIR__ . '/includes/header.php';
       </button>
 
       <button class="topology-node topology-node--glass topology-node--primary active" style="--x:50%;--y:31%" type="button"
-        data-network-node="opnsense" data-path-node="public client" aria-pressed="true">
+        data-network-node="opnsense" data-path-node="public client lab" aria-pressed="true">
         <span class="topology-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.6 2.7 8 7 10 4.3-2 7-5.4 7-10V6l-7-3Z"></path><path d="M8 12h8M12 8v8"></path></svg>
         </span>
@@ -161,7 +165,7 @@ require __DIR__ . '/includes/header.php';
       </div>
 
       <button class="topology-zone" style="--x:10%;--y:70%" type="button"
-        data-network-node="admin" data-path-node="all" aria-pressed="false">
+        data-network-node="admin" data-path-node="admin" aria-pressed="false">
         <i></i><strong>ADMIN</strong><small>Management plane</small>
       </button>
       <button class="topology-zone" style="--x:26%;--y:70%" type="button"
@@ -169,7 +173,7 @@ require __DIR__ . '/includes/header.php';
         <i></i><strong>DMZ</strong><small>Public-facing</small>
       </button>
       <button class="topology-zone" style="--x:42%;--y:70%" type="button"
-        data-network-node="services" data-path-node="all lab" aria-pressed="false">
+        data-network-node="services" data-path-node="lab" aria-pressed="false">
         <i></i><strong>SERVICES</strong><small>Internal apps</small>
       </button>
       <button class="topology-zone" style="--x:58%;--y:70%" type="button"
@@ -194,7 +198,7 @@ require __DIR__ . '/includes/header.php';
       </button>
 
       <button class="topology-node topology-node--workload" style="--x:42%;--y:90%" type="button"
-        data-network-node="proxmox" data-path-node="all lab" aria-pressed="false">
+        data-network-node="proxmox" data-path-node="public lab" aria-pressed="false">
         <span class="topology-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M7 8h10M7 12h4M7 16h7"></path></svg>
         </span>
