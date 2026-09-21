@@ -96,7 +96,7 @@ require __DIR__ . '/includes/header.php';
           <span class="metadata-video-word-base">Metadata</span>
           <span class="metadata-video-word-mask" aria-hidden="true">
             <video autoplay muted loop playsinline preload="auto" data-offset="0">
-              <source src="https://videos.pexels.com/video-files/6804121/6804121-hd_1920_1080_25fps.mp4" type="video/mp4">
+              <source src="https://videos.pexels.com/video-files/854053/854053-hd_1920_1080_25fps.mp4" type="video/mp4">
             </video>
           </span>
         </span>
@@ -104,7 +104,7 @@ require __DIR__ . '/includes/header.php';
           <span class="metadata-video-word-base">Security</span>
           <span class="metadata-video-word-mask" aria-hidden="true">
             <video autoplay muted loop playsinline preload="auto" data-offset="1.4">
-              <source src="https://videos.pexels.com/video-files/6804121/6804121-hd_1920_1080_25fps.mp4" type="video/mp4">
+              <source src="https://videos.pexels.com/video-files/854053/854053-hd_1920_1080_25fps.mp4" type="video/mp4">
             </video>
           </span>
         </span>
@@ -112,7 +112,7 @@ require __DIR__ . '/includes/header.php';
           <span class="metadata-video-word-base">Lab</span>
           <span class="metadata-video-word-mask" aria-hidden="true">
             <video autoplay muted loop playsinline preload="auto" data-offset="2.8">
-              <source src="https://videos.pexels.com/video-files/6804121/6804121-hd_1920_1080_25fps.mp4" type="video/mp4">
+              <source src="https://videos.pexels.com/video-files/854053/854053-hd_1920_1080_25fps.mp4" type="video/mp4">
             </video>
           </span>
         </span>
