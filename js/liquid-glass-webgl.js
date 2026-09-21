@@ -11,14 +11,14 @@
   const SHADOW_MARGIN = 42;
 
   const SETTINGS = {
-    thickness: 50,
-    bezel: 60,
-    ior: 3.0,
+    thickness: 68,
+    bezel: 56,
+    ior: 3.15,
     blur: 1.5,
     // archisvaze's shader already has a single-sample fast path below 0.5.
     // Use it on phones to cut texture work without changing refraction math.
     mobileBlur: 0.3,
-    specular: 0.55,
+    specular: 0.68,
     tint: 0.08,
     shadow: 0.5
   };
@@ -121,7 +121,9 @@
       }
 
       float distFromEdge = -sd;
-      float maxBezel = max(1.0, min(uRadius, min(halfSize.x, halfSize.y)) - 1.0);
+      // Let the refractive shoulder extend farther into large cards instead
+      // of being capped by the CSS corner radius (~18-22px on most cards).
+      float maxBezel = max(1.0, min(halfSize.x, halfSize.y) * 0.42);
       float bezel = min(uBezel, maxBezel);
       float t = clamp(distFromEdge / bezel, 0.0, 1.0);
 
@@ -423,13 +425,29 @@
 
       for (const card of cards) {
         if (!card.isConnected) continue;
-        const geometry = cardGeometry.get(card);
-        if (!geometry) continue;
 
-        const left = geometry.left - page.x - stageRect.left;
-        const top = geometry.top - page.y - stageRect.top;
-        const width = geometry.width;
-        const height = geometry.height;
+        // Mobile WebKit compositor scrolling can move DOM layers ahead of
+        // window/visualViewport offsets. Read each card's viewport rect directly
+        // on mobile so the WebGL surface follows the same coordinate space as the
+        // painted DOM border. Desktop keeps the cheaper cached document geometry.
+        let left, top, width, height, radius;
+        if (mobile) {
+          const rect = card.getBoundingClientRect();
+          const style = getComputedStyle(card);
+          left = rect.left - stageRect.left;
+          top = rect.top - stageRect.top;
+          width = rect.width;
+          height = rect.height;
+          radius = Math.max(1, parseFloat(style.borderTopLeftRadius) || 20);
+        } else {
+          const geometry = cardGeometry.get(card);
+          if (!geometry) continue;
+          left = geometry.left - page.x - stageRect.left;
+          top = geometry.top - page.y - stageRect.top;
+          width = geometry.width;
+          height = geometry.height;
+          radius = geometry.radius;
+        }
         const right = left + width;
         const bottom = top + height;
 
@@ -463,7 +481,7 @@
         gl.scissor(sx, sy, sw, sh);
         gl.uniform2f(u.center, centerX, centerY);
         gl.uniform2f(u.size, width, height);
-        gl.uniform1f(u.radius, geometry.radius);
+        gl.uniform1f(u.radius, radius);
         gl.drawArrays(gl.TRIANGLES, 0, 6);
       }
 
