@@ -231,6 +231,17 @@
     wallpaper.id = 'liquid-glass-wallpaper';
     wallpaper.setAttribute('aria-hidden', 'true');
 
+    // iOS/WebView scrolling can move DOM layers asynchronously from a fixed
+    // WebGL canvas. On the Cyber Lab mobile layout, keep the same wallpaper but
+    // use the cards' native CSS backdrop-filter permanently. This removes the
+    // detached/refraction smear instead of trying to chase scroll position.
+    if (isCyberLabMobile()) {
+      document.body.insertBefore(wallpaper, document.body.firstChild);
+      liftNormalPageContent(wallpaper, null);
+      document.documentElement.classList.add('liquid-mobile-native-only');
+      return;
+    }
+
     const canvas = document.createElement('canvas');
     canvas.id = 'liquid-glass-stage';
     canvas.setAttribute('aria-hidden', 'true');
