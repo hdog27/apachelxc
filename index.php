@@ -91,7 +91,10 @@ require __DIR__ . '/includes/header.php';
 
       <div class="banner-row">
         <div class="banner-flank" id="flank-l"></div>
-        <img class="banner-photo" src="/images/cyber-banner.gif?v=2" alt="Animated cyberspace banner" loading="lazy" width="400" height="400">
+        <div class="banner-globe-slot" id="banner-globe-slot">
+          <img class="banner-photo banner-globe-fallback" src="/images/cyber-banner.gif?v=2" alt="Animated cyberspace banner" loading="lazy" width="400" height="400">
+          <canvas id="metadata-cobe" class="metadata-cobe" aria-label="Animated request path globe"></canvas>
+        </div>
         <div class="banner-flank" id="flank-r"></div>
       </div>
 
