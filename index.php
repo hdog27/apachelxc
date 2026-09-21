@@ -8,7 +8,7 @@ $page_title       = 'Cyber Lab | hmax.space';
 $page_description = 'A live web-server metadata security lab: see the IP, geolocation, ISP, VPN/proxy status and device fingerprint your browser reveals on every request.';
 $body_class       = 'cyberlab';
 $page_css         = 'cyberlab.css';
-$page_js          = ['route-globe.js'];
+$page_js          = ['route-globe.js', 'video-text.js'];
 $og_image         = 'https://hmax.space/images/og-cyberlab.jpg';
 
 $routePayload = [
@@ -91,7 +91,14 @@ require __DIR__ . '/includes/header.php';
   <section class="lab-grid">
     <article class="panel lab-intro-panel">
       <p class="panel-label">LIVE REQUESTS · 24H</p>
-      <h1>Metadata Security Lab</h1>
+      <h1 class="metadata-video-title" data-video-title>
+        <span class="metadata-video-title-fallback">Metadata Security Lab</span>
+        <span class="metadata-video-title-mask" aria-hidden="true">
+          <video autoplay muted loop playsinline preload="metadata">
+            <source src="/media/metadata-terminal.webm" type="video/webm">
+          </video>
+        </span>
+      </h1>
 
       <div class="banner-row">
         <div class="banner-flank" id="flank-l"></div>
