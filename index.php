@@ -86,7 +86,7 @@ require __DIR__ . '/includes/header.php';
 
   <section class="lab-grid">
     <article class="panel lab-intro-panel">
-      <p class="panel-label">LIVE DEMO</p>
+      <p class="panel-label">LIVE REQUEST</p>
       <h1>Metadata Security Lab</h1>
 
       <div class="banner-row">
