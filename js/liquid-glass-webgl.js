@@ -361,9 +361,7 @@
     let lastHeight = 0;
     let running = true;
     let geometryTimer = 0;
-    let scrollTimer = 0;
     let rafId = 0;
-    let mobileScrollActive = false;
 
     function resize(stageRect) {
       const mobile = stageRect.width <= MOBILE_BREAKPOINT;
@@ -384,13 +382,13 @@
     }
 
     function requestNextFrame() {
-      if (!running || !canvas.isConnected || document.hidden || mobileScrollActive || rafId) return;
+      if (!running || !canvas.isConnected || document.hidden || rafId) return;
       rafId = requestAnimationFrame(render);
     }
 
     function render() {
       rafId = 0;
-      if (!running || !canvas.isConnected || document.hidden || mobileScrollActive) return;
+      if (!running || !canvas.isConnected || document.hidden) return;
 
       // One viewport measurement remains, but card layout is no longer queried
       // during scrolling. Their document-space boxes are cached and translated
@@ -477,34 +475,6 @@
       geometryTimer = window.setTimeout(measureCardGeometry, delay == null ? 60 : delay);
     }
 
-    function onMobileScroll() {
-      if (!isCyberLabMobile() || !running) return;
-
-      if (!mobileScrollActive) {
-        mobileScrollActive = true;
-        document.documentElement.classList.add('liquid-mobile-scrolling');
-        if (rafId) {
-          cancelAnimationFrame(rafId);
-          rafId = 0;
-        }
-      }
-
-      window.clearTimeout(scrollTimer);
-      scrollTimer = window.setTimeout(() => {
-        if (!running) return;
-        measureCardGeometry();
-        mobileScrollActive = false;
-
-        // Draw one correctly aligned frame while the native CSS glass is still
-        // covering the canvas, then crossfade real refraction back in.
-        render();
-        requestAnimationFrame(() => {
-          document.documentElement.classList.remove('liquid-mobile-scrolling');
-          requestNextFrame();
-        });
-      }, 60);
-    }
-
     function onVisibilityChange() {
       if (document.hidden) {
         if (rafId) {
@@ -518,7 +488,6 @@
       requestNextFrame();
     }
 
-    window.addEventListener('scroll', onMobileScroll, { passive: true });
     document.addEventListener('visibilitychange', onVisibilityChange);
 
     // Geometry is refreshed only when layout can actually change. Ordinary
@@ -547,11 +516,8 @@
     window.addEventListener('pagehide', () => {
       running = false;
       window.clearTimeout(geometryTimer);
-      window.clearTimeout(scrollTimer);
       if (rafId) cancelAnimationFrame(rafId);
-      window.removeEventListener('scroll', onMobileScroll);
       document.removeEventListener('visibilitychange', onVisibilityChange);
-      document.documentElement.classList.remove('liquid-mobile-scrolling');
       if (resizeObserver) resizeObserver.disconnect();
       const loseContext = gl.getExtension('WEBGL_lose_context');
       if (loseContext) loseContext.loseContext();
