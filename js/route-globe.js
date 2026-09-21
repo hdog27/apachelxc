@@ -163,6 +163,9 @@
   var fragmentSrc=[
     'precision mediump float;',
     'uniform sampler2D u_tex;',
+    'uniform sampler2D u_regionTex;',
+    'uniform vec4 u_regionBounds;',
+    'uniform float u_regionReady;',
     'uniform vec2 u_centerPx;',
     'uniform float u_radius;',
     'uniform float u_centerLat;',
@@ -182,6 +185,12 @@
     'float lat=asin(clamp(world.z,-1.0,1.0));float lon=atan(world.y,world.x);',
     'vec2 uv=vec2((lon+PI)/(2.0*PI),(lat+PI/2.0)/PI);',
     'vec3 base=u_ready>.5?texture2D(u_tex,uv).rgb:mix(vec3(.01,.055,.12),vec3(.02,.15,.28),z);',
+    'if(u_regionReady>.5&&lon>=u_regionBounds.x&&lon<=u_regionBounds.z&&lat>=u_regionBounds.y&&lat<=u_regionBounds.w){',
+    'vec2 ruv=vec2((lon-u_regionBounds.x)/(u_regionBounds.z-u_regionBounds.x),(lat-u_regionBounds.y)/(u_regionBounds.w-u_regionBounds.y));',
+    'float edge=min(min(ruv.x,1.0-ruv.x),min(ruv.y,1.0-ruv.y));',
+    'float blend=smoothstep(.02,.08,edge);',
+    'base=mix(base,texture2D(u_regionTex,ruv).rgb,blend);',
+    '}',
     'vec3 lightDir=normalize(vec3(-.35,.42,.84));',
     'float lit=.58+.42*max(0.0,dot(normalize(vec3(p.x,p.y,z)),lightDir));',
     'float limb=.72+.28*z;vec3 color=base*lit*limb;',
@@ -215,6 +224,9 @@
   var uCenterLon=gl.getUniformLocation(program,'u_centerLon');
   var uReady=gl.getUniformLocation(program,'u_ready');
   var uTex=gl.getUniformLocation(program,'u_tex');
+  var uRegionTex=gl.getUniformLocation(program,'u_regionTex');
+  var uRegionBounds=gl.getUniformLocation(program,'u_regionBounds');
+  var uRegionReady=gl.getUniformLocation(program,'u_regionReady');
 
   var texture=gl.createTexture();
   gl.activeTexture(gl.TEXTURE0);
@@ -225,6 +237,20 @@
   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
   gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([4,22,43,255]));
   gl.uniform1i(uTex,0);
+
+  var regionTexture=gl.createTexture();
+  gl.activeTexture(gl.TEXTURE1);
+  gl.bindTexture(gl.TEXTURE_2D,regionTexture);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+  gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([4,22,43,255]));
+  gl.uniform1i(uRegionTex,1);
+  gl.uniform1f(uRegionReady,0);
+
+  var regionTextureReady=false;
+  var regionBounds=null;
 
   var textureReady=false;
   var maxTexture=gl.getParameter(gl.MAX_TEXTURE_SIZE)||2048;
@@ -281,6 +307,31 @@
   };
   img.src=textureUrl;
 
+  if(isMobileLike&&hasVisitor&&Math.abs(visitor.lon)<178&&Math.abs(visitor.lat)<88){
+    var regionCenterLat=Math.round(visitor.lat*4)/4;
+    var regionCenterLon=Math.round(visitor.lon*4)/4;
+    var regionSpan=2.4,regionHalf=regionSpan/2;
+    regionBounds={
+      minLon:Math.max(-179.9,regionCenterLon-regionHalf),
+      minLat:Math.max(-89.9,regionCenterLat-regionHalf),
+      maxLon:Math.min(179.9,regionCenterLon+regionHalf),
+      maxLat:Math.min(89.9,regionCenterLat+regionHalf)
+    };
+
+    var regionImg=new Image();
+    regionImg.decoding='async';
+    regionImg.onload=function(){
+      try{
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D,regionTexture);
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
+        gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,regionImg);
+        regionTextureReady=true;
+      }catch(e){}
+    };
+    regionImg.src='/partials/earth-region?lat='+encodeURIComponent(regionCenterLat)+'&lon='+encodeURIComponent(regionCenterLon);
+  }
+
   function resize(){
     var r=overlay.getBoundingClientRect();
     W=Math.max(1,Math.round(r.width));
@@ -331,6 +382,29 @@
     gl.uniform1f(uCenterLat,rad(center.lat));
     gl.uniform1f(uCenterLon,rad(center.lon));
     gl.uniform1f(uReady,textureReady?1:0);
+
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D,texture);
+    gl.uniform1i(uTex,0);
+
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D,regionTexture);
+    gl.uniform1i(uRegionTex,1);
+
+    if(regionTextureReady&&regionBounds){
+      gl.uniform4f(
+        uRegionBounds,
+        rad(regionBounds.minLon),
+        rad(regionBounds.minLat),
+        rad(regionBounds.maxLon),
+        rad(regionBounds.maxLat)
+      );
+      gl.uniform1f(uRegionReady,1);
+    }else{
+      gl.uniform4f(uRegionBounds,0,0,0,0);
+      gl.uniform1f(uRegionReady,0);
+    }
+
     gl.drawArrays(gl.TRIANGLES,0,6);
   }
 
