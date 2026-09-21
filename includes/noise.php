@@ -13,6 +13,7 @@ function hmax_noise_empty() {
         'top_probes' => [],
         'taxonomy' => [],
         'activity' => [],
+        'geo_points' => [],
         'latest' => null,
         'updated' => null,
     ];
@@ -35,6 +36,7 @@ function hmax_noise_stats() {
 
     // Backwards compatible with a cache written before hourly activity existed.
     if (!isset($data['activity']) || !is_array($data['activity'])) $data['activity'] = [];
+    if (!isset($data['geo_points']) || !is_array($data['geo_points'])) $data['geo_points'] = [];
 
     // Treat very stale data as unavailable rather than pretending it is live.
     if (empty($data['updated']) || (time() - (int)$data['updated']) > 300) {
