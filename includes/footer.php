@@ -22,11 +22,12 @@
 <?php endforeach; ?>
 <script src="/js/site-polish.js?v=<?= @filemtime(__DIR__ . "/../js/site-polish.js") ?>"></script>
 <?php if (($body_class ?? '') === 'cyberlab'): ?>
-<script src="/js/vpn-kitty.js?v=<?= @filemtime(__DIR__ . "/../js/vpn-kitty.js") ?>"></script>
 <script src="/js/cyberlab-layout.js?v=<?= @filemtime(__DIR__ . "/../js/cyberlab-layout.js") ?>"></script>
-<?php endif; ?>
+<script src="/js/cyberlab-deferred.js?v=<?= @filemtime(__DIR__ . "/../js/cyberlab-deferred.js") ?>"></script>
+<?php else: ?>
 <script src="/js/liquid-glass-webgl.js?v=<?= @filemtime(__DIR__ . "/../js/liquid-glass-webgl.js") ?>"></script>
 <script src="/js/liquid-glass-nav-webgl.js?v=<?= @filemtime(__DIR__ . "/../js/liquid-glass-nav-webgl.js") ?>"></script>
 <script src="/js/liquid-glass-debug.js?v=<?= @filemtime(__DIR__ . "/../js/liquid-glass-debug.js") ?>"></script>
+<?php endif; ?>
 </body>
 </html>
