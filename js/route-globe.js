@@ -222,7 +222,7 @@
   var textureReady=false;
   var maxTexture=gl.getParameter(gl.MAX_TEXTURE_SIZE)||2048;
   var mobileTexture='/images/earth-mobile-2048.jpg';
-  var fallbackTexture='https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/Nasa_land_ocean_ice_8192.jpg/1024px-Nasa_land_ocean_ice_8192.jpg';
+  var fallbackTexture='https://upload.wikimedia.org/wikipedia/commons/archive/9/91/20170416020821%21Land_shallow_topo_2048.jpg';
   var textureUrl=isMobileLike
     ? mobileTexture
     : (maxTexture>=8192 && window.innerWidth>900
