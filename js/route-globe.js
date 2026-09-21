@@ -5,10 +5,11 @@
   var dataEl = document.getElementById('route-data');
   if (!overlay || !routeCanvas || !stage || !dataEl) return;
 
-  // Keep the overlay hidden during the tiny WebGL warm-up so visitors do not
-  // see the canvas initialize or flash before the route animation begins.
-  overlay.style.visibility = 'hidden';
-  overlay.style.opacity = '0';
+  // Keep the full-screen overlay visible from first paint so the underlying
+  // page never flashes through while WebGL and the Earth texture initialize.
+  overlay.style.visibility = 'visible';
+  overlay.style.opacity = '1';
+  stage.textContent = 'Preparing route visualization...';
 
   if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     overlay.remove();
@@ -34,12 +35,14 @@
   globeCanvas.style.height = '100%';
   globeCanvas.style.pointerEvents = 'none';
   globeCanvas.style.zIndex = '0';
+  globeCanvas.style.visibility = 'hidden';
   routeCanvas.style.position = 'absolute';
   routeCanvas.style.inset = '0';
   routeCanvas.style.width = '100%';
   routeCanvas.style.height = '100%';
   routeCanvas.style.zIndex = '1';
   routeCanvas.style.pointerEvents = 'none';
+  routeCanvas.style.visibility = 'hidden';
   overlay.insertBefore(globeCanvas, routeCanvas);
 
   var gl = globeCanvas.getContext('webgl', {
@@ -55,8 +58,8 @@
   var dpr = Math.min(window.devicePixelRatio || 1, isMobileLike ? 1.5 : 2);
   var started = 0;
   var duration = 4700;
-  var warmupDelay = isMobileLike ? 140 : 50;
-  var textureWaitMax = isMobileLike ? 900 : 350;
+  var warmupDelay = 50;
+  var textureWaitMax = isMobileLike ? 3000 : 1200;
   var introStarted = false;
   var warmupReady = false;
   var textureSettled = false;
@@ -219,7 +222,7 @@
 
   var textureReady=false;
   var maxTexture=gl.getParameter(gl.MAX_TEXTURE_SIZE)||2048;
-  var mobileTexture='https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/Nasa_land_ocean_ice_8192.jpg/2048px-Nasa_land_ocean_ice_8192.jpg';
+  var mobileTexture='/images/earth-mobile-2048.jpg';
   var fallbackTexture='https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/Nasa_land_ocean_ice_8192.jpg/1024px-Nasa_land_ocean_ice_8192.jpg';
   var textureUrl=isMobileLike
     ? mobileTexture
@@ -227,14 +230,20 @@
       ? 'https://upload.wikimedia.org/wikipedia/commons/d/d6/Nasa_land_ocean_ice_8192.jpg'
       : (maxTexture>=4096
         ? 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/Nasa_land_ocean_ice_8192.jpg/4096px-Nasa_land_ocean_ice_8192.jpg'
-        : mobileTexture));
+        : fallbackTexture));
 
   function maybeBeginIntro(){
     if(introStarted || !warmupReady || !textureSettled)return;
+    if(!textureReady){
+      // A failed texture should never produce a broken blue-ball intro.
+      overlay.classList.add('done');
+      setTimeout(function(){ cleanup(); overlay.remove(); },420);
+      return;
+    }
     introStarted=true;
     started=performance.now();
-    overlay.style.visibility='visible';
-    overlay.style.opacity='1';
+    globeCanvas.style.visibility='visible';
+    routeCanvas.style.visibility='visible';
     requestAnimationFrame(tick);
   }
 
@@ -253,6 +262,7 @@
       gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,img);
       textureReady=true;
     }catch(e){}
+    if(textureFallbackTimer){ clearTimeout(textureFallbackTimer); textureFallbackTimer=null; }
     settleTexture();
   };
   img.onerror=function(){
@@ -293,7 +303,7 @@
     maybeBeginIntro();
   },warmupDelay);
   textureFallbackTimer=setTimeout(function(){
-    settleTexture();
+    if(!textureReady) settleTexture();
   },textureWaitMax);
 
   function project(p,center,radius){
