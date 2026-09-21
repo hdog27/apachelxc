@@ -45,8 +45,8 @@ import createGlobe from '/js/vendor/cobe/index.esm.js';
     var weight = Math.sqrt(count / maxTraffic);
     markers.push({
       location: [plat, plon],
-      size: 0.012 + (0.024 * weight),
-      color: [0.44, 0.64, 0.96]
+      size: 0.018 + (0.038 * weight),
+      color: [0.42, 0.72, 1.0]
     });
   });
 
