@@ -496,38 +496,30 @@ nav.top-nav select.OLD-nav-select{display:block!important;width:calc(100% - 24px
 }
 .repo-embed-body blockquote { margin: 10px 0; padding: 6px 12px; border-left: 3px solid rgba(159, 209, 255, 0.5); background: rgba(255, 255, 255, 0.04); border-radius: 0 6px 6px 0; }
 
-/* Animista: text-pop-up-top (stock/default generated effect). */
+/* Toned-down Animista text-pop-up-top for page H1s. */
 .homelab-page .homelab-hero h1,
 .projects-page .projects-hero h1,
 .wide-content-page > .card > h1,
 .contact-page .contact-hero h1 {
-  -webkit-animation: text-pop-up-top 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
-          animation: text-pop-up-top 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+  --title-pop-y: -8px;
+  -webkit-animation: text-pop-up-top .9s cubic-bezier(.250,.460,.450,.940) both;
+          animation: text-pop-up-top .9s cubic-bezier(.250,.460,.450,.940) both;
 }
 
 @-webkit-keyframes text-pop-up-top {
   0% {
     -webkit-transform: translateY(0);
             transform: translateY(0);
-    -webkit-transform-origin: 50% 50%;
-            transform-origin: 50% 50%;
     text-shadow: none;
   }
   100% {
-    -webkit-transform: translateY(-50px);
-            transform: translateY(-50px);
-    -webkit-transform-origin: 50% 50%;
-            transform-origin: 50% 50%;
-    text-shadow: 0 1px 0 #cccccc,
-                 0 2px 0 #cccccc,
-                 0 3px 0 #cccccc,
-                 0 4px 0 #cccccc,
-                 0 5px 0 #cccccc,
-                 0 6px 0 #cccccc,
-                 0 7px 0 #cccccc,
-                 0 8px 0 #cccccc,
-                 0 9px 0 #cccccc,
-                 0 50px 30px rgba(0, 0, 0, 0.3);
+    -webkit-transform: translateY(var(--title-pop-y));
+            transform: translateY(var(--title-pop-y));
+    text-shadow:
+      0 1px 0 #cccccc,
+      0 2px 0 #c4c4c4,
+      0 3px 0 #bdbdbd,
+      0 10px 14px rgba(0,0,0,.24);
   }
 }
 
@@ -535,24 +527,38 @@ nav.top-nav select.OLD-nav-select{display:block!important;width:calc(100% - 24px
   0% {
     -webkit-transform: translateY(0);
             transform: translateY(0);
-    -webkit-transform-origin: 50% 50%;
-            transform-origin: 50% 50%;
     text-shadow: none;
   }
   100% {
-    -webkit-transform: translateY(-50px);
-            transform: translateY(-50px);
-    -webkit-transform-origin: 50% 50%;
-            transform-origin: 50% 50%;
-    text-shadow: 0 1px 0 #cccccc,
-                 0 2px 0 #cccccc,
-                 0 3px 0 #cccccc,
-                 0 4px 0 #cccccc,
-                 0 5px 0 #cccccc,
-                 0 6px 0 #cccccc,
-                 0 7px 0 #cccccc,
-                 0 8px 0 #cccccc,
-                 0 9px 0 #cccccc,
-                 0 50px 30px rgba(0, 0, 0, 0.3);
+    -webkit-transform: translateY(var(--title-pop-y));
+            transform: translateY(var(--title-pop-y));
+    text-shadow:
+      0 1px 0 #cccccc,
+      0 2px 0 #c4c4c4,
+      0 3px 0 #bdbdbd,
+      0 10px 14px rgba(0,0,0,.24);
+  }
+}
+
+@media (max-width:640px) {
+  .homelab-page .homelab-hero h1,
+  .projects-page .projects-hero h1,
+  .wide-content-page > .card > h1,
+  .contact-page .contact-hero h1 {
+    --title-pop-y: -4px;
+    -webkit-animation-duration: 1s;
+            animation-duration: 1s;
+  }
+}
+
+@media (prefers-reduced-motion:reduce) {
+  .homelab-page .homelab-hero h1,
+  .projects-page .projects-hero h1,
+  .wide-content-page > .card > h1,
+  .contact-page .contact-hero h1 {
+    -webkit-animation:none!important;
+            animation:none!important;
+    -webkit-transform:none!important;
+            transform:none!important;
   }
 }
