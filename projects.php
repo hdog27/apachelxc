@@ -31,7 +31,6 @@ require __DIR__ . '/includes/header.php';
     <p>Hands-on security, networking and infrastructure projects from the lab.</p>
   </header>
 
-<?php if ($featured_video): ?>
   <article class="project-card project-featured card">
     <div class="project-copy">
       <p class="project-kicker">FEATURED BUILD</p>
@@ -63,6 +62,7 @@ require __DIR__ . '/includes/header.php';
     </div>
   </article>
 
+<?php if ($featured_video): ?>
   <section class="project-grid" aria-label="Project list">
     <article class="project-card card">
       <div class="project-copy">
