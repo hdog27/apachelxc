@@ -91,12 +91,30 @@ require __DIR__ . '/includes/header.php';
   <section class="lab-grid">
     <article class="panel lab-intro-panel">
       <p class="panel-label">LIVE REQUESTS · 24H</p>
-      <h1 class="metadata-video-title" data-video-title>
-        <span class="metadata-video-title-fallback">Metadata Security Lab</span>
-        <span class="metadata-video-title-mask" aria-hidden="true">
-          <video autoplay muted loop playsinline preload="metadata">
-            <source src="https://videos.pexels.com/video-files/6804121/6804121-uhd_4096_2160_25fps.mp4" type="video/mp4">
-          </video>
+      <h1 class="metadata-video-title" data-video-title aria-label="Metadata Security Lab">
+        <span class="metadata-video-word" data-video-word="Metadata">
+          <span class="metadata-video-word-base">Metadata</span>
+          <span class="metadata-video-word-mask" aria-hidden="true">
+            <video autoplay muted loop playsinline preload="auto" data-offset="0">
+              <source src="https://videos.pexels.com/video-files/6804121/6804121-hd_1920_1080_25fps.mp4" type="video/mp4">
+            </video>
+          </span>
+        </span>
+        <span class="metadata-video-word" data-video-word="Security">
+          <span class="metadata-video-word-base">Security</span>
+          <span class="metadata-video-word-mask" aria-hidden="true">
+            <video autoplay muted loop playsinline preload="auto" data-offset="1.4">
+              <source src="https://videos.pexels.com/video-files/6804121/6804121-hd_1920_1080_25fps.mp4" type="video/mp4">
+            </video>
+          </span>
+        </span>
+        <span class="metadata-video-word" data-video-word="Lab">
+          <span class="metadata-video-word-base">Lab</span>
+          <span class="metadata-video-word-mask" aria-hidden="true">
+            <video autoplay muted loop playsinline preload="auto" data-offset="2.8">
+              <source src="https://videos.pexels.com/video-files/6804121/6804121-hd_1920_1080_25fps.mp4" type="video/mp4">
+            </video>
+          </span>
         </span>
       </h1>
 
