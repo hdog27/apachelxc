@@ -21,6 +21,7 @@ $routePayload = [
   'ipVersion' => strpos($ip, ':') !== false ? 'IPv6' : 'IPv4',
   'cfColo' => $cfColo,
   'cfRay' => $cfRay,
+  'traffic24h' => !empty($noise24h['geo_points']) ? $noise24h['geo_points'] : [],
 ];
 
 // Selected request metadata. This allowlist is intentionally narrow: it shows
@@ -89,7 +90,7 @@ require __DIR__ . '/includes/header.php';
 
   <section class="lab-grid">
     <article class="panel lab-intro-panel">
-      <p class="panel-label">LIVE · LAST 24 HOURS</p>
+      <p class="panel-label">LIVE REQUESTS · 24H</p>
       <h1>Metadata Security Lab</h1>
 
       <div class="banner-row">
