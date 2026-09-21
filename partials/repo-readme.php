@@ -137,6 +137,7 @@ if ($lock && @flock($lock, LOCK_EX)) {
                 @chmod($tmp, 0640);
                 @rename($tmp, $cacheFile);
                 $cached = $rendered;
+                $cacheFresh = true;
             } else {
                 @unlink($tmp);
             }
