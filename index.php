@@ -94,9 +94,28 @@ require __DIR__ . '/includes/header.php';
       <h1 class="metadata-video-title" data-video-title>
         <span class="metadata-video-title-fallback">Metadata Security Lab</span>
         <span class="metadata-video-title-mask" aria-hidden="true">
-          <video autoplay muted loop playsinline preload="metadata">
-            <source src="/media/metadata-terminal.webm" type="video/webm">
-          </video>
+          <span class="metadata-terminal-track">
+            <span class="metadata-terminal-group">
+          <span>harry@hmax:~$ tail -f access.log</span>
+          <span>GET / HTTP/2 200 · CF-RAY 8FD3</span>
+          <span>[INFO] request parsed · latency=31ms</span>
+          <span>10.20.30.14 → 172.67.18.201:443</span>
+          <span>[WARN] /.env probe blocked</span>
+          <span>[OK] telemetry → security index</span>
+          <span>HTTPS · TLS1.3 · ESTABLISHED</span>
+          <span>[INFO] firewall rule matched</span>
+            </span>
+            <span class="metadata-terminal-group">
+          <span>harry@hmax:~$ tail -f access.log</span>
+          <span>GET / HTTP/2 200 · CF-RAY 8FD3</span>
+          <span>[INFO] request parsed · latency=31ms</span>
+          <span>10.20.30.14 → 172.67.18.201:443</span>
+          <span>[WARN] /.env probe blocked</span>
+          <span>[OK] telemetry → security index</span>
+          <span>HTTPS · TLS1.3 · ESTABLISHED</span>
+          <span>[INFO] firewall rule matched</span>
+            </span>
+          </span>
         </span>
       </h1>
 
