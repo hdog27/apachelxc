@@ -8,7 +8,7 @@ $page_title       = 'Cyber Lab | hmax.space';
 $page_description = 'A live web-server metadata security lab: see the IP, geolocation, ISP, VPN/proxy status and device fingerprint your browser reveals on every request.';
 $body_class       = 'cyberlab';
 $page_css         = 'cyberlab.css';
-$page_js          = ['route-globe.js', 'video-text.js'];
+$page_js          = ['route-globe.js'];
 $og_image         = 'https://hmax.space/images/og-cyberlab.jpg';
 
 $routePayload = [
@@ -91,32 +91,7 @@ require __DIR__ . '/includes/header.php';
   <section class="lab-grid">
     <article class="panel lab-intro-panel">
       <p class="panel-label">LIVE REQUESTS · 24H</p>
-      <h1 class="metadata-video-title" data-video-title aria-label="Metadata Security Lab">
-        <span class="metadata-video-word" data-video-word="Metadata">
-          <span class="metadata-video-word-base">Metadata</span>
-          <span class="metadata-video-word-mask" aria-hidden="true">
-            <video autoplay muted loop playsinline preload="auto" data-offset="0">
-              <source src="https://videos.pexels.com/video-files/854053/854053-hd_1920_1080_25fps.mp4" type="video/mp4">
-            </video>
-          </span>
-        </span>
-        <span class="metadata-video-word" data-video-word="Security">
-          <span class="metadata-video-word-base">Security</span>
-          <span class="metadata-video-word-mask" aria-hidden="true">
-            <video autoplay muted loop playsinline preload="auto" data-offset="1.4">
-              <source src="https://videos.pexels.com/video-files/854053/854053-hd_1920_1080_25fps.mp4" type="video/mp4">
-            </video>
-          </span>
-        </span>
-        <span class="metadata-video-word" data-video-word="Lab">
-          <span class="metadata-video-word-base">Lab</span>
-          <span class="metadata-video-word-mask" aria-hidden="true">
-            <video autoplay muted loop playsinline preload="auto" data-offset="2.8">
-              <source src="https://videos.pexels.com/video-files/854053/854053-hd_1920_1080_25fps.mp4" type="video/mp4">
-            </video>
-          </span>
-        </span>
-      </h1>
+      <h1>Metadata Security Lab</h1>
 
       <div class="banner-row">
         <div class="banner-flank" id="flank-l"></div>
