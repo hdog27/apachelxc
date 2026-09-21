@@ -193,13 +193,13 @@
     'if(u_regionReady>.5&&lon>=u_regionBounds.x&&lon<=u_regionBounds.z&&lat>=u_regionBounds.y&&lat<=u_regionBounds.w){',
     'vec2 ruv=vec2((lon-u_regionBounds.x)/(u_regionBounds.z-u_regionBounds.x),(lat-u_regionBounds.y)/(u_regionBounds.w-u_regionBounds.y));',
     'float edge=min(min(ruv.x,1.0-ruv.x),min(ruv.y,1.0-ruv.y));',
-    'float blend=smoothstep(.02,.08,edge);',
+    'float blend=smoothstep(.03,.30,edge);',
     'base=mix(base,texture2D(u_regionTex,ruv).rgb,blend*u_regionMix);',
     '}',
     'if(u_homeRegionReady>.5&&lon>=u_homeRegionBounds.x&&lon<=u_homeRegionBounds.z&&lat>=u_homeRegionBounds.y&&lat<=u_homeRegionBounds.w){',
     'vec2 huv=vec2((lon-u_homeRegionBounds.x)/(u_homeRegionBounds.z-u_homeRegionBounds.x),(lat-u_homeRegionBounds.y)/(u_homeRegionBounds.w-u_homeRegionBounds.y));',
     'float hedge=min(min(huv.x,1.0-huv.x),min(huv.y,1.0-huv.y));',
-    'float hblend=smoothstep(.02,.08,hedge);',
+    'float hblend=smoothstep(.03,.30,hedge);',
     'base=mix(base,texture2D(u_homeRegionTex,huv).rgb,hblend*u_homeRegionMix);',
     '}',
     'vec3 lightDir=normalize(vec3(-.35,.42,.84));',
@@ -352,7 +352,7 @@
     };
   }
 
-  function loadRegionTexture(targetTexture,unit,bounds,span,onReady){
+  function loadRegionTexture(targetTexture,unit,bounds,span,size,onReady){
     var regionImg=new Image();
     regionImg.decoding='async';
     regionImg.onload=function(){
@@ -366,23 +366,26 @@
     };
     regionImg.src='/partials/earth-region?lat='+encodeURIComponent(bounds.centerLat)+
       '&lon='+encodeURIComponent(bounds.centerLon)+
-      '&span='+encodeURIComponent(span);
+      '&span='+encodeURIComponent(span)+
+      '&size='+encodeURIComponent(size);
   }
 
   if(isMobileLike){
     // Tight high-detail crop for the ~50 mi visitor close-up.
     if(hasVisitor&&Math.abs(visitor.lon)<178&&Math.abs(visitor.lat)<88){
-      var visitorRegionSpan=1.8;
+      var visitorRegionSpan=2.2;
+      var visitorRegionSize=2048;
       regionBounds=makeRegionBounds(visitor.lat,visitor.lon,visitorRegionSpan);
-      loadRegionTexture(regionTexture,gl.TEXTURE1,regionBounds,visitorRegionSpan,function(){
+      loadRegionTexture(regionTexture,gl.TEXTURE1,regionBounds,visitorRegionSpan,visitorRegionSize,function(){
         regionTextureReady=true;
       });
     }
 
     // Broader crop for the generalized ~200 mi origin close-up.
-    var homeRegionSpan=10.0;
+    var homeRegionSpan=9.0;
+    var homeRegionSize=2048;
     homeRegionBounds=makeRegionBounds(home.lat,home.lon,homeRegionSpan);
-    loadRegionTexture(homeRegionTexture,gl.TEXTURE2,homeRegionBounds,homeRegionSpan,function(){
+    loadRegionTexture(homeRegionTexture,gl.TEXTURE2,homeRegionBounds,homeRegionSpan,homeRegionSize,function(){
       homeRegionTextureReady=true;
     });
   }
@@ -391,7 +394,7 @@
     var r=overlay.getBoundingClientRect();
     W=Math.max(1,Math.round(r.width));
     H=Math.max(1,Math.round(r.height));
-    dpr=Math.min(window.devicePixelRatio||1,isMobileLike?1.75:2);
+    dpr=Math.min(window.devicePixelRatio||1,isMobileLike?2:2);
     globeCanvas.width=Math.round(W*dpr);
     globeCanvas.height=Math.round(H*dpr);
     routeCanvas.width=Math.round(W*dpr);
@@ -568,8 +571,8 @@
     if(zoomHome>0) scale=Math.exp(Math.log(homeFocusScale)*zoomHome);
     var radius=baseR*scale;
 
-    var visitorDetailMix=hasVisitor ? (1-seg(t,.10,.44)) : 0;
-    var homeDetailMix=seg(t,.72,.94);
+    var visitorDetailMix=hasVisitor ? (1-seg(t,.10,.50)) : 0;
+    var homeDetailMix=seg(t,.66,.98);
     renderEarth(center,radius,visitorDetailMix,homeDetailMix);
     ctx.clearRect(0,0,W,H);
     var pulse=(Math.sin(now/160)+1)/2;
