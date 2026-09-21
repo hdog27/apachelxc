@@ -119,8 +119,14 @@ foreach ($readableLogs as $logFile) {
         if ($ts < $cutoff) continue;
         $recentMatches++;
 
-        $requestCount++;
         $path = $m[4];
+        $requestPath = parse_url($path, PHP_URL_PATH) ?: $path;
+
+        // Internal HTMX fragment requests are application plumbing, not Internet noise.
+        // Excluding them keeps the public request counter comparable to the pre-HTMX site.
+        if ($requestPath === '/partials/repo-readme' || $requestPath === '/partials/repo-readme.php') continue;
+
+        $requestCount++;
         $label = null;
         foreach ($patterns as $name => $regex) {
             if (preg_match($regex, $path)) { $label = $name; break; }
