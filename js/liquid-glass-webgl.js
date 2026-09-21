@@ -348,7 +348,7 @@
       measureCardGeometry();
       cards.forEach((card) => card.classList.add('liquid-webgl-surface'));
       document.documentElement.classList.add('archis-webgl-ready');
-      requestAnimationFrame(render);
+      requestNextFrame();
     }, { once: true });
 
     image.src = BACKDROP_URL;
@@ -361,6 +361,9 @@
     let lastHeight = 0;
     let running = true;
     let geometryTimer = 0;
+    let scrollTimer = 0;
+    let rafId = 0;
+    let mobileScrollActive = false;
 
     function resize(stageRect) {
       const mobile = stageRect.width <= MOBILE_BREAKPOINT;
@@ -380,15 +383,21 @@
       return { dpr, mobile };
     }
 
+    function requestNextFrame() {
+      if (!running || !canvas.isConnected || document.hidden || mobileScrollActive || rafId) return;
+      rafId = requestAnimationFrame(render);
+    }
+
     function render() {
-      if (!running || !canvas.isConnected) return;
+      rafId = 0;
+      if (!running || !canvas.isConnected || document.hidden || mobileScrollActive) return;
 
       // One viewport measurement remains, but card layout is no longer queried
       // during scrolling. Their document-space boxes are cached and translated
       // with the current page offset instead.
       const stageRect = canvas.getBoundingClientRect();
       if (stageRect.width <= 1 || stageRect.height <= 1) {
-        requestAnimationFrame(render);
+        requestNextFrame();
         return;
       }
 
@@ -460,13 +469,57 @@
         gl.drawArrays(gl.TRIANGLES, 0, 6);
       }
 
-      requestAnimationFrame(render);
+      requestNextFrame();
     }
 
     function scheduleGeometryMeasure(delay) {
       window.clearTimeout(geometryTimer);
       geometryTimer = window.setTimeout(measureCardGeometry, delay == null ? 60 : delay);
     }
+
+    function onMobileScroll() {
+      if (!isCyberLabMobile() || !running) return;
+
+      if (!mobileScrollActive) {
+        mobileScrollActive = true;
+        document.documentElement.classList.add('liquid-mobile-scrolling');
+        if (rafId) {
+          cancelAnimationFrame(rafId);
+          rafId = 0;
+        }
+      }
+
+      window.clearTimeout(scrollTimer);
+      scrollTimer = window.setTimeout(() => {
+        if (!running) return;
+        measureCardGeometry();
+        mobileScrollActive = false;
+
+        // Draw one correctly aligned frame while the native CSS glass is still
+        // covering the canvas, then crossfade real refraction back in.
+        render();
+        requestAnimationFrame(() => {
+          document.documentElement.classList.remove('liquid-mobile-scrolling');
+          requestNextFrame();
+        });
+      }, 110);
+    }
+
+    function onVisibilityChange() {
+      if (document.hidden) {
+        if (rafId) {
+          cancelAnimationFrame(rafId);
+          rafId = 0;
+        }
+        return;
+      }
+
+      measureCardGeometry();
+      requestNextFrame();
+    }
+
+    window.addEventListener('scroll', onMobileScroll, { passive: true });
+    document.addEventListener('visibilitychange', onVisibilityChange);
 
     // Geometry is refreshed only when layout can actually change. Ordinary
     // scrolling never asks every card for getBoundingClientRect().
@@ -494,6 +547,11 @@
     window.addEventListener('pagehide', () => {
       running = false;
       window.clearTimeout(geometryTimer);
+      window.clearTimeout(scrollTimer);
+      if (rafId) cancelAnimationFrame(rafId);
+      window.removeEventListener('scroll', onMobileScroll);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      document.documentElement.classList.remove('liquid-mobile-scrolling');
       if (resizeObserver) resizeObserver.disconnect();
       const loseContext = gl.getExtension('WEBGL_lose_context');
       if (loseContext) loseContext.loseContext();
