@@ -119,3 +119,9 @@
 @media(prefers-reduced-motion:reduce){
   .topology-node,.topology-zone,.path-controls button,.topology-line path{transition:none}
 }
+.topology-layer-label{position:absolute;z-index:2;left:18px;color:rgba(180,210,235,.28);font-size:9px;font-weight:800;letter-spacing:.13em;pointer-events:none}
+.layer-edge{top:12px}
+.layer-access{top:250px}
+.layer-zones{top:382px}
+.layer-workloads{top:530px}
+@media(max-width:820px){.topology-layer-label{display:none}}
