@@ -5,7 +5,7 @@ $page_title       = 'Cyber Lab | hmax.space';
 $page_description = 'A live web-server metadata security lab: see the IP, geolocation, ISP, VPN/proxy status and device fingerprint your browser reveals on every request.';
 $body_class       = 'cyberlab';
 $page_css         = 'cyberlab.css';
-$page_js          = ['route-globe.js', 'rtc.js', 'flank.js', 'confetti.js', 'rain.js', 'ghosts.js'];
+$page_js          = ['route-globe.js'];
 $og_image         = 'https://hmax.space/images/og-cyberlab.jpg';
 
 $routePayload = [
