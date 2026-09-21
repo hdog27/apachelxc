@@ -64,10 +64,10 @@
 
   function sizeCanvas() {
     var rect = slot.getBoundingClientRect();
-    var cssSize = Math.max(140, Math.round(Math.min(rect.width, rect.height || rect.width)));
-    var dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.style.width = cssSize + 'px';
-    canvas.style.height = cssSize + 'px';
+    var cssSize = Math.max(140, Math.round(rect.width || 230));
+    var dpr = Math.min(window.devicePixelRatio || 1, 1.75);
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
     return { cssSize: cssSize, dpr: dpr };
   }
 
@@ -76,17 +76,18 @@
 
     globe = createGlobe(canvas, {
       devicePixelRatio: size.dpr,
-      width: Math.round(size.cssSize * size.dpr),
-      height: Math.round(size.cssSize * size.dpr),
+      width: size.cssSize,
+      height: size.cssSize,
       phi: 0,
       theta: 0.2,
       dark: 1,
       diffuse: 1.2,
       mapSamples: 16000,
-      mapBrightness: 6,
-      baseColor: [0.02, 0.03, 0.05],
+      mapBrightness: 8,
+      mapBaseBrightness: 0.015,
+      baseColor: [0.30, 0.30, 0.30],
       markerColor: [0.49, 0.91, 0.53],
-      glowColor: [0.08, 0.12, 0.20],
+      glowColor: [0.22, 0.30, 0.42],
       scale: 1,
       offset: [0, 0],
       markers: markers,
@@ -98,7 +99,7 @@
       onRender: function (state) {
         if (document.hidden || destroyed) return;
         state.phi = phi;
-        phi += 0.0026;
+        phi += 0.0045;
       }
     });
 
