@@ -47,6 +47,9 @@ if (!isset($body_class))       { $body_class = ''; }
 <?php if (!empty($page_css)): ?>
   <link rel="stylesheet" href="/css/<?= htmlspecialchars($page_css) ?>?v=<?= @filemtime(__DIR__ . '/../css/' . $page_css) ?>">
 <?php endif; ?>
+<?php if (($body_class ?? '') === 'cyberlab'): ?>
+  <link rel="stylesheet" href="/css/cyberlab-interactions.css?v=<?= @filemtime(__DIR__ . '/../css/cyberlab-interactions.css') ?>">
+<?php endif; ?>
   <link rel="stylesheet" href="/css/nav.css?v=<?= @filemtime(__DIR__ . "/../css/nav.css") ?>">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Harrison","url":"https://hmax.space","jobTitle":"Cybersecurity Student","sameAs":["https://github.com/hdog27","https://www.linkedin.com/in/harrison-smith1234/"]}</script>
 </head>
