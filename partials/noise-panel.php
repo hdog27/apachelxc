@@ -28,6 +28,45 @@ $noise = hmax_noise_stats();
   <div><strong><?= number_format($noise['networks']) ?></strong><span>scanner networks</span></div>
 </div>
 
+<?php
+$activity = !empty($noise['activity']) && is_array($noise['activity']) ? $noise['activity'] : [];
+$activityMax = 1;
+foreach ($activity as $bucket) {
+    $activityMax = max($activityMax, (int)($bucket['count'] ?? 0));
+}
+?>
+<section id="noise-activity" class="noise-activity is-loaded" aria-label="Suspicious scanner activity during the last 24 hours">
+  <div class="activity-heading">
+    <div><span>SCANNER ACTIVITY</span><strong>Suspicious requests by hour</strong></div>
+    <small id="noise-activity-status">Live · refreshes every minute</small>
+  </div>
+  <div class="activity-bars" id="activity-bars">
+    <?php if ($activity): ?>
+      <?php foreach ($activity as $index => $bucket): ?>
+        <?php
+          $count = (int)($bucket['count'] ?? 0);
+          $networks = (int)($bucket['networks'] ?? 0);
+          $height = max(5, (int)round(($count / $activityMax) * 100));
+          $label = date('D g:i A', (int)($bucket['ts'] ?? 0)) . ': ' . $count . ' suspicious requests from ' . $networks . ' source networks';
+        ?>
+        <button type="button"
+          class="activity-bar-wrap<?= $index === count($activity) - 1 ? ' is-current' : '' ?>"
+          aria-label="<?= htmlspecialchars($label) ?>"
+          title="<?= htmlspecialchars($label) ?>"
+          data-activity-ts="<?= (int)($bucket['ts'] ?? 0) ?>"
+          data-activity-count="<?= $count ?>"
+          data-activity-networks="<?= $networks ?>">
+          <i class="activity-bar" style="--activity-height:<?= $height ?>%"></i>
+        </button>
+      <?php endforeach; ?>
+    <?php else: ?>
+      <div class="activity-empty">No hourly scanner timeline is available yet.</div>
+    <?php endif; ?>
+  </div>
+  <div class="activity-axis"><span>24h ago</span><span>18h</span><span>12h</span><span>6h</span><span>now</span></div>
+  <div class="activity-readout" id="noise-activity-readout">Hover or tap a bar to inspect an hour.</div>
+</section>
+
 <h3 class="mini-heading">Common probes</h3>
 <div class="probe-list">
   <?php if (!empty($noise['top_probes'])): ?>
