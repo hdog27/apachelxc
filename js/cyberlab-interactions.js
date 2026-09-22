@@ -326,4 +326,14 @@
   initProbeRows();
   refreshTimeline();
   window.setInterval(refreshTimeline, 60000);
+
+  // HTMX replaces the live-noise panel every minute. Re-bind the interactive
+  // probe explanations and timeline immediately after each fragment swap so
+  // the visualization never loses its click/hover behavior.
+  document.body.addEventListener('htmx:afterSwap', function (event) {
+    var target = event && event.detail ? event.detail.target : null;
+    if (!target || !target.classList || !target.classList.contains('noise-panel')) return;
+    initProbeRows();
+    refreshTimeline();
+  });
 })();
