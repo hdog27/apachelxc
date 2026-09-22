@@ -216,12 +216,16 @@ require __DIR__ . '/includes/header.php';
 
     <article class="panel project-panel">
       <p class="panel-label">FEATURED BUILD</p>
-      <img src="/images/rack.jpg" alt="Harrison's 12U cybersecurity homelab rack" loading="lazy">
-      <h2>Detection → phone alert</h2>
-      <p>Suricata events from the homelab are filtered and pushed to my phone so security telemetry becomes something I can actually react to.</p>
+      <div class="featured-build-media">
+        <video autoplay muted loop playsinline preload="metadata" aria-label="AWS CloudFoxable security assessment terminal demonstration">
+          <source src="/media/cloudfoxable-enumeration.mp4" type="video/mp4">
+        </video>
+      </div>
+      <h2>AWS Cloud Security Engineering</h2>
+      <p>A hands-on AWS security assessment using CloudFoxable: enumerate the environment, identify exposed services and permission paths, validate findings in the authorized lab, then document remediation and retesting.</p>
       <div class="project-links">
-        <a href="https://github.com/hdog27/homelab-IDS-alerts" target="_blank" rel="noopener">View the code ↗</a>
-        <a href="/homelab">See the infrastructure →</a>
+        <a href="https://github.com/hdog27/AWS-Cloud-Security-Engineering" target="_blank" rel="noopener">View the assessment ↗</a>
+        <a href="/projects">See project details →</a>
       </div>
     </article>
   </section>
