@@ -174,7 +174,7 @@ require __DIR__ . '/includes/header.php';
         <button class="topology-zone zone-dmz" type="button" data-network-node="dmz" data-path-node="public" aria-pressed="false">
           <i></i><strong>DMZ</strong><small>Public-facing</small>
         </button>
-        <button class="topology-zone zone-services" type="button" data-network-node="services" data-path-node="lab" aria-pressed="false">
+        <button class="topology-zone zone-services" type="button" data-network-node="services" data-path-node="services" aria-pressed="false">
           <i></i><strong>SERVICES</strong><small>Internal apps</small>
         </button>
         <button class="topology-zone zone-users" type="button" data-network-node="users" data-path-node="client" aria-pressed="false">
