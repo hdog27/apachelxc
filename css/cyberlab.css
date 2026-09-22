@@ -116,6 +116,11 @@ body .vpn-badge.vpn-no { background:rgba(180,45,55,.28)!important; border:1px so
 .empty-state { color:rgba(255,255,255,.55)!important; font-size:13px!important; }
 .project-panel img { width:100%; aspect-ratio:16/9; object-fit:cover; border-radius:14px; border:1px solid rgba(255,255,255,.1); margin:8px 0 16px; }
 .project-panel p { color:rgba(255,255,255,.66); }
+.project-panel { display:flex; flex-direction:column; min-height:0; }
+.featured-build-media { width:100%; margin:8px 0 18px; border-radius:14px; overflow:hidden; border:1px solid rgba(255,255,255,.1); background:rgba(0,0,0,.2); }
+.featured-build-media video { display:block; width:100%; aspect-ratio:16/9; object-fit:cover; background:#05080d; }
+.project-panel h2 { margin-top:2px; }
+.project-panel .project-links { margin-top:auto; padding-top:2px; }
 
 .currently-panel { display:flex; align-items:center; justify-content:space-between; gap:20px; }
 .currently-panel .panel-label { margin:0; }
