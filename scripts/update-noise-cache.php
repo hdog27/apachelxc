@@ -66,6 +66,7 @@ $now = time();
 $cutoff = $now - 86400;
 $requestCount = 0;
 $probeCounts = [];
+$probeLabels = [];
 $taxonomy = array_fill_keys(array_keys($patterns), 0);
 $scannerIps = [];
 $networkKeys = [];
@@ -172,6 +173,7 @@ foreach ($readableLogs as $logFile) {
         if ($label === null) continue;
 
         $probeCounts[$path] = ($probeCounts[$path] ?? 0) + 1;
+        $probeLabels[$path] = $label;
         $taxonomy[$label]++;
         $scannerIps[hash('sha256', $ipAddr)] = true;
 
@@ -203,10 +205,32 @@ foreach ($readableLogs as $logFile) {
 
 arsort($probeCounts);
 arsort($taxonomy);
+
+// Show a representative live path for every scanner taxonomy instead of
+// letting the five highest-volume paths crowd out less common attack types.
 $top = [];
-foreach (array_slice($probeCounts, 0, 5, true) as $path => $count) {
-    $top[] = ['path' => mb_substr($path, 0, 70), 'count' => $count];
+$seenTypes = [];
+foreach ($probeCounts as $path => $count) {
+    $type = $probeLabels[$path] ?? null;
+    if (!$type || isset($seenTypes[$type])) continue;
+
+    $top[] = [
+        'path' => mb_substr($path, 0, 70),
+        'count' => $count,
+        'type' => $type,
+    ];
+    $seenTypes[$type] = true;
+
+    if (count($seenTypes) >= count($patterns)) break;
 }
+
+// Keep the representative rows ordered by current taxonomy volume so the
+// highest-activity category still appears first.
+usort($top, function ($a, $b) use ($taxonomy) {
+    $aCount = $taxonomy[$a['type']] ?? 0;
+    $bCount = $taxonomy[$b['type']] ?? 0;
+    return $bCount <=> $aCount;
+});
 
 $activity = [];
 foreach ($activityCounts as $bucketTs => $count) {
