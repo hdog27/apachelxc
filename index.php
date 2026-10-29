@@ -80,7 +80,7 @@ require __DIR__ . '/includes/header.php';
   <section class="identity-hero">
     <div>
       <p class="eyebrow">HARRISON SMITH — CYBERSECURITY &amp; INFRASTRUCTURE</p>
-      <p class="identity-copy">I build and secure networks in my 12U homelab. This site is hosted from it.</p>
+      <p class="identity-copy">CompTIA Security+ certified. I build and secure networks in my 12U homelab. This site is hosted from it.</p>
     </div>
     <div class="identity-actions">
       <a href="/homelab">Explore the homelab →</a>

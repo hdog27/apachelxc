@@ -33,6 +33,17 @@
   border-radius:14px;
   background:linear-gradient(135deg,rgba(88,166,255,.10),rgba(126,231,135,.05));
 }
+.credential-badge {
+  flex:0 0 80px;
+  width:80px;
+  height:80px;
+  object-fit:contain;
+  border-radius:9px;
+  background:#fff;
+}
+.credential-verify { color:#8dc7ff; font-size:12px; width:fit-content; }
+.credential-verify:focus-visible { outline:2px solid #8dc7ff; outline-offset:3px; }
+.credential-code { overflow-wrap:anywhere; }
 .credential-mark {
   flex:0 0 auto;
   padding:9px 10px;
