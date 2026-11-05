@@ -21,6 +21,11 @@ $cloudfox_video_path = __DIR__ . '/media/' . $cloudfox_video_name;
 $cloudfox_video_version = @filemtime($cloudfox_video_path) ?: 1;
 $cloudfox_video = '/media/' . rawurlencode($cloudfox_video_name) . '?v=' . $cloudfox_video_version;
 
+$php_video_name = 'php-remediation-terminal.mp4';
+$php_video_path = __DIR__ . '/media/' . $php_video_name;
+$php_video_version = @filemtime($php_video_path) ?: 1;
+$php_video = '/media/' . rawurlencode($php_video_name) . '?v=' . $php_video_version;
+
 require __DIR__ . '/includes/header.php';
 ?>
 
@@ -62,6 +67,22 @@ require __DIR__ . '/includes/header.php';
     </div>
   </article>
 <?php endif; ?>
+
+  <article id="php-remediation" class="project-card project-featured card">
+    <div class="project-copy">
+      <p class="project-kicker">LINUX / VULNERABILITY MANAGEMENT</p>
+      <h2>PHP2Shell | PHP Vulnerability Remediation</h2>
+      <p class="project-cves"><strong><u>CVE-2026-109618</u> &amp; <u>CVE-2026-109619</u></strong></p>
+      <p>Responding to the AI-discovered PHP2Shell vulnerabilities on my Ubuntu Apache server: pause the Cloudflare tunnel, investigate PHP packages, restore update access through the segmented DMZ, apply updates, and verify services before bringing the website back online.</p>
+      <div class="project-actions">
+        <a class="project-btn primary" href="https://github.com/hdog27/Linux-Administration-php-Vulnerability" target="_blank" rel="noopener">View the remediation walkthrough →</a>
+        <a class="project-btn" href="https://ubuntu.com/security/notices/USN-8948-1" target="_blank" rel="noopener">Ubuntu security advisory →</a>
+      </div>
+    </div>
+    <div class="project-media terminal-media">
+      <video data-autoplay-video src="<?= htmlspecialchars($php_video) ?>" poster="/media/php-remediation-terminal.jpg?v=<?= $php_video_version ?>" autoplay muted loop playsinline webkit-playsinline controls preload="metadata" aria-label="PHP2Shell vulnerability remediation terminal walkthrough"></video>
+    </div>
+  </article>
 
   <section class="project-grid" aria-label="Project list">
     <article class="project-card card">

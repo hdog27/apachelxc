@@ -45,6 +45,13 @@
   object-fit:cover;
   background:#000;
 }
+.terminal-media video {
+  height:auto;
+  aspect-ratio:auto;
+  object-fit:contain;
+}
+.project-cves { color:#a8f0b6; }
+.project-cves u { text-underline-offset:3px; }
 .project-grid {
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));
@@ -107,6 +114,7 @@
   .project-featured { gap:18px; }
   .project-media { order:-1; border-radius:12px; }
   .project-media video { aspect-ratio:16/9; }
+  .terminal-media video { aspect-ratio:auto; }
   .repo-embed-body { max-height:280px; }
   .repo-embed-header { gap:8px; align-items:flex-start; }
   .repo-embed-name { overflow-wrap:anywhere; }
