@@ -15,7 +15,7 @@ require __DIR__ . '/includes/header.php';
   <header class="contact-hero">
     <p class="contact-eyebrow">CONTACT</p>
     <h1>Get in touch</h1>
-    <p class="status-line">CompTIA Security+ certified. B.S. Cybersecurity in progress, with an associate's degree and Cisco Networking Academy Network Defense credential completed.</p>
+    <p class="status-line">CompTIA Security+ certified. B.S. Cybersecurity in progress, with an associate's degree and Cisco Networking Academy Network Security course credential completed.</p>
   </header>
 
   <section class="contact-about" aria-labelledby="about-heading">
@@ -34,12 +34,12 @@ require __DIR__ . '/includes/header.php';
       </div>
     </div>
 
-    <div class="credential-card" aria-label="Cisco certification">
-      <div class="credential-mark">CISCO</div>
+    <div class="credential-card" aria-label="Cisco Networking Academy course credential">
+      <img class="credential-badge" src="/images/cisco-network-security.svg" alt="Cisco Networking Academy Network Security verified badge" width="80" height="80" loading="lazy">
       <div>
-        <span class="credential-label">CERTIFICATION</span>
-        <strong>Cisco Networking Academy — Network Defense</strong>
-        <small>Completed network security / defense coursework and credentialing.</small>
+        <span class="credential-label">COURSE CREDENTIAL</span>
+        <strong>Cisco Networking Academy — Network Security</strong>
+        <small>Completed Cisco Networking Academy Network Security coursework.</small>
       </div>
     </div>
   </section>
