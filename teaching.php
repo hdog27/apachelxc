@@ -2,7 +2,7 @@
 require_once __DIR__ . '/includes/metadata.php';
 $current_page     = 'teaching';
 $page_title       = 'Teaching | hmax.space';
-$page_description = 'Hands-on cybersecurity teaching and mentoring using a live homelab environment.';
+$page_description = 'Cyber-range engineering and hands-on instruction: isolated attack environments, centralized telemetry, and student-led investigations.';
 $page_css         = 'content-wide.css';
 $body_class       = 'wide-content-page';
 $photos           = glob(__DIR__ . '/images/teaching*.{jpg,jpeg,png,webp}', GLOB_BRACE);
@@ -18,27 +18,22 @@ require __DIR__ . '/includes/header.php';
 ?>
 <div class="card">
   <h1>Teaching</h1>
-  <p class="subtext">Hands-on cybersecurity mentoring using the homelab, not slides.</p>
+  <p class="subtext">Cyber-range engineering. Live telemetry. Hands-on investigation.</p>
 
 <?php if ($hero): ?>
   <img class="teach-hero" src="/images/<?= rawurlencode(basename($hero)) ?>?v=<?= @filemtime($hero) ?>" alt="Teaching session in the homelab" loading="lazy">
 <?php endif; ?>
 
-  <p>I ran hands-on sessions for visiting students using the same lab documented on this site. Rather than talking about attacks in the abstract, they ran them against deliberately vulnerable targets in an isolated segment, then went and found their own traffic in the logs.</p>
+  <p>I designed and operated an isolated cyber range at Rhode Island College, made its security telemetry work, and taught students to investigate their own attacks.</p>
 
-  <h2>What they worked with</h2>
   <ul class="safe-list">
-    <li><strong>Metasploitable</strong> | a purpose-built vulnerable host to attack.</li>
-    <li><strong>DVWA</strong> | web application vulnerabilities, hands on.</li>
-    <li><strong>OWASP Juice Shop</strong> | a modern vulnerable app with less obvious flaws.</li>
-    <li><strong>Splunk</strong> | finding their own attacks in the logs afterwards.</li>
-    <li><strong>OPNsense</strong> | the firewall and segmentation keeping the range isolated.</li>
+    <li><strong>Built the environment:</strong> Combined Kali, Metasploitable 2, DVWA, and OWASP Juice Shop behind OPNsense firewall segmentation on my own hardware.</li>
+    <li><strong>Engineered detection:</strong> Resolved Linux service, syslog, routing, and NAT issues; built custom Splunk dashboards and automated searches, with CrowdSec blocking attacking hosts.</li>
+    <li><strong>Led the investigation:</strong> Guided students from authorized attacks to finding and correlating their activity in Splunk, connecting attacker actions to defender evidence.</li>
   </ul>
 
-  <p>The part that landed hardest was the second half: running an attack is one thing, then seeing exactly what it looked like from the defender's side is what makes the lesson stick.</p>
-
   <h2>Web development side</h2>
-  <p>Some students were more interested in the coding work than the security side, so they took on this website instead | working on the design and layout you're looking at now, through the GitHub web editor, a VNC editor and StackBlitz.</p>
+  <p>Students interested in web development also contributed to this site’s design and layout using GitHub, a VNC editor, and StackBlitz.</p>
 
 <?php if ($rest): ?>
   <div class="teach-gallery">
@@ -49,6 +44,6 @@ require __DIR__ . '/includes/header.php';
 <?php endif; ?>
 
   <hr class="divider">
-  <p class="subtext">Everything ran on hardware I own, in a segment with no route to anything else.</p>
+  <p class="subtext">Attack exercises ran in an isolated lab segment on hardware I own.</p>
 </div>
 <?php require __DIR__ . '/includes/footer.php'; ?>
