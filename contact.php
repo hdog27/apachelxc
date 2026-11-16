@@ -33,6 +33,7 @@ require __DIR__ . '/includes/header.php';
         <strong>CompTIA CySA+</strong>
         <small>Cybersecurity Analyst · Earned November 2026</small>
         <small>Threat detection, vulnerability management, incident response, and security operations.</small>
+        <a class="credential-verify" href="https://www.credly.com/badges/32601b4e-70a5-4fc2-ac0d-ac48beceb7c2/public_url" target="_blank" rel="noopener">Verify CySA+ on Credly ↗</a>
       </div>
     </div>
 
