@@ -8,8 +8,13 @@ $body_class       = 'wide-content-page';
 require __DIR__ . '/includes/header.php';
 ?>
 <div class="card">
+  <header class="page-credential-layout">
+    <div class="page-credential-copy">
   <h1>How do I get started?</h1>
   <p class="subtext">This is what I'd tell someone starting today. It's not the only way.</p>
+    </div>
+    <?php require __DIR__ . '/includes/csap-badge.php'; ?>
+  </header>
 
   <h2>1. Get a cheap box you can leave on</h2>
   <p>A used mini PC is the sweet spot. Cheap, quiet, low power, and you can leave it running 24/7 without thinking about it. An old laptop or desktop works too. You do not need a rack, and you should not buy one yet.</p>

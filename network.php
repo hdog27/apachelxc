@@ -11,7 +11,8 @@ require __DIR__ . '/includes/header.php';
 ?>
 
 <main class="network-shell">
-  <header class="network-hero card">
+  <header class="network-hero card page-credential-layout">
+    <div class="page-credential-copy">
     <div>
       <p class="network-eyebrow">MY NETWORK · SANITIZED VIEW</p>
       <h1>Explore the infrastructure behind hmax.space.</h1>
@@ -21,6 +22,8 @@ require __DIR__ . '/includes/header.php';
       <a class="network-link primary" href="#topology">Open topology ↓</a>
       <a class="network-link" href="/homelab">See the physical rack →</a>
     </div>
+      </div>
+    <?php require __DIR__ . '/includes/csap-badge.php'; ?>
   </header>
 
   <section class="architecture-card card" id="topology" aria-labelledby="architecture-heading">

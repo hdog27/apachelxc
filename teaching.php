@@ -17,8 +17,13 @@ $og_image         = 'https://hmax.space/images/og-teaching.jpg';
 require __DIR__ . '/includes/header.php';
 ?>
 <div class="card">
+  <header class="page-credential-layout">
+    <div class="page-credential-copy">
   <h1>Teaching</h1>
   <p class="subtext">Cyber-range engineering. Live telemetry. Hands-on investigation.</p>
+    </div>
+    <?php require __DIR__ . '/includes/csap-badge.php'; ?>
+  </header>
 
 <?php if ($hero): ?>
   <img class="teach-hero" src="/images/<?= rawurlencode(basename($hero)) ?>?v=<?= @filemtime($hero) ?>" alt="Teaching session in the homelab" loading="lazy">

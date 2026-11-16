@@ -10,7 +10,8 @@ require __DIR__ . '/includes/header.php';
 ?>
 
 <main class="card homelab-card">
-  <header class="homelab-hero">
+  <header class="homelab-hero page-credential-layout">
+    <div class="page-credential-copy">
     <div>
       <p class="eyebrow">12U HOMELAB</p>
       <h1>Homelab</h1>
@@ -21,6 +22,8 @@ require __DIR__ . '/includes/header.php';
       <li>Click the numbered points for a hardware breakdown</li>
       <li>Tap a service to expand the details</li>
     </ul>
+      </div>
+    <?php require __DIR__ . '/includes/csap-badge.php'; ?>
   </header>
 
   <a class="network-explorer-link" href="/network">

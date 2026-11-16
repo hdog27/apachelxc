@@ -30,10 +30,13 @@ require __DIR__ . '/includes/header.php';
 ?>
 
 <main class="projects-shell">
-  <header class="projects-hero card">
+  <header class="projects-hero card page-credential-layout">
+    <div class="page-credential-copy">
     <p class="projects-eyebrow">BUILD LOG</p>
     <h1>Projects</h1>
     <p>Hands-on security, networking and infrastructure projects from the lab.</p>
+      </div>
+    <?php require __DIR__ . '/includes/csap-badge.php'; ?>
   </header>
 
   <article class="project-card project-featured card">

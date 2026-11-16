@@ -77,15 +77,18 @@ require __DIR__ . '/includes/header.php';
 <script type="application/json" id="route-data"><?= json_encode($routePayload, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?></script>
 
 <main class="cyber-shell">
-  <section class="identity-hero">
+  <section class="identity-hero page-credential-layout">
+    <div class="page-credential-copy">
     <div>
       <p class="eyebrow">HARRISON SMITH — CYBERSECURITY &amp; INFRASTRUCTURE</p>
-      <p class="identity-copy">CompTIA Security+ certified. I build and secure networks in my 12U homelab. This site is hosted from it.</p>
+      <p class="identity-copy">CompTIA CySA+ and Security+ certified. I build and secure networks in my 12U homelab. This site is hosted from it.</p>
     </div>
     <div class="identity-actions">
       <a href="/homelab">Explore the homelab →</a>
       <a href="/projects">Projects</a>
     </div>
+      </div>
+    <?php require __DIR__ . '/includes/csap-badge.php'; ?>
   </section>
 
   <section class="lab-grid">

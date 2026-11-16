@@ -18,10 +18,7 @@ require __DIR__ . '/includes/header.php';
       <h1>Get in touch</h1>
       <p class="status-line">CompTIA CySA+ and Security+ certified. B.S. Cybersecurity in progress, with an associate's degree and Cisco Networking Academy Network Security course credential completed.</p>
     </div>
-    <figure class="contact-stackable">
-      <img src="/images/comptia-csap.png" alt="CompTIA CSAP — Security Analytics Professional stackable certification badge" width="150" height="150" decoding="async">
-      <figcaption>CySA+ + Security+</figcaption>
-    </figure>
+    <?php require __DIR__ . '/includes/csap-badge.php'; ?>
   </header>
 
   <section class="contact-about" aria-labelledby="about-heading">

@@ -9,8 +9,13 @@ $scan_url         = 'https://securityheaders.com/?q=hmax.space&followRedirects=o
 require __DIR__ . '/includes/header.php';
 ?>
 <div class="card">
+  <header class="page-credential-layout">
+    <div class="page-credential-copy">
   <h1>Is this site safe?</h1>
   <p class="subtext">This is a metadata demonstration. Here is what it collects, where that information goes, and which protections you can check.</p>
+    </div>
+    <?php require __DIR__ . '/includes/csap-badge.php'; ?>
+  </header>
 
   <p class="grade-badge">Security headers: <strong>check the current deployment</strong></p>
   <p><a href="<?= htmlspecialchars($scan_url) ?>" target="_blank" rel="noopener">Run the scan yourself &rarr;</a><br>
