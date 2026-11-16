@@ -2,7 +2,7 @@
 require_once __DIR__ . '/includes/metadata.php';
 $current_page     = 'contact';
 $page_title       = 'Contact | hmax.space';
-$page_description = 'Contact Harrison Smith, CompTIA Security+ certified cybersecurity student focused on security engineering and Linux administration.';
+$page_description = 'Contact Harrison Smith, CompTIA CySA+ and Security+ certified cybersecurity student focused on security engineering and Linux administration.';
 $page_css         = 'contact.css';
 $body_class       = 'contact-page';
 
@@ -13,15 +13,31 @@ require __DIR__ . '/includes/header.php';
 ?>
 <main class="card contact-card">
   <header class="contact-hero">
-    <p class="contact-eyebrow">CONTACT</p>
-    <h1>Get in touch</h1>
-    <p class="status-line">CompTIA Security+ certified. B.S. Cybersecurity in progress, with an associate's degree and Cisco Networking Academy Network Security course credential completed.</p>
+    <div class="contact-hero-copy">
+      <p class="contact-eyebrow">CONTACT</p>
+      <h1>Get in touch</h1>
+      <p class="status-line">CompTIA CySA+ and Security+ certified. B.S. Cybersecurity in progress, with an associate's degree and Cisco Networking Academy Network Security course credential completed.</p>
+    </div>
+    <figure class="contact-stackable">
+      <img src="/images/comptia-csap.png" alt="CompTIA CSAP — Security Analytics Professional stackable certification badge" width="150" height="150" decoding="async">
+      <figcaption>CySA+ + Security+</figcaption>
+    </figure>
   </header>
 
   <section class="contact-about" aria-labelledby="about-heading">
     <h2 id="about-heading">About</h2>
     <p>I work on network security, log collection and analysis, and self-hosted infrastructure. Most of it is built and documented in the homelab on this site, including the server hosting this page.</p>
     <p>I’m always learning and expanding the lab as I go. Most of what’s here came from building something, breaking it, and figuring out how to make it better.</p>
+
+    <div class="credential-card" aria-label="CompTIA CySA+ certification">
+      <span class="credential-mark" aria-hidden="true">CySA+</span>
+      <div>
+        <span class="credential-label">CERTIFICATION</span>
+        <strong>CompTIA CySA+</strong>
+        <small>Cybersecurity Analyst · Earned November 2026</small>
+        <small>Threat detection, vulnerability management, incident response, and security operations.</small>
+      </div>
+    </div>
 
     <div class="credential-card" aria-label="CompTIA Security+ certification">
       <img class="credential-badge" src="/images/comptia-security-plus.png" alt="CompTIA Security+ Certified badge" width="80" height="80" loading="lazy">

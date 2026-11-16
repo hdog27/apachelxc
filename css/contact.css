@@ -7,7 +7,18 @@
   padding:40px;
   text-align:left;
 }
-.contact-hero { padding-bottom:26px; border-bottom:1px solid rgba(255,255,255,.12); }
+.contact-hero {
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:28px;
+  padding-bottom:26px;
+  border-bottom:1px solid rgba(255,255,255,.12);
+}
+.contact-hero-copy { flex:1; min-width:0; }
+.contact-stackable { flex:0 0 150px; margin:0; text-align:center; }
+.contact-stackable img { display:block; width:150px; height:150px; object-fit:contain; }
+.contact-stackable figcaption { margin-top:8px; color:rgba(255,255,255,.65); font-size:11px; }
 .contact-eyebrow {
   margin:0 0 5px!important;
   color:#7ee787!important;
@@ -71,6 +82,9 @@
 .contact-note { margin:18px 0 0; font-size:14px; color:rgba(255,255,255,.58); }
 @media (max-width:600px) {
   .contact-card { width:calc(100vw - 28px); padding:26px 20px; }
+  .contact-hero { flex-direction:column; gap:20px; }
+  .contact-stackable { flex-basis:auto; align-self:flex-end; }
+  .contact-stackable img { width:120px; height:120px; }
   .contact-about { padding:24px 0; }
   .contact-cta { padding-top:22px; }
   .contact-links { justify-content:flex-start; }
