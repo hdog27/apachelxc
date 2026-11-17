@@ -18,7 +18,6 @@ require __DIR__ . '/includes/header.php';
       <h1>Get in touch</h1>
       <p class="status-line">CompTIA CySA+ and Security+ certified. B.S. Cybersecurity in progress, with an associate's degree and Cisco Networking Academy Network Security course credential completed.</p>
     </div>
-    <?php require __DIR__ . '/includes/csap-badge.php'; ?>
   </header>
 
   <section class="contact-about" aria-labelledby="about-heading">
@@ -108,4 +107,7 @@ require __DIR__ . '/includes/header.php';
 <?php endif; ?>
   </section>
 </main>
+<div class="page-csap-bottom">
+  <?php require __DIR__ . '/includes/csap-badge.php'; ?>
+</div>
 <?php require __DIR__ . '/includes/footer.php'; ?>
