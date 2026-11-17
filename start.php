@@ -14,6 +14,9 @@ require __DIR__ . '/includes/header.php';
   <p class="subtext">This is what I'd tell someone starting today. It's not the only way.</p>
     </div>
 
+    <div class="csap-desktop-only">
+      <?php require __DIR__ . '/includes/csap-badge.php'; ?>
+    </div>
   </header>
 
   <h2>1. Get a cheap box you can leave on</h2>
@@ -43,7 +46,7 @@ require __DIR__ . '/includes/header.php';
   <hr class="divider">
   <p class="subtext">Build it yourself rather than copying someone else's setup. The copying is the part where you don't learn anything.</p>
 </div>
-<div class="page-csap-bottom">
+<div class="page-csap-bottom csap-mobile-only">
   <?php require __DIR__ . '/includes/csap-badge.php'; ?>
 </div>
 <?php require __DIR__ . '/includes/footer.php'; ?>
