@@ -55,6 +55,7 @@ require __DIR__ . '/includes/header.php';
         <span class="credential-label">COURSE CREDENTIAL</span>
         <strong>Cisco Networking Academy — Network Security</strong>
         <small>Completed Cisco Networking Academy Network Security coursework.</small>
+        <a class="credential-verify" href="https://www.credly.com/badges/c8facc0b-67a6-4e9c-b28a-10064f439f9e/public_url" target="_blank" rel="noopener">Verify Network Security on Credly ↗</a>
       </div>
     </div>
   </section>
