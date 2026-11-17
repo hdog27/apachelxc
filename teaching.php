@@ -23,6 +23,9 @@ require __DIR__ . '/includes/header.php';
   <p class="subtext">Cyber-range engineering. Live telemetry. Hands-on investigation.</p>
     </div>
 
+    <div class="csap-desktop-only">
+      <?php require __DIR__ . '/includes/csap-badge.php'; ?>
+    </div>
   </header>
 
 <?php if ($hero): ?>
@@ -51,7 +54,7 @@ require __DIR__ . '/includes/header.php';
   <hr class="divider">
   <p class="subtext">Attack exercises ran in an isolated lab segment on hardware I own.</p>
 </div>
-<div class="page-csap-bottom">
+<div class="page-csap-bottom csap-mobile-only">
   <?php require __DIR__ . '/includes/csap-badge.php'; ?>
 </div>
 <?php require __DIR__ . '/includes/footer.php'; ?>
