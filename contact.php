@@ -60,6 +60,37 @@ require __DIR__ . '/includes/header.php';
     </div>
   </section>
 
+  <section class="contact-about contact-education" aria-labelledby="education-heading">
+    <h2 id="education-heading">Education</h2>
+
+    <div class="credential-card">
+      <div>
+        <span class="credential-label">BACHELOR'S DEGREE · IN PROGRESS</span>
+        <strong>B.S. Cybersecurity</strong>
+        <small>Rhode Island College · Expected May 2027</small>
+        <a class="credential-verify" href="https://www.ric.edu/academics/undergraduate-degree-programs/cybersecurity-bs" target="_blank" rel="noopener" aria-label="View Rhode Island College's B.S. Cybersecurity program (opens in a new tab)">View program ↗</a>
+      </div>
+    </div>
+
+    <div class="credential-card">
+      <div>
+        <span class="credential-label">ASSOCIATE DEGREE</span>
+        <strong>A.S. Cybersecurity</strong>
+        <small>Community College of Rhode Island · Earned December 2025</small>
+        <a class="credential-verify" href="https://ccri.edu/programs/cybersecurity-as/" target="_blank" rel="noopener" aria-label="View CCRI's A.S. Cybersecurity program (opens in a new tab)">View program ↗</a>
+      </div>
+    </div>
+
+    <div class="credential-card">
+      <div>
+        <span class="credential-label">ACADEMIC CERTIFICATE</span>
+        <strong>Cyber Defense Certificate</strong>
+        <small>Community College of Rhode Island · Completed</small>
+        <a class="credential-verify" href="https://www.ccri.edu/programs/cyber-defense-certificate/" target="_blank" rel="noopener" aria-label="View CCRI's Cyber Defense Certificate program (opens in a new tab)">View program ↗</a>
+      </div>
+    </div>
+  </section>
+
   <section class="contact-cta" aria-label="Contact links">
     <div class="contact-links">
       <a class="contact-btn" href="https://github.com/hdog27" target="_blank" rel="noopener">GitHub</a>
