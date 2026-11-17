@@ -22,7 +22,7 @@ require __DIR__ . '/includes/header.php';
   <h1>Teaching</h1>
   <p class="subtext">Cyber-range engineering. Live telemetry. Hands-on investigation.</p>
     </div>
-    <?php require __DIR__ . '/includes/csap-badge.php'; ?>
+
   </header>
 
 <?php if ($hero): ?>
@@ -50,5 +50,8 @@ require __DIR__ . '/includes/header.php';
 
   <hr class="divider">
   <p class="subtext">Attack exercises ran in an isolated lab segment on hardware I own.</p>
+</div>
+<div class="page-csap-bottom">
+  <?php require __DIR__ . '/includes/csap-badge.php'; ?>
 </div>
 <?php require __DIR__ . '/includes/footer.php'; ?>
