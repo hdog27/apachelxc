@@ -15,7 +15,7 @@ require __DIR__ . '/includes/header.php';
     <div>
       <p class="eyebrow">12U HOMELAB</p>
       <h1>Homelab</h1>
-      <p class="homelab-intro">Homelabbing is a personal journey.<br>You should be the one to build it, not copy it.</p>
+      <p class="homelab-intro">Homelabbing is a personal journey.<br class="csap-mobile-linebreak"> You should be the one to build it, not copy it.</p>
     </div>
     <ul class="homelab-facts" aria-label="Homelab quick facts">
       <li>12U half rack</li>
