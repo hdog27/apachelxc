@@ -251,12 +251,13 @@ require __DIR__ . '/includes/header.php';
   </section>
 
   <section class="panel currently-panel">
-    <p class="panel-label">CURRENTLY BUILDING</p>
+    <p class="panel-label">CURRENTLY LEARNING &amp; BUILDING</p>
     <div class="build-chips">
-      <span>OPNsense VPN failover</span>
-      <span>AWS networking &amp; architecture</span>
-      <span>Home Assistant rack UI</span>
-      <span>Security telemetry</span>
+      <span>CISSP certification preparation</span>
+      <span>RITA + Zeek integration</span>
+      <span>Nessus &amp; Greenbone credentialed vulnerability scanning</span>
+      <span>Qualys agent-based vulnerability scanning</span>
+      <span>Computer engineering: ESP32 circuit-board video game project</span>
     </div>
   </section>
 
