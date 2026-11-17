@@ -13,7 +13,7 @@ require __DIR__ . '/includes/header.php';
   <h1>How do I get started?</h1>
   <p class="subtext">This is what I'd tell someone starting today. It's not the only way.</p>
     </div>
-    <?php require __DIR__ . '/includes/csap-badge.php'; ?>
+
   </header>
 
   <h2>1. Get a cheap box you can leave on</h2>
@@ -42,5 +42,8 @@ require __DIR__ . '/includes/header.php';
 
   <hr class="divider">
   <p class="subtext">Build it yourself rather than copying someone else's setup. The copying is the part where you don't learn anything.</p>
+</div>
+<div class="page-csap-bottom">
+  <?php require __DIR__ . '/includes/csap-badge.php'; ?>
 </div>
 <?php require __DIR__ . '/includes/footer.php'; ?>
