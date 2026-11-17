@@ -27,11 +27,11 @@ require __DIR__ . '/includes/header.php';
     <p>I’m always learning and expanding the lab as I go. Most of what’s here came from building something, breaking it, and figuring out how to make it better.</p>
 
     <div class="credential-card" aria-label="CompTIA CySA+ certification">
-      <span class="credential-mark" aria-hidden="true">CySA+</span>
+      <img class="credential-badge" src="/images/comptia-cysa-plus.png" alt="CompTIA CySA+ Certified badge" width="80" height="80" loading="lazy">
       <div>
         <span class="credential-label">CERTIFICATION</span>
         <strong>CompTIA CySA+</strong>
-        <small>Cybersecurity Analyst · Earned November 2026</small>
+        <small>Earned November 15, 2026 · Expires November 15, 2029</small>
         <small>Threat detection, vulnerability management, incident response, and security operations.</small>
         <a class="credential-verify" href="https://www.credly.com/badges/32601b4e-70a5-4fc2-ac0d-ac48beceb7c2/public_url" target="_blank" rel="noopener">Verify CySA+ on Credly ↗</a>
       </div>
@@ -43,7 +43,8 @@ require __DIR__ . '/includes/header.php';
         <span class="credential-label">CERTIFICATION</span>
         <strong>CompTIA Security+</strong>
         <small>Earned October 28, 2026 · Expires October 28, 2029</small>
-        <a class="credential-verify" href="https://verify.comptia.org" target="_blank" rel="noopener">Verify certification ↗</a>
+        <small>Core security controls, risk management, network defense, and incident response.</small>
+        <a class="credential-verify" href="https://verify.comptia.org" target="_blank" rel="noopener">Verify Security+ ↗</a>
         <small class="credential-code">Verification code: 2c1126afeb7b48e1b700b72828fcc090</small>
       </div>
     </div>

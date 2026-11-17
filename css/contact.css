@@ -46,8 +46,10 @@
   width:80px;
   height:80px;
   object-fit:contain;
-  border-radius:9px;
-  background:#fff;
+  border-radius:0;
+  background:transparent;
+  filter:none;
+  mix-blend-mode:normal;
 }
 .credential-verify { color:#8dc7ff; font-size:12px; width:fit-content; }
 .credential-verify:focus-visible { outline:2px solid #8dc7ff; outline-offset:3px; }
