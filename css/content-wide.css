@@ -36,6 +36,15 @@
   margin:24px auto 0;
 }
 
+.wide-content-page .teach-gallery-portraits {
+  max-width:720px;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+}
+.wide-content-page .teach-gallery-portraits img {
+  height:auto;
+  aspect-ratio:3 / 4;
+}
+
 /* Fix the desktop quick-fact dots so they never sit on top of the text. */
 .homelab-facts li {
   position:static!important;

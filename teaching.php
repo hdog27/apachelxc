@@ -2,7 +2,7 @@
 require_once __DIR__ . '/includes/metadata.php';
 $current_page     = 'teaching';
 $page_title       = 'Teaching | hmax.space';
-$page_description = 'Cyber-range engineering and hands-on instruction: isolated attack environments, centralized telemetry, and student-led investigations.';
+$page_description = 'Cyber-range engineering and hands-on instruction: isolated attack environments, centralized telemetry, student-led investigations, and a homelab presentation at the RIC NECSP meetup.';
 $page_css         = 'content-wide.css';
 $body_class       = 'wide-content-page';
 $photos           = glob(__DIR__ . '/images/teaching*.{jpg,jpeg,png,webp}', GLOB_BRACE);
@@ -53,6 +53,15 @@ require __DIR__ . '/includes/header.php';
 
   <hr class="divider">
   <p class="subtext">Attack exercises ran in an isolated lab segment on hardware I own.</p>
+
+  <h2>Homelab Presentation at the RIC NECSP Meetup</h2>
+  <p>I was the only student presenter at Rhode Island College’s NECSP meetup. I showed how I use my homelab to practice Linux administration, networking, virtualization, centralized logging, and troubleshooting outside the classroom.</p>
+  <p>I demonstrated attack detection testing and a small USB HID project, then shared ways students can start building a homelab of their own.</p>
+
+  <div class="teach-gallery teach-gallery-portraits">
+    <img src="/images/necsp-presentation.webp" width="800" height="1066" alt="Harrison Smith presenting at the NECSP meetup podium beside his closing slide" loading="lazy">
+    <img src="/images/necsp-homelab-demo.webp" width="800" height="1038" alt="Harrison Smith at the podium with his homelab demo projected behind him" loading="lazy">
+  </div>
 </div>
 <div class="page-csap-bottom csap-mobile-only">
   <?php require __DIR__ . '/includes/csap-badge.php'; ?>
