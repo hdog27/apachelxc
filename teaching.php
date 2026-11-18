@@ -17,10 +17,10 @@ $og_image         = 'https://hmax.space/images/og-teaching.jpg';
 require __DIR__ . '/includes/header.php';
 ?>
 <div class="card">
-  <header class="page-credential-layout">
+  <header class="page-credential-layout teaching-header">
     <div class="page-credential-copy">
-  <h1>Teaching</h1>
-  <p class="subtext">Cyber-range engineering. Live telemetry. Hands-on investigation.</p>
+      <h1>Teaching</h1>
+      <p class="subtext">Cyber-range engineering. Live telemetry. Hands-on investigation.</p>
     </div>
 
     <div class="csap-desktop-only">
@@ -59,8 +59,8 @@ require __DIR__ . '/includes/header.php';
   <p>I demonstrated attack detection testing and a small USB HID project, then shared ways students can start building a homelab of their own.</p>
 
   <div class="teach-gallery teach-gallery-portraits">
-    <img src="/images/necsp-presentation.webp" width="800" height="1066" alt="Harrison Smith presenting at the NECSP meetup podium beside his closing slide" loading="lazy">
-    <img src="/images/necsp-homelab-demo.webp" width="800" height="1038" alt="Harrison Smith at the podium with his homelab demo projected behind him" loading="lazy">
+    <img src="/images/necsp-presentation.webp?v=2" width="720" height="960" alt="Harrison Smith presenting at the NECSP meetup podium beside his closing slide" loading="lazy">
+    <img src="/images/necsp-homelab-demo.webp?v=2" width="720" height="960" alt="Harrison Smith at the podium with his homelab demo projected behind him" loading="lazy">
   </div>
 </div>
 <div class="page-csap-bottom csap-mobile-only">

@@ -11,7 +11,6 @@
     ? window.__hmaxDeferredScripts.slice()
     : [
         '/js/liquid-glass-webgl.js',
-        '/js/liquid-glass-nav-webgl.js',
         '/js/liquid-glass-debug.js',
         '/js/rtc.js',
         '/js/flank.js',

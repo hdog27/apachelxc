@@ -26,7 +26,6 @@
 <script>
 window.__hmaxDeferredScripts = <?= json_encode([
   '/js/liquid-glass-webgl.js?v=' . (@filemtime(__DIR__ . '/../js/liquid-glass-webgl.js') ?: 1),
-  '/js/liquid-glass-nav-webgl.js?v=' . (@filemtime(__DIR__ . '/../js/liquid-glass-nav-webgl.js') ?: 1),
   '/js/liquid-glass-debug.js?v=' . (@filemtime(__DIR__ . '/../js/liquid-glass-debug.js') ?: 1),
   '/js/rtc.js?v=' . (@filemtime(__DIR__ . '/../js/rtc.js') ?: 1),
   '/js/flank.js?v=' . (@filemtime(__DIR__ . '/../js/flank.js') ?: 1),
@@ -40,7 +39,6 @@ window.__hmaxDeferredScripts = <?= json_encode([
 <script type="module" src="/js/cobe-metadata-globe-v2.js?v=<?= @filemtime(__DIR__ . "/../js/cobe-metadata-globe-v2.js") ?>"></script>
 <?php else: ?>
 <script src="/js/liquid-glass-webgl.js?v=<?= @filemtime(__DIR__ . "/../js/liquid-glass-webgl.js") ?>"></script>
-<script src="/js/liquid-glass-nav-webgl.js?v=<?= @filemtime(__DIR__ . "/../js/liquid-glass-nav-webgl.js") ?>"></script>
 <script src="/js/liquid-glass-debug.js?v=<?= @filemtime(__DIR__ . "/../js/liquid-glass-debug.js") ?>"></script>
 <?php endif; ?>
 </body>

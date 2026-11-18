@@ -1,3 +1,51 @@
+@media (min-width: 641px) {
+  .top-nav {
+    align-items: center;
+    gap: clamp(4px, 0.7vw, 10px);
+    padding: 10px;
+  }
+
+  .top-nav > a.nav-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 46px;
+    padding: 8px clamp(7px, 1.25vw, 20px);
+    border: 1px solid rgba(181, 211, 250, .22);
+    border-radius: 10px !important;
+    background: rgba(14, 24, 40, .75);
+    box-shadow: none;
+    color: #edf4ff;
+    font-size: clamp(.94rem, 1.35vw, 1.1rem);
+    font-weight: 650;
+    letter-spacing: 0;
+    text-shadow: none;
+    white-space: nowrap;
+    transform: none;
+    transition: background-color .18s ease, border-color .18s ease;
+  }
+
+  .top-nav > a.nav-btn::after,
+  .top-nav > a.nav-btn[href="/safe"]::before { content: none; }
+  .top-nav > a.nav-btn[href="/safe"] { margin-left: 0; opacity: 1; }
+
+  .top-nav > a.nav-btn:hover {
+    background: #223653;
+    border-color: #799bc4;
+  }
+
+  .top-nav > a.nav-btn.active {
+    background: #25466c;
+    border-color: #91baff;
+    color: #fff;
+  }
+
+  .top-nav > a.nav-btn:focus-visible {
+    outline: 2px solid #a8d4ff;
+    outline-offset: 2px;
+  }
+}
+
 .hm-bar, .hm-drawer, .hm-scrim { display: none; }
 .hm-nav-wrap { display: none; }
 
