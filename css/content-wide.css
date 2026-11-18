@@ -23,13 +23,13 @@
   margin:12px auto 26px;
   text-align:left;
 }
-.wide-content-page .teaching-header { text-align:center; }
+.wide-content-page .card > .page-credential-layout { text-align:center; }
 @media (min-width:601px) {
-  .wide-content-page .teaching-header {
+  .wide-content-page .card > .page-credential-layout {
     grid-template-columns:120px minmax(0, 1fr) 120px;
     gap:clamp(12px, 2vw, 24px);
   }
-  .teaching-header > .page-credential-copy { grid-column:2; }
+  .wide-content-page .card > .page-credential-layout > .page-credential-copy { grid-column:2; }
 }
 
 .wide-content-page .teach-hero {
