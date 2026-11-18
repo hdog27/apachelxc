@@ -65,7 +65,7 @@ if (!isset($body_class))       { $body_class = ''; }
   <a class="nav-btn<?= nav_active('index', $current_page) ?>" href="/">Cyber Lab</a>
   <a class="nav-btn<?= nav_active('projects', $current_page) ?>" href="/projects">Projects</a>
   <a class="nav-btn<?= nav_active("start", $current_page) ?>" href="/start">Get Started</a>
-  <a class="nav-btn<?= nav_active("teaching", $current_page) ?>" href="/teaching">Teaching</a>
+  <a class="nav-btn<?= nav_active("teaching", $current_page) ?>" href="/teaching">Workshops &amp; Talks</a>
   <a class="nav-btn<?= nav_active('contact', $current_page) ?>" href="/contact">Contact</a>
   <a class="nav-btn<?= nav_active("safe", $current_page) ?>" href="/safe">Is this safe?</a>
   <div class="hm-deskcat" aria-hidden="true"></div>

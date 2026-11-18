@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/includes/metadata.php';
 $current_page     = 'teaching';
-$page_title       = 'Teaching | hmax.space';
+$page_title       = 'Workshops & Talks | hmax.space';
 $page_description = 'Cyber-range engineering and hands-on instruction: isolated attack environments, centralized telemetry, student-led investigations, and a homelab presentation at the RIC NECSP meetup.';
 $page_css         = 'content-wide.css';
 $body_class       = 'wide-content-page';
@@ -19,7 +19,7 @@ require __DIR__ . '/includes/header.php';
 <div class="card">
   <header class="page-credential-layout teaching-header">
     <div class="page-credential-copy">
-      <h1>Teaching</h1>
+      <h1>Workshops &amp; Talks</h1>
       <p class="subtext">Cyber-range engineering. Live telemetry. Hands-on investigation.</p>
     </div>
 
